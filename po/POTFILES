@@ -1,0 +1,7 @@
+data/io.boite.imagine.desktop.in
+data/io.boite.imagine.appdata.xml.in
+data/io.boite.imagine.gschema.xml
+src/window.ui
+src/main.py
+src/window.py
+
