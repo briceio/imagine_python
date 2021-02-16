@@ -16,22 +16,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from gi.repository import Gtk
-
+from gi.repository import GdkPixbuf
+import cairo
+import math
+from io import BytesIO
+from PIL import Image
 
 @Gtk.Template(resource_path='/io/boite/imagine/window.ui')
 class ImagineWindow(Gtk.ApplicationWindow):
     __gtype_name__ = 'ImagineWindow'
 
-    image = Gtk.Template.Child()
+    drawingArea = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    @Gtk.Template.Callback("on_file_open")
-    def on_file_open2(self, widget):
-        self.image.set_from_file("/home/brice/Données/Temp/pic.jpg")
+        im = Image.open("/home/brice/Données/Temp/pic.jpg")
+        buffer = BytesIO()
+        im.save(buffer, format="PNG")
+        buffer.seek(0)
+        self.image = cairo.ImageSurface.create_from_png(buffer)
 
-    #@Gtk.Template.Callback("on_file_open")
+        self.drawingArea.connect("draw", self.on_draw)
+
+    @Gtk.Template.Callback("on_file_open")
     def on_file_open(self, widget):
         dialog = Gtk.FileChooserDialog("Image to open", self, Gtk.FileChooserAction.OPEN,
                                        (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
@@ -49,3 +57,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
             print("ok")
 
         dialog.destroy()
+
+    def on_draw(self, w, cc):
+        cc.set_source_surface(self.image, 0, 0)
+        cc.paint()
+
+
+ 

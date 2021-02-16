@@ -6,6 +6,7 @@ project('imagine',
 )
 
 i18n = import('i18n')
+pymod = import('python')
 
 
 subdir('data')

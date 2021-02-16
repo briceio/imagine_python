@@ -22,7 +22,7 @@
         "*.a"
     ],
     "modules" : [
-    	{
+        {
             "name" : "imagine",
             "builddir" : true,
             "buildsystem" : "meson",
