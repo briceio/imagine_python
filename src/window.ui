@@ -21,7 +21,17 @@
               <object class="GtkToolItemGroup">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">General</property>
+                <property name="label" translatable="yes">Transform</property>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Resize</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">insert-image</property>
+                    <signal name="clicked" handler="on_resize" swapped="no"/>
+                  </object>
+                </child>
                 <child>
                   <object class="GtkToolButton">
                     <property name="visible">True</property>
@@ -29,7 +39,11 @@
                     <property name="label" translatable="yes">Crop</property>
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-cut</property>
+                    <signal name="clicked" handler="on_crop" swapped="no"/>
                   </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
               </object>
               <packing>
@@ -95,6 +109,20 @@
               </packing>
             </child>
             <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
+                <property name="label" translatable="yes">Zoom</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkSpinButton" id="zoom_spinbutton">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -109,7 +137,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>

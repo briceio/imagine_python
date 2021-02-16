@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .resize_dialog import ResizeDialog
+
 from gi.repository import Gtk
 from gi.repository import GdkPixbuf
 import cairo
@@ -46,6 +48,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # binding
         self.drawing_area.connect("draw", self.on_draw)
+
+        # center window
+        self.set_size_request(1024, 768)
+        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
 
     def load_image(self, image):
         im = Image.open(image)
@@ -83,6 +89,17 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_zoom_changed(self, widget):
         self.scale = self.zoom_spinbutton.get_value()
         self.redraw_image()
+
+    @Gtk.Template.Callback("on_resize")
+    def on_resize(self, widget):
+        dialog = ResizeDialog()
+        dialog.set_transient_for(self) # link dialog to parent
+        dialog.show_all()
+        pass
+
+    @Gtk.Template.Callback("on_crop")
+    def on_crop(self, widget):
+        print("crop")
 
     def redraw_image(self):
         self.drawing_area.queue_draw()
