@@ -26,18 +26,39 @@ from PIL import Image
 class ImagineWindow(Gtk.ApplicationWindow):
     __gtype_name__ = 'ImagineWindow'
 
-    drawingArea = Gtk.Template.Child()
+    # scale factor
+    scale = 1.0
+
+    # widgets
+    drawing_area: Gtk.DrawingArea = Gtk.Template.Child()
+    zoom_spinbutton: Gtk.SpinButton = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        im = Image.open("/home/brice/Données/Temp/pic.jpg")
+        # DEBUG load test image
+        self.load_image("/home/brice/Données/Temp/pic.jpg")
+
+        # zoom
+        self.zoom_spinbutton.set_range(0.1, 10.0)
+        self.zoom_spinbutton.set_increments(0.1, 1.0)
+        self.zoom_spinbutton.set_value(1.0)
+
+        # binding
+        self.drawing_area.connect("draw", self.on_draw)
+
+    def load_image(self, image):
+        im = Image.open(image)
         buffer = BytesIO()
         im.save(buffer, format="PNG")
         buffer.seek(0)
+
+        # create cairo surface
         self.image = cairo.ImageSurface.create_from_png(buffer)
 
-        self.drawingArea.connect("draw", self.on_draw)
+    def save(self):
+        # TODO surface.write_to_png
+        pass
 
     @Gtk.Template.Callback("on_file_open")
     def on_file_open(self, widget):
@@ -58,7 +79,20 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         dialog.destroy()
 
+    @Gtk.Template.Callback("on_zoom_changed")
+    def on_zoom_changed(self, widget):
+        self.scale = self.zoom_spinbutton.get_value()
+        self.redraw_image()
+
+    def redraw_image(self):
+        self.drawing_area.queue_draw()
+
     def on_draw(self, w, cr):
+
+        # scale
+        self.drawing_area.set_size_request(self.scale * self.image.get_width(), self.scale * self.image.get_height())
+        cr.scale(self.scale, self.scale)
+
         cr.set_source_surface(self.image, 0, 0)
         cr.paint()
 
@@ -76,6 +110,3 @@ class ImagineWindow(Gtk.ApplicationWindow):
         cr.move_to(40, 40)
         cr.show_text("This is a test")
 
-
-
- 

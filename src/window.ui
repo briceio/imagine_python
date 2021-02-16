@@ -52,7 +52,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <child>
-                  <object class="GtkDrawingArea" id="drawingArea">
+                  <object class="GtkDrawingArea" id="drawing_area">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                   </object>
@@ -74,15 +74,44 @@
         <property name="title">Imagine</property>
         <property name="show-close-button">True</property>
         <child>
-          <object class="GtkButton">
-            <property name="label" translatable="yes">Open</property>
+          <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
-            <signal name="clicked" handler="on_file_open" swapped="no"/>
-            <style>
-              <class name="suggested-action"/>
-            </style>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Open</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_file_open" swapped="no"/>
+                <style>
+                  <class name="suggested-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSpinButton" id="zoom_spinbutton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="progress-fraction">0.10</property>
+                <property name="progress-pulse-step">0.5</property>
+                <property name="input-purpose">number</property>
+                <property name="digits">1</property>
+                <property name="snap-to-ticks">True</property>
+                <property name="numeric">True</property>
+                <signal name="value-changed" handler="on_zoom_changed" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
           </object>
         </child>
       </object>
