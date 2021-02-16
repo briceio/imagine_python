@@ -58,9 +58,24 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         dialog.destroy()
 
-    def on_draw(self, w, cc):
-        cc.set_source_surface(self.image, 0, 0)
-        cc.paint()
+    def on_draw(self, w, cr):
+        cr.set_source_surface(self.image, 0, 0)
+        cr.paint()
+
+        # line
+        cr.set_source_rgb(1, 0, 0)
+        cr.set_line_width(2)
+        cr.move_to(0, 0)
+        cr.line_to(100, 100)
+        cr.stroke()
+
+        # text
+        cr.set_source_rgb(1, 1, 0)
+        cr.select_font_face("Mono", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(40)
+        cr.move_to(40, 40)
+        cr.show_text("This is a test")
+
 
 
  
