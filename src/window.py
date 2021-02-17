@@ -17,7 +17,7 @@
 
 from .document import Document
 from .resize_dialog import ResizeDialog
-from .tools import Tool, CropTool, AnnotationRectangleTool
+from .tools import Tool, CropTool, RectangleAnnotationTool
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -66,6 +66,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # binding
         self.layers_listbox.bind_model(self.document.layers, self.create_layer_item_widget)
+        self.layers_listbox.connect("row-selected", self.on_select_layer)
 
         # center window
         self.set_size_request(1024, 768)
@@ -124,7 +125,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_annotate_rectangle")
     def on_annotate_rectangle(self, widget):
-        self.set_active_tool(AnnotationRectangleTool(self.document))
+        self.set_active_tool(RectangleAnnotationTool(self.document), keep_selected=True)
 
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
@@ -170,6 +171,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def create_layer_item_widget(self, layer):
         return Gtk.Label(label = layer.name, justify = Gtk.Justification.LEFT)
+
+    def on_select_layer(self, container, row):
+        # build & select the default tool (if any)
+        layer = self.document.layers[row.get_index()]
+        tool_name = layer.get_tool()
+        if tool_name != None:
+            self.tool = globals()[tool_name](self.document, layer)
 
     def on_draw(self, w, cr):
 

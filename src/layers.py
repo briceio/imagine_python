@@ -10,10 +10,13 @@ class Layer(GObject.GObject):
         GObject.GObject.__init__(self)
         self.name = name
 
+    def get_tool(self):
+        return None
+
     def draw(self, w, cr):
         pass
 
-class RectangleLayer(Layer):
+class RectangleAnnotationLayer(Layer):
 
     def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__("Rectangle")
@@ -21,6 +24,9 @@ class RectangleLayer(Layer):
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
+
+    def get_tool(self):
+        return "RectangleAnnotationTool"
 
     def draw(self, w, cr):
         cr.set_source_rgba(1, 1, 1, 1)

@@ -1,4 +1,4 @@
-from .layers import RectangleLayer
+from .layers import RectangleAnnotationLayer
 
 class Tool:
 
@@ -99,11 +99,12 @@ class CropTool(RectTool):
             cr.rectangle(0, mouse_y, w.get_allocation().width, mouse_y)
             cr.fill()
 
-class AnnotationRectangleTool(RectTool):
+class RectangleAnnotationTool(RectTool):
 
-    def __init__(self, document):
+    def __init__(self, document, layer=None):
         super().__init__(document)
-        self.layer = RectangleLayer()
+        self.layer = layer if layer else RectangleAnnotationLayer()
+        self.existing = False if layer is None else True
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
@@ -116,6 +117,9 @@ class AnnotationRectangleTool(RectTool):
             self.layer.draw(w, cr)
 
     def apply(self):
-        self.document.add_layer(self.layer)
+        if not self.existing:
+            self.document.add_layer(self.layer)
+            self.existing = True
+
         super().apply()
 
