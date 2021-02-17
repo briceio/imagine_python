@@ -139,13 +139,14 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.drawing_area.queue_draw()
 
     def mouse_move(self, w, event):
-        self.mouse_x = event.x
-        self.mouse_y = event.y
+        self.mouse_x = event.x / self.scale
+        self.mouse_y = event.y / self.scale
+
         self.redraw()
 
     def mouse_down(self, w, event):
-        self.mouse_x = event.x
-        self.mouse_y = event.y
+        self.mouse_x = event.x / self.scale
+        self.mouse_y = event.y / self.scale
 
         if self.tool != None:
             self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
@@ -153,8 +154,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.redraw()
 
     def mouse_up(self, w, event):
-        self.mouse_x = event.x
-        self.mouse_y = event.y
+        self.mouse_x = event.x / self.scale
+        self.mouse_y = event.y / self.scale
 
         if self.tool != None:
             self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
@@ -168,7 +169,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 self.redraw()
 
     def create_layer_item_widget(self, layer):
-        return Gtk.Label(label = layer.name)
+        return Gtk.Label(label = layer.name, justify = Gtk.Justification.LEFT)
 
     def on_draw(self, w, cr):
 
@@ -179,7 +180,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.document.draw(w, cr)
 
         # scale back to 1/1
-        cr.scale(1/self.scale, 1/self.scale)
+        #cr.scale(1/self.scale, 1/self.scale)
 
         # tools
         if self.tool != None:

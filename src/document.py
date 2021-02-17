@@ -40,7 +40,7 @@ class Document:
         cr.set_source_surface(self.imageSurface, 0, 0)
         cr.paint()
 
-        # TODO layers
+        # layers
         for layer in self.layers:
             layer.draw(w, cr)
 
