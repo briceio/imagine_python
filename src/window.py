@@ -56,13 +56,16 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_increments(0.1, 1.0)
         self.zoom_spinbutton.set_value(1.0)
 
-        # binding
+        # events
         self.connect("key-press-event", self.on_key_press)
         self.drawing_area.connect("draw", self.on_draw)
         self.drawing_area.connect("motion-notify-event", self.mouse_move)
         self.drawing_area.connect("button-press-event", self.mouse_down)
         self.drawing_area.connect("button-release-event", self.mouse_up)
         self.drawing_area.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
+
+        # binding
+        self.layers_listbox.bind_model(self.document.layers, self.create_layer_item_widget)
 
         # center window
         self.set_size_request(1024, 768)
@@ -125,10 +128,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
-
-            # refresh layers
-            self.refresh_layers()
-
             # unselect if requested
             if not keep_selected:
                 self.tool = None
@@ -168,15 +167,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 self.tool.cancel()
                 self.redraw()
 
-    def refresh_layers(self):
-        for layer in self.document.layers:
-            row = Gtk.ListBoxRow()
-            hbox = Gtk.Box()
-            hbox.pack_start(Gtk.Label(str(layer)), True, True, 0)
-            row.add(hbox)
-            self.layers_listbox.add(row)
-
-        self.layers_listbox.show_all()
+    def create_layer_item_widget(self, layer):
+        return Gtk.Label(label = layer.name)
 
     def on_draw(self, w, cr):
 

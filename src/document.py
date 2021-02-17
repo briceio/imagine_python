@@ -1,6 +1,8 @@
 from PIL import Image
 import cairo
 from io import BytesIO
+from gi.repository import Gtk, Gio, GObject
+
 
 from .layers import Layer
 
@@ -9,7 +11,7 @@ class Document:
     def __init__(self, path):
         self.image: Image = None
         self.imageSurface: cairo.ImageSurface = None
-        self.layers = []
+        self.layers = Gio.ListStore()
         self._reload(Image.open(path))
 
     def _reload(self, image):
