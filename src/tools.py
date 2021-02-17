@@ -1,4 +1,4 @@
-from .layers import RectangleAnnotationLayer
+from .layers import RectangleAnnotationLayer, ArrowAnnotationLayer
 
 class Tool:
 
@@ -41,6 +41,43 @@ class Tool:
         pass
 
 class RectTool(Tool):
+
+    def __init__(self, document):
+        super().__init__(document, reticule = True)
+        self._drawing = False
+        self.start_x = 0
+        self.start_y = 0
+        self.end_x = 0
+        self.end_y = 0
+
+    def cancel(self):
+        super().cancel()
+        self._drawing = False
+
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y)
+        if not self._drawing:
+            self.start_x = mouse_x
+            self.start_y = mouse_y
+            self._drawing = True
+
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.end_x = mouse_x
+            self.end_y = mouse_y
+            self.apply()
+
+        self._drawing = False
+
+    def width(self):
+        return int(self.end_x - self.start_x)
+
+    def height(self):
+        return int(self.end_y - self.start_y)
+
+class LineTool(Tool):
 
     def __init__(self, document):
         super().__init__(document, reticule = True)
@@ -123,3 +160,26 @@ class RectangleAnnotationTool(RectTool):
 
         super().apply()
 
+class ArrowAnnotationTool(LineTool):
+
+    def __init__(self, document, layer=None):
+        super().__init__(document)
+        self.layer = layer if layer else ArrowAnnotationLayer()
+        self.existing = False if layer is None else True
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.layer.x1 = self.start_x
+            self.layer.y1 = self.start_y
+            self.layer.x2 = mouse_x
+            self.layer.y2 = mouse_y
+            self.layer.draw(w, cr)
+
+    def apply(self):
+        if not self.existing:
+            self.document.add_layer(self.layer)
+            self.existing = True
+
+        super().apply()

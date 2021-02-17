@@ -17,7 +17,7 @@
 
 from .document import Document
 from .resize_dialog import ResizeDialog
-from .tools import Tool, CropTool, RectangleAnnotationTool
+from .tools import Tool, CropTool, RectangleAnnotationTool, ArrowAnnotationTool
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -127,6 +127,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_annotate_rectangle(self, widget):
         self.set_active_tool(RectangleAnnotationTool(self.document), keep_selected=True)
 
+    @Gtk.Template.Callback("on_annotate_arrow")
+    def on_annotate_arrow(self, widget):
+        self.set_active_tool(ArrowAnnotationTool(self.document), keep_selected=True)
+
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
             # unselect if requested
@@ -149,7 +153,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_x = event.x / self.scale
         self.mouse_y = event.y / self.scale
 
-        if self.tool != None:
+        if self.tool != None and event.button == 1:
             self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
 
         self.redraw()
@@ -158,7 +162,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_x = event.x / self.scale
         self.mouse_y = event.y / self.scale
 
-        if self.tool != None:
+        if self.tool != None and event.button == 1:
             self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
 
         self.redraw()
