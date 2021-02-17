@@ -17,7 +17,7 @@
 
 from .document import Document
 from .resize_dialog import ResizeDialog
-from .tools import Tool, AreaSelector
+from .tools import Tool, CropTool, AnnotationRectangleTool
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -112,7 +112,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         dialog.connect("response", handle_response)
 
         dialog.show_all()
-        pass
 
     def do_resize(self, width, height):
         self.document.resize(int(width), int(height))
@@ -120,10 +119,19 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_crop")
     def on_crop(self, widget):
-        def apply(tool):
-            self.document.crop(tool.start_x, tool.start_y, tool.end_x, tool.end_y)
+        self.set_active_tool(CropTool(self.document))
 
-        self.tool = AreaSelector(apply)
+    @Gtk.Template.Callback("on_annotate_rectangle")
+    def on_annotate_rectangle(self, widget):
+        self.set_active_tool(AnnotationRectangleTool(self.document))
+
+    def set_active_tool(self, tool, keep_selected = False):
+        def apply_callback():
+            if not keep_selected:
+                self.tool = None
+
+        self.tool = tool
+        self.tool.apply_callback = apply_callback
 
     def redraw(self):
         self.drawing_area.queue_draw()

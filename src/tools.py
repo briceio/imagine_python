@@ -1,12 +1,18 @@
+from .layers import RectangleLayer
+
 class Tool:
 
-    def __init__(self, callback, **args):
-        self.callback = callback
+    apply_callback = None
+
+    def __init__(self, document, **args):
+        self.document = document
         self.reticule = bool(args["reticule"]) if "reticule" in args else False
 
     def apply(self):
-        if self.callback != None:
-            self.callback(self)
+        if self.apply_callback != None:
+            self.apply_callback()
+
+        pass
 
     def cancel(self):
         pass
@@ -35,7 +41,7 @@ class Tool:
 
         pass
 
-class AreaSelector(Tool):
+class RectTool(Tool):
 
     _drawing = False
     start_x = 0
@@ -43,8 +49,8 @@ class AreaSelector(Tool):
     end_x = 0
     end_y = 0
 
-    def __init__(self, callback):
-        super().__init__(callback, reticule = True)
+    def __init__(self, document):
+        super().__init__(document, reticule = True)
 
     def cancel(self):
         super().cancel()
@@ -67,6 +73,22 @@ class AreaSelector(Tool):
 
         self._drawing = False
 
+    def width(self):
+        return int(self.end_x - self.start_x)
+
+    def height(self):
+        return int(self.end_y - self.start_y)
+
+class CropTool(RectTool):
+
+    def __init__(self, document):
+        super().__init__(document)
+        pass
+
+    def apply(self):
+        super().apply()
+        self.document.crop(self.start_x, self.start_y, self.end_x, self.end_y)
+
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
@@ -80,9 +102,25 @@ class AreaSelector(Tool):
             cr.rectangle(0, mouse_y, w.get_allocation().width, mouse_y)
             cr.fill()
 
-    def width(self):
-        return int(self.end_x - self.start_x)
+class AnnotationRectangleTool(RectTool):
 
-    def height(self):
-        return int(self.end_y - self.start_y)
-    
+    layer = RectangleLayer()
+
+    def __init__(self, document):
+        super().__init__(document)
+        pass
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.layer.x1 = self.start_x
+            self.layer.y1 = self.start_y
+            self.layer.x2 = mouse_x
+            self.layer.y2 = mouse_y
+            self.layer.draw(w, cr)
+
+    def apply(self):
+        super().apply()
+        self.document.add_layer(self.layer)
+
