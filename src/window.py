@@ -18,6 +18,7 @@
 from .resize_dialog import ResizeDialog
 
 from gi.repository import Gtk
+from gi.repository import Gdk
 from gi.repository import GdkPixbuf
 import cairo
 import math
@@ -39,7 +40,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         super().__init__(**kwargs)
 
         # DEBUG load test image
-        self.load_image("/home/brice/Données/Temp/pic.jpg")
+        self.load_image(Image.open("/home/brice/Données/Temp/pic.jpg"))
 
         # zoom
         self.zoom_spinbutton.set_range(0.1, 10.0)
@@ -48,19 +49,23 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # binding
         self.drawing_area.connect("draw", self.on_draw)
+        self.drawing_area.connect("motion-notify-event", self.mouse_move)
+        self.drawing_area.connect("button-press-event", self.mouse_down)
+        self.drawing_area.connect("button-release-event", self.mouse_up)
+        self.drawing_area.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
 
         # center window
         self.set_size_request(1024, 768)
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
 
     def load_image(self, image):
-        im = Image.open(image)
+        self.image = image
         buffer = BytesIO()
-        im.save(buffer, format="PNG")
+        self.image.save(buffer, format="PNG")
         buffer.seek(0)
 
         # create cairo surface
-        self.image = cairo.ImageSurface.create_from_png(buffer)
+        self.imageSurface = cairo.ImageSurface.create_from_png(buffer)
 
     def save(self):
         # TODO surface.write_to_png
@@ -92,10 +97,23 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_resize")
     def on_resize(self, widget):
-        dialog = ResizeDialog()
+
+        def handle_response(d, r):
+            if r == Gtk.ResponseType.OK:
+                self.do_resize(d.width, d.height)
+            d.destroy()
+
+        dialog = ResizeDialog(self.image.size[0], self.image.size[1])
         dialog.set_transient_for(self) # link dialog to parent
+
+        dialog.connect("response", handle_response)
+
         dialog.show_all()
         pass
+
+    def do_resize(self, width, height):
+        self.load_image(self.image.resize((int(width), int(height)), resample=Image.BILINEAR))
+        self.redraw_image()
 
     @Gtk.Template.Callback("on_crop")
     def on_crop(self, widget):
@@ -104,13 +122,22 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def redraw_image(self):
         self.drawing_area.queue_draw()
 
+    def mouse_move(self, w, event):
+        print("move")
+
+    def mouse_down(self, w, event):
+        print("down")
+
+    def mouse_up(self, w, event):
+        print("up")
+
     def on_draw(self, w, cr):
 
         # scale
-        self.drawing_area.set_size_request(self.scale * self.image.get_width(), self.scale * self.image.get_height())
+        self.drawing_area.set_size_request(self.scale * self.imageSurface.get_width(), self.scale * self.imageSurface.get_height())
         cr.scale(self.scale, self.scale)
 
-        cr.set_source_surface(self.image, 0, 0)
+        cr.set_source_surface(self.imageSurface, 0, 0)
         cr.paint()
 
         # line

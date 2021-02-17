@@ -21,7 +21,7 @@
             <property name="can-focus">False</property>
             <property name="layout-style">end</property>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="button1">
                 <property name="label">gtk-undo</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -35,7 +35,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="button2">
                 <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -98,6 +98,9 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="halign">start</property>
+                <property name="max-width-chars">5</property>
+                <property name="input-purpose">number</property>
+                <property name="numeric">True</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
@@ -110,6 +113,11 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="halign">start</property>
+                <property name="max-width-chars">5</property>
+                <property name="progress-fraction">1</property>
+                <property name="progress-pulse-step">1</property>
+                <property name="input-purpose">number</property>
+                <property name="numeric">True</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
@@ -120,6 +128,7 @@
               <object class="GtkCheckButton" id="resize_dialog_keep_aspect_ratio_checkbox">
                 <property name="label" translatable="yes">Keep aspect ratio</property>
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
                 <property name="draw-indicator">True</property>
@@ -141,5 +150,9 @@
         </child>
       </object>
     </child>
+    <action-widgets>
+      <action-widget response="-6">button1</action-widget>
+      <action-widget response="-5">button2</action-widget>
+    </action-widgets>
   </template>
 </interface>
