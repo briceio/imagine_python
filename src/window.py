@@ -59,6 +59,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_value(1.0)
 
         # binding
+        self.connect("key-press-event", self.on_key_press)
         self.drawing_area.connect("draw", self.on_draw)
         self.drawing_area.connect("motion-notify-event", self.mouse_move)
         self.drawing_area.connect("button-press-event", self.mouse_down)
@@ -95,7 +96,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback("on_zoom_changed")
     def on_zoom_changed(self, widget):
         self.scale = self.zoom_spinbutton.get_value()
-        self.redraw_image()
+        self.redraw()
 
     @Gtk.Template.Callback("on_resize")
     def on_resize(self, widget):
@@ -115,19 +116,22 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def do_resize(self, width, height):
         self.document.resize(int(width), int(height))
-        self.redraw_image()
+        self.redraw()
 
     @Gtk.Template.Callback("on_crop")
     def on_crop(self, widget):
-        self.tool = AreaSelector()
+        def apply(tool):
+            self.document.crop(tool.start_x, tool.start_y, tool.end_x, tool.end_y)
 
-    def redraw_image(self):
+        self.tool = AreaSelector(apply)
+
+    def redraw(self):
         self.drawing_area.queue_draw()
 
     def mouse_move(self, w, event):
         self.mouse_x = event.x
         self.mouse_y = event.y
-        self.redraw_image()
+        self.redraw()
 
     def mouse_down(self, w, event):
         self.mouse_x = event.x
@@ -136,7 +140,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         if self.tool != None:
             self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
 
-        self.redraw_image()
+        self.redraw()
 
     def mouse_up(self, w, event):
         self.mouse_x = event.x
@@ -145,7 +149,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
         if self.tool != None:
             self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
 
-        self.redraw_image()
+        self.redraw()
+
+    def on_key_press(self, widget, event):
+        if event.keyval == Gdk.KEY_Escape:
+            if self.tool != None:
+                self.tool.cancel()
+                self.redraw()
 
     def on_draw(self, w, cr):
 

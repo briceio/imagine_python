@@ -1,7 +1,15 @@
 class Tool:
 
-    def __init__(self, **args):
+    def __init__(self, callback, **args):
+        self.callback = callback
         self.reticule = bool(args["reticule"]) if "reticule" in args else False
+
+    def apply(self):
+        if self.callback != None:
+            self.callback(self)
+
+    def cancel(self):
+        pass
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
         pass
@@ -30,21 +38,33 @@ class Tool:
 class AreaSelector(Tool):
 
     _drawing = False
-    _start_x = 0
-    _start_y = 0
+    start_x = 0
+    start_y = 0
+    end_x = 0
+    end_y = 0
 
-    def __init__(self):
-        super().__init__(reticule = True)
+    def __init__(self, callback):
+        super().__init__(callback, reticule = True)
+
+    def cancel(self):
+        super().cancel()
+        self._drawing = False
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y)
         if not self._drawing:
-            self._start_x = mouse_x
-            self._start_y = mouse_y
+            self.start_x = mouse_x
+            self.start_y = mouse_y
             self._drawing = True
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.end_x = mouse_x
+            self.end_y = mouse_y
+            self.apply()
+
         self._drawing = False
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
@@ -54,8 +74,15 @@ class AreaSelector(Tool):
             cr.set_source_rgba(0, 0, 0, 0.5)
             cr.set_line_width(0)
             cr.set_dash([])
-            cr.rectangle(0, 0, w.get_allocation().width, self._start_y)
-            cr.rectangle(0, 0, self._start_x, w.get_allocation().height)
+            cr.rectangle(0, 0, w.get_allocation().width, self.start_y)
+            cr.rectangle(0, 0, self.start_x, w.get_allocation().height)
             cr.rectangle(mouse_x, 0, mouse_x, w.get_allocation().height)
             cr.rectangle(0, mouse_y, w.get_allocation().width, mouse_y)
             cr.fill()
+
+    def width(self):
+        return int(self.end_x - self.start_x)
+
+    def height(self):
+        return int(self.end_y - self.start_y)
+    

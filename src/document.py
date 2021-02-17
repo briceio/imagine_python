@@ -21,6 +21,11 @@ class Document:
 
     def resize(self, width, height):
         self._reload(self.image.resize((width, height), resample=Image.BILINEAR))
+        # TODO resize the layers
+
+    def crop(self, x1, y1, x2, y2):
+        self._reload(self.image.crop((x1, y1, x2, y2)))
+        # TODO crop the layers
 
     def draw(self, w, cr):
 
