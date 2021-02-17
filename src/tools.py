@@ -3,13 +3,13 @@ class Tool:
     def __init__(self, **args):
         self.reticule = bool(args["reticule"]) if "reticule" in args else False
 
-    def mouse_down(self, w, cr, mouse_x, mouse_y):
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
         pass
 
-    def mouse_up(self, w, cr, mouse_x, mouse_y):
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y):
         pass
 
-    def draw(self, w, cr, mouse_x, mouse_y):
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
 
         # reticule
         if self.reticule:
@@ -36,19 +36,19 @@ class AreaSelector(Tool):
     def __init__(self):
         super().__init__(reticule = True)
 
-    def mouse_down(self, w, cr, mouse_x, mouse_y):
-        super().mouse_down(w, cr, mouse_x, mouse_y)
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y)
         if not self._drawing:
             self._start_x = mouse_x
             self._start_y = mouse_y
             self._drawing = True
 
-    def mouse_up(self, w, cr, mouse_x, mouse_y):
-        super().mouse_up(w, cr, mouse_x, mouse_y)
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y)
         self._drawing = False
 
-    def draw(self, w, cr, mouse_x, mouse_y):
-        super().draw(w, cr, mouse_x, mouse_y)
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
 
         if self._drawing:
             cr.set_source_rgba(0, 0, 0, 0.5)

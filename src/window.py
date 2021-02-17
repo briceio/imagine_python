@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .document import Document
 from .resize_dialog import ResizeDialog
 from .tools import Tool, AreaSelector
 
@@ -23,12 +24,14 @@ from gi.repository import Gdk
 from gi.repository import GdkPixbuf
 import cairo
 import math
-from io import BytesIO
 from PIL import Image
 
 @Gtk.Template(resource_path='/io/boite/imagine/window.ui')
 class ImagineWindow(Gtk.ApplicationWindow):
     __gtype_name__ = 'ImagineWindow'
+
+    # document
+    document: Document = None
 
     # scale factor
     scale = 1.0
@@ -47,8 +50,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # DEBUG load test image
-        self.load_image(Image.open("/home/brice/Données/Temp/pic.jpg"))
+        # TODO DEBUG document
+        self.document = Document("/home/brice/Données/Temp/pic.jpg")
 
         # zoom
         self.zoom_spinbutton.set_range(0.1, 10.0)
@@ -65,15 +68,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # center window
         self.set_size_request(1024, 768)
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
-
-    def load_image(self, image):
-        self.image = image
-        buffer = BytesIO()
-        self.image.save(buffer, format="PNG")
-        buffer.seek(0)
-
-        # create cairo surface
-        self.imageSurface = cairo.ImageSurface.create_from_png(buffer)
 
     def save(self):
         # TODO surface.write_to_png
@@ -111,7 +105,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 self.do_resize(d.width, d.height)
             d.destroy()
 
-        dialog = ResizeDialog(self.image.size[0], self.image.size[1])
+        dialog = ResizeDialog(self.document.image.size[0], self.document.image.size[1])
         dialog.set_transient_for(self) # link dialog to parent
 
         dialog.connect("response", handle_response)
@@ -120,7 +114,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         pass
 
     def do_resize(self, width, height):
-        self.load_image(self.image.resize((int(width), int(height)), resample=Image.BILINEAR))
+        self.document.resize(int(width), int(height))
         self.redraw_image()
 
     @Gtk.Template.Callback("on_crop")
@@ -140,7 +134,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_y = event.y
 
         if self.tool != None:
-            self.tool.mouse_down(self.drawing_area, self.imageSurface, self.mouse_x, self.mouse_y)
+            self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
 
         self.redraw_image()
 
@@ -149,28 +143,22 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_y = event.y
 
         if self.tool != None:
-            self.tool.mouse_up(self.drawing_area, self.imageSurface, self.mouse_x, self.mouse_y)
+            self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
 
         self.redraw_image()
 
     def on_draw(self, w, cr):
 
-        # draw image given the scale factor
-        self.drawing_area.set_size_request(self.scale * self.imageSurface.get_width(), self.scale * self.imageSurface.get_height())
+        # document
+        self.drawing_area.set_size_request(self.scale * self.document.imageSurface.get_width(), self.scale * self.document.imageSurface.get_height())
         cr.scale(self.scale, self.scale)
-        cr.set_source_surface(self.imageSurface, 0, 0)
-        cr.paint()
 
-        # test
-        cr.set_source_rgb(1, 1, 0)
-        cr.select_font_face("Mono", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
-        cr.set_font_size(40)
-        cr.move_to(40, 40)
-        cr.show_text("This is a test")
+        self.document.draw(w, cr)
 
-        # tool (scale back to 1/1)
+        # scale back to 1/1
         cr.scale(1/self.scale, 1/self.scale)
 
+        # tools
         if self.tool != None:
-            self.tool.draw(w, cr, self.mouse_x, self.mouse_y)
+            self.tool.draw(self.document, w, cr, self.mouse_x, self.mouse_y)
 
