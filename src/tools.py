@@ -2,10 +2,9 @@ from .layers import RectangleLayer
 
 class Tool:
 
-    apply_callback = None
-
     def __init__(self, document, **args):
         self.document = document
+        self.apply_callback = args["callback"] if "callback" in args else None
         self.reticule = bool(args["reticule"]) if "reticule" in args else False
 
     def apply(self):
@@ -43,14 +42,13 @@ class Tool:
 
 class RectTool(Tool):
 
-    _drawing = False
-    start_x = 0
-    start_y = 0
-    end_x = 0
-    end_y = 0
-
     def __init__(self, document):
         super().__init__(document, reticule = True)
+        self._drawing = False
+        self.start_x = 0
+        self.start_y = 0
+        self.end_x = 0
+        self.end_y = 0
 
     def cancel(self):
         super().cancel()
@@ -83,7 +81,6 @@ class CropTool(RectTool):
 
     def __init__(self, document):
         super().__init__(document)
-        pass
 
     def apply(self):
         super().apply()
@@ -104,11 +101,9 @@ class CropTool(RectTool):
 
 class AnnotationRectangleTool(RectTool):
 
-    layer = RectangleLayer()
-
     def __init__(self, document):
         super().__init__(document)
-        pass
+        self.layer = RectangleLayer()
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
@@ -121,6 +116,6 @@ class AnnotationRectangleTool(RectTool):
             self.layer.draw(w, cr)
 
     def apply(self):
-        super().apply()
         self.document.add_layer(self.layer)
+        super().apply()
 

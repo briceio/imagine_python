@@ -13,6 +13,9 @@ class RectangleLayer(Layer):
         self.x2 = x2
         self.y2 = y2
 
+    def __str__(self):
+        return "Rectangle"
+
     def draw(self, w, cr):
         cr.set_source_rgba(1, 1, 1, 1)
         cr.set_line_width(1)

@@ -6,12 +6,10 @@ from .layers import Layer
 
 class Document:
 
-    image: Image
-    imageSurface: cairo.ImageSurface
-
-    layers = []
-
     def __init__(self, path):
+        self.image: Image = None
+        self.imageSurface: cairo.ImageSurface = None
+        self.layers = []
         self._reload(Image.open(path))
 
     def _reload(self, image):

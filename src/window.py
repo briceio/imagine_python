@@ -30,28 +30,26 @@ from PIL import Image
 class ImagineWindow(Gtk.ApplicationWindow):
     __gtype_name__ = 'ImagineWindow'
 
-    # document
-    document: Document = None
-
     # scale factor
     scale = 1.0
 
     # widgets
     drawing_area: Gtk.DrawingArea = Gtk.Template.Child()
     zoom_spinbutton: Gtk.SpinButton = Gtk.Template.Child()
-
-    # current tool
-    tool: Tool = None
-
-    # current mouse state
-    mouse_x = 0
-    mouse_y = 0
+    layers_listbox: Gtk.ListBox = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         # TODO DEBUG document
         self.document = Document("/home/brice/Données/Temp/pic.jpg")
+
+        # current tool
+        self.tool: Tool = None
+
+        # current mouse state
+        self.mouse_x = 0
+        self.mouse_y = 0
 
         # zoom
         self.zoom_spinbutton.set_range(0.1, 10.0)
@@ -127,6 +125,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
+
+            # refresh layers
+            self.refresh_layers()
+
+            # unselect if requested
             if not keep_selected:
                 self.tool = None
 
@@ -164,6 +167,16 @@ class ImagineWindow(Gtk.ApplicationWindow):
             if self.tool != None:
                 self.tool.cancel()
                 self.redraw()
+
+    def refresh_layers(self):
+        for layer in self.document.layers:
+            row = Gtk.ListBoxRow()
+            hbox = Gtk.Box()
+            hbox.pack_start(Gtk.Label(str(layer)), True, True, 0)
+            row.add(hbox)
+            self.layers_listbox.add(row)
+
+        self.layers_listbox.show_all()
 
     def on_draw(self, w, cr):
 
