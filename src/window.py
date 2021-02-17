@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .resize_dialog import ResizeDialog
+from .tools import Tool, AreaSelector
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -35,6 +36,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
     # widgets
     drawing_area: Gtk.DrawingArea = Gtk.Template.Child()
     zoom_spinbutton: Gtk.SpinButton = Gtk.Template.Child()
+
+    # current tool
+    tool: Tool = None
+
+    # current mouse state
+    mouse_x = 0
+    mouse_y = 0
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -117,40 +125,52 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_crop")
     def on_crop(self, widget):
-        print("crop")
+        self.tool = AreaSelector()
 
     def redraw_image(self):
         self.drawing_area.queue_draw()
 
     def mouse_move(self, w, event):
-        print("move")
+        self.mouse_x = event.x
+        self.mouse_y = event.y
+        self.redraw_image()
 
     def mouse_down(self, w, event):
-        print("down")
+        self.mouse_x = event.x
+        self.mouse_y = event.y
+
+        if self.tool != None:
+            self.tool.mouse_down(self.drawing_area, self.imageSurface, self.mouse_x, self.mouse_y)
+
+        self.redraw_image()
 
     def mouse_up(self, w, event):
-        print("up")
+        self.mouse_x = event.x
+        self.mouse_y = event.y
+
+        if self.tool != None:
+            self.tool.mouse_up(self.drawing_area, self.imageSurface, self.mouse_x, self.mouse_y)
+
+        self.redraw_image()
 
     def on_draw(self, w, cr):
 
-        # scale
+        # draw image given the scale factor
         self.drawing_area.set_size_request(self.scale * self.imageSurface.get_width(), self.scale * self.imageSurface.get_height())
         cr.scale(self.scale, self.scale)
-
         cr.set_source_surface(self.imageSurface, 0, 0)
         cr.paint()
 
-        # line
-        cr.set_source_rgb(1, 0, 0)
-        cr.set_line_width(2)
-        cr.move_to(0, 0)
-        cr.line_to(100, 100)
-        cr.stroke()
-
-        # text
+        # test
         cr.set_source_rgb(1, 1, 0)
         cr.select_font_face("Mono", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
         cr.set_font_size(40)
         cr.move_to(40, 40)
         cr.show_text("This is a test")
+
+        # tool (scale back to 1/1)
+        cr.scale(1/self.scale, 1/self.scale)
+
+        if self.tool != None:
+            self.tool.draw(w, cr, self.mouse_x, self.mouse_y)
 
