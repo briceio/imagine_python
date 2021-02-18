@@ -3,6 +3,9 @@ import gi
 import math
 from gi.repository import Gtk, Gdk, Gio, GObject
 
+# common default tool widths
+DEFAULT_WIDTH = 5
+
 class Layer(GObject.GObject):
 
     name = GObject.Property(type=str, nick="Name")
@@ -22,7 +25,7 @@ class Layer(GObject.GObject):
 
 class RectangleAnnotationLayer(Layer):
 
-    width = GObject.Property(type=int, default=1, nick="Width")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width")
     stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
 
@@ -57,12 +60,13 @@ class RectangleAnnotationLayer(Layer):
 
 class LineAnnotationLayer(Layer):
 
-    width = GObject.Property(type=int, default=1, nick="Width")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width")
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
     arrow = GObject.Property(type=bool, default=False, nick="Arrow")
 
-    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
-        super().__init__("Line")
+    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0, arrow = False):
+        super().__init__("Arrow" if arrow else "Line")
+        self.arrow = arrow
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2

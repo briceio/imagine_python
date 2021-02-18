@@ -161,12 +161,12 @@ class RectangleAnnotationTool(RectTool):
 
 class LineAnnotationTool(LineTool):
 
-    def __init__(self, document, layer=None):
+    def __init__(self, document, layer=None, arrow=False):
         super().__init__(document)
 
         self.layer = layer
         if layer == None:
-            self.layer = LineAnnotationLayer()
+            self.layer = LineAnnotationLayer(arrow=arrow)
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):

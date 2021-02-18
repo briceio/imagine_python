@@ -134,6 +134,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_annotate_line(self, widget):
         self.set_active_tool(LineAnnotationTool(self.document), keep_selected=True)
 
+    @Gtk.Template.Callback("on_annotate_arrow")
+    def on_annotate_arrow(self, widget):
+        self.set_active_tool(LineAnnotationTool(self.document, arrow=True), keep_selected=True)
+
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
             # unselect if requested
