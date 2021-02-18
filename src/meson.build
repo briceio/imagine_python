@@ -31,6 +31,7 @@ imagine_sources = [
   'layers.py',
   'document.py',
   'window.py',
+  'layer_editor.py',
   'resize_dialog.py',
   'tools.py',
 ]

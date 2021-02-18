@@ -18,6 +18,7 @@
 from .document import Document
 from .resize_dialog import ResizeDialog
 from .tools import Tool, CropTool, RectangleAnnotationTool, ArrowAnnotationTool
+from .layer_editor import LayerEditor
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -37,6 +38,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     drawing_area: Gtk.DrawingArea = Gtk.Template.Child()
     zoom_spinbutton: Gtk.SpinButton = Gtk.Template.Child()
     layers_listbox: Gtk.ListBox = Gtk.Template.Child()
+    layer_editor_container: Gtk.Box = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -177,11 +179,31 @@ class ImagineWindow(Gtk.ApplicationWindow):
         return Gtk.Label(label = layer.name, justify = Gtk.Justification.LEFT)
 
     def on_select_layer(self, container, row):
+
         # build & select the default tool (if any)
         layer = self.document.layers[row.get_index()]
         tool_name = layer.get_tool()
         if tool_name != None:
             self.tool = globals()[tool_name](self.document, layer)
+
+        # udpate the layer properties editor
+        self.build_layer_editor(layer)
+
+    def build_layer_editor(self, layer):
+
+        def on_update_editor(layer):
+            self.redraw() # TODO redraw only layer?
+
+        # cleanup
+        for child in self.layer_editor_container.get_children():
+            self.layer_editor_container.remove(child)
+
+        # add the new editor
+        layer_editor = LayerEditor(layer)
+        layer_editor.on_update = on_update_editor
+        self.layer_editor_container.add(layer_editor)
+
+        pass
 
     def on_draw(self, w, cr):
 
