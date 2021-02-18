@@ -1,6 +1,6 @@
 import cairo
 import gi
-from gi.repository import Gtk, Gio, GObject
+from gi.repository import Gtk, Gdk, Gio, GObject
 
 class Layer(GObject.GObject):
 
@@ -51,10 +51,12 @@ class RectangleAnnotationLayer(Layer):
 class ArrowAnnotationLayer(Layer):
 
     width = GObject.Property(type=int, nick="Width")
+    color = GObject.Property(type=Gdk.RGBA, nick="Color")
 
     def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__("Arrow")
         self.width = 1
+        self.color = Gdk.RGBA(1, 1, 1, 1)
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
@@ -70,7 +72,7 @@ class ArrowAnnotationLayer(Layer):
         self.y2 -= y1
 
     def draw(self, w, cr):
-        cr.set_source_rgba(1, 1, 1, 1)
+        cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         cr.set_line_width(self.width)
         cr.set_dash([])
         cr.move_to(self.x1, self.y1)

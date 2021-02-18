@@ -19,6 +19,7 @@ class LayerEditor(Gtk.ListBox):
         switcher = {
             "gchararray": self._build_string_editor,
             "gint": self._build_int_editor,
+            "GdkRGBA": self._build_color_editor,
         }
 
         # build properties editors
@@ -62,5 +63,17 @@ class LayerEditor(Gtk.ListBox):
         entry.set_increments(1, 5)
         entry.set_value(self.layer.get_property(p.name))
         entry.connect("changed", on_change)
+        box.pack_start(entry, True, True, 0)
+
+    def _build_color_editor(self, p):
+
+        def on_change(entry):
+            self.layer.set_property(p.name, entry.get_rgba())
+            self._notify(p.name)
+
+        box = self._build_property_editor(p)
+        entry = Gtk.ColorButton()
+        entry.set_rgba(self.layer.get_property(p.name))
+        entry.connect("color-set", on_change)
         box.pack_start(entry, True, True, 0)
 
