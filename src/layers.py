@@ -1,10 +1,17 @@
 import cairo
 import gi
 import math
-from gi.repository import Gtk, Gdk, Gio, GObject
+gi.require_version('PangoCairo', '1.0')
+from gi.repository import Gtk, Gdk, Gio, GObject, Pango, PangoCairo
 
 # common default tool widths
 DEFAULT_WIDTH = 5
+
+class Font(GObject.GObject):
+
+    def __init__(self, desc):
+        GObject.GObject.__init__(self)
+        self.desc = desc
 
 class Layer(GObject.GObject):
 
@@ -100,3 +107,33 @@ class LineAnnotationLayer(Layer):
             cr.rel_line_to(-arrowhead_length * math.cos(arrow_angle + arrowhead_angle), -arrowhead_length * math.sin(arrow_angle + arrowhead_angle))
 
         cr.stroke()
+
+class TextAnnotationLayer(Layer):
+
+    text = GObject.Property(type=str, default="Text", nick="Text")
+    font = GObject.Property(type=Font, default=Font("Noto Sans Bold 30"), nick="Font")
+    color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
+
+    def __init__(self, x = 0, y = 0):
+        super().__init__("Text")
+        self.x = x
+        self.y = y
+
+    def get_tool(self):
+        return "TextAnnotationTool"
+
+    def crop(self, x1, y1, x2, y2):
+        self.x -= x1
+        self.y -= y1
+
+    def draw(self, w, cr):
+        cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
+        cr.move_to(self.x, self.y)
+
+        desc = Pango.font_description_from_string(self.font.desc)
+
+        layout = PangoCairo.create_layout(cr)
+        layout.set_font_description(desc)
+        layout.set_text(self.text, -1)
+        PangoCairo.show_layout(cr, layout)
+        

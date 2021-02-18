@@ -1,7 +1,7 @@
 from gi.repository import Gtk
 from gi.repository import Gdk
 
-from .layers import Layer
+from .layers import Layer, Font
 
 class LayerEditor(Gtk.ListBox):
     __gtype_name__ = 'LayerEditor'
@@ -21,6 +21,7 @@ class LayerEditor(Gtk.ListBox):
             "gint": self._build_int_editor,
             "GdkRGBA": self._build_color_editor,
             "gboolean": self._build_checkbox_editor,
+            "imagine+layers+Font": self._build_font_editor,
         }
 
         # build properties editors
@@ -89,4 +90,20 @@ class LayerEditor(Gtk.ListBox):
         entry = Gtk.CheckButton()
         entry.set_active(self.layer.get_property(p.name))
         entry.connect("toggled", on_change)
+        box.pack_start(entry, True, True, 0)
+
+    def _build_font_editor(self, p):
+        font = self.layer.get_property(p.name)
+
+        def on_change(entry):
+            self.layer.set_property(p.name, Font(entry.get_font_name()))
+            self._notify(p.name)
+
+        box = self._build_property_editor(p)
+        entry = Gtk.FontButton()
+        entry.set_use_size(True)
+        entry.set_show_size(True)
+        entry.set_show_style(True)
+        entry.set_font_name(font.desc)
+        entry.connect("font-set", on_change)
         box.pack_start(entry, True, True, 0)

@@ -1,4 +1,4 @@
-from .layers import RectangleAnnotationLayer, LineAnnotationLayer
+from .layers import RectangleAnnotationLayer, LineAnnotationLayer, TextAnnotationLayer
 
 class Tool:
 
@@ -39,6 +39,42 @@ class Tool:
             cr.stroke()
 
         pass
+
+class PointTool(Tool):
+
+    def __init__(self, document):
+        super().__init__(document, reticule = True)
+        self._drawing = False
+        self.x = 0
+        self.y = 0
+
+    def cancel(self):
+        super().cancel()
+        self._drawing = False
+
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y)
+        if not self._drawing:
+            self.x = mouse_x
+            self.y = mouse_y
+            self._drawing = True
+
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.x = mouse_x
+            self.y = mouse_y
+            self.apply()
+
+        self._drawing = False
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.x = mouse_x
+            self.y = mouse_y
 
 class RectTool(Tool):
 
@@ -178,3 +214,19 @@ class LineAnnotationTool(LineTool):
             self.layer.x2 = mouse_x
             self.layer.y2 = mouse_y
             self.layer.draw(w, cr)
+
+class TextAnnotationTool(PointTool):
+
+    def __init__(self, document, layer=None):
+        super().__init__(document)
+
+        self.layer = layer
+        if layer == None:
+            self.layer = TextAnnotationLayer()
+            self.document.add_layer(self.layer)
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+        self.layer.x = self.x
+        self.layer.y = self.y
+        self.layer.draw(w, cr)
