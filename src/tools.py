@@ -127,13 +127,16 @@ class CropTool(RectTool):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
         if self._drawing:
+            width = doc.imageSurface.get_width()
+            height = doc.imageSurface.get_height()
+
             cr.set_source_rgba(0, 0, 0, 0.5)
             cr.set_line_width(0)
             cr.set_dash([])
-            cr.rectangle(0, 0, w.get_allocation().width, self.start_y)
-            cr.rectangle(0, 0, self.start_x, w.get_allocation().height)
-            cr.rectangle(mouse_x, 0, mouse_x, w.get_allocation().height)
-            cr.rectangle(0, mouse_y, w.get_allocation().width, mouse_y)
+            cr.rectangle(0, 0, width, self.start_y)
+            cr.rectangle(0, 0, self.start_x, height)
+            cr.rectangle(mouse_x, 0, mouse_x, height)
+            cr.rectangle(0, mouse_y, width, mouse_y)
             cr.fill()
 
 class RectangleAnnotationTool(RectTool):
