@@ -8,6 +8,9 @@ from .layers import Layer
 
 class Document:
 
+    # added layer callback
+    on_added_layer = None
+
     def __init__(self, path):
         self.image: Image = None
         self.imageSurface: cairo.ImageSurface = None
@@ -33,6 +36,9 @@ class Document:
 
     def add_layer(self, layer):
         self.layers.append(layer)
+
+        if self.on_added_layer != None:
+            self.on_added_layer(layer)
 
     def draw(self, w, cr):
 

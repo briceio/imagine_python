@@ -6,6 +6,7 @@ from .layers import Layer
 class LayerEditor(Gtk.ListBox):
     __gtype_name__ = 'LayerEditor'
 
+    # called when the layer is updated
     on_update = None
 
     def __init__(self, layer, **kwargs):
@@ -27,7 +28,7 @@ class LayerEditor(Gtk.ListBox):
         self.show_all()
 
     def _notify(self, p):
-        self.layer.notify(p)
+        #self.layer.notify(p) TODO DEBUG > model not updated: notify problem?
         if self.on_update != None:
             self.on_update(self.layer)
 

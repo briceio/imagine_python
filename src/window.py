@@ -45,6 +45,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # TODO DEBUG document
         self.document = Document("/home/brice/Données/Temp/pic.jpg")
+        self.document.on_added_layer = self._on_added_layer
 
         # current tool
         self.tool: Tool = None
@@ -188,6 +189,15 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # udpate the layer properties editor
         self.build_layer_editor(layer)
+
+    def _on_added_layer(self, layer):
+
+        # find the layer index to select
+        for i, l in enumerate(self.document.layers):
+            if l == layer:
+               break
+
+        self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(i)) # select newly added layer
 
     def build_layer_editor(self, layer):
 
