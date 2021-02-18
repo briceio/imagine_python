@@ -37,21 +37,41 @@ class LayerEditor(Gtk.ListBox):
 
     def _build_property_editor(self, p):
         box = Gtk.HBox()
-        box.pack_start(Gtk.Label(p.nick), True, True, 0) # property label
+        box.set_homogeneous(True)
+        box.set_focus_on_click(False)
+
+        label = Gtk.Label(p.nick)
+        label.set_size_request(100, -1)
+        box.pack_start(label, True, True, 0) # property label
+
         self.add(box)
         return box
 
     def _build_string_editor(self, p):
 
-        def on_change(entry):
+        def on_change_entry(entry):
             self.layer.set_property(p.name, entry.get_text())
             self._notify(p.name)
 
+        def on_change_textview(entry):
+            start, end = entry.get_bounds()
+            self.layer.set_property(p.name, entry.get_text(start, end, True))
+            self._notify(p.name)
+
         box = self._build_property_editor(p)
-        entry = Gtk.Entry()
-        entry.set_text(self.layer.get_property(p.name))
-        entry.connect("changed", on_change)
-        box.pack_start(entry, True, True, 0)
+
+        if p.blurb == "multiline":
+            entry = Gtk.TextView()
+            entry.get_buffer().set_text(self.layer.get_property(p.name))
+            entry.set_editable(True)
+            box.set_size_request(-1, 100)
+            entry.get_buffer().connect("changed", on_change_textview)
+            box.pack_start(entry, True, True, 0)
+        else:
+            entry = Gtk.Entry()
+            entry.set_text(self.layer.get_property(p.name))
+            entry.connect("changed", on_change_entry)
+            box.pack_start(entry, True, True, 0)
 
     def _build_int_editor(self, p):
 

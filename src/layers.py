@@ -110,7 +110,7 @@ class LineAnnotationLayer(Layer):
 
 class TextAnnotationLayer(Layer):
 
-    text = GObject.Property(type=str, default="Text", nick="Text")
+    text = GObject.Property(type=str, default="Text", nick="Text", blurb="multiline")
     font = GObject.Property(type=Font, default=Font("Noto Sans Bold 30"), nick="Font")
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
 
