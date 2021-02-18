@@ -20,6 +20,7 @@ class LayerEditor(Gtk.ListBox):
             "gchararray": self._build_string_editor,
             "gint": self._build_int_editor,
             "GdkRGBA": self._build_color_editor,
+            "gboolean": self._build_checkbox_editor,
         }
 
         # build properties editors
@@ -74,6 +75,18 @@ class LayerEditor(Gtk.ListBox):
         box = self._build_property_editor(p)
         entry = Gtk.ColorButton()
         entry.set_rgba(self.layer.get_property(p.name))
+        entry.set_use_alpha(True)
         entry.connect("color-set", on_change)
         box.pack_start(entry, True, True, 0)
 
+    def _build_checkbox_editor(self, p):
+
+        def on_change(entry):
+            self.layer.set_property(p.name, entry.get_active())
+            self._notify(p.name)
+
+        box = self._build_property_editor(p)
+        entry = Gtk.CheckButton()
+        entry.set_active(self.layer.get_property(p.name))
+        entry.connect("toggled", on_change)
+        box.pack_start(entry, True, True, 0)

@@ -1,4 +1,4 @@
-from .layers import RectangleAnnotationLayer, ArrowAnnotationLayer
+from .layers import RectangleAnnotationLayer, LineAnnotationLayer
 
 class Tool:
 
@@ -159,14 +159,14 @@ class RectangleAnnotationTool(RectTool):
             self.layer.y2 = mouse_y
             self.layer.draw(w, cr)
 
-class ArrowAnnotationTool(LineTool):
+class LineAnnotationTool(LineTool):
 
     def __init__(self, document, layer=None):
         super().__init__(document)
 
         self.layer = layer
         if layer == None:
-            self.layer = ArrowAnnotationLayer()
+            self.layer = LineAnnotationLayer()
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):

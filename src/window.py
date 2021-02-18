@@ -17,7 +17,7 @@
 
 from .document import Document
 from .resize_dialog import ResizeDialog
-from .tools import Tool, CropTool, RectangleAnnotationTool, ArrowAnnotationTool
+from .tools import Tool, CropTool, RectangleAnnotationTool, LineAnnotationTool
 from .layer_editor import LayerEditor
 
 from gi.repository import Gtk
@@ -130,9 +130,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_annotate_rectangle(self, widget):
         self.set_active_tool(RectangleAnnotationTool(self.document), keep_selected=True)
 
-    @Gtk.Template.Callback("on_annotate_arrow")
-    def on_annotate_arrow(self, widget):
-        self.set_active_tool(ArrowAnnotationTool(self.document), keep_selected=True)
+    @Gtk.Template.Callback("on_annotate_line")
+    def on_annotate_line(self, widget):
+        self.set_active_tool(LineAnnotationTool(self.document), keep_selected=True)
 
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
