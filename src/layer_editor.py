@@ -58,15 +58,25 @@ class LayerEditor(Gtk.ListBox):
             self.layer.set_property(p.name, entry.get_text(start, end, True))
             self._notify(p.name)
 
+        def block_event(widget, event):
+            if not widget.has_focus():
+                widget.grab_focus()
+                return True
+            return False
+
         box = self._build_property_editor(p)
 
         if p.blurb == "multiline":
             entry = Gtk.TextView()
             entry.get_buffer().set_text(self.layer.get_property(p.name))
+            entry.set_wrap_mode(Gtk.WrapMode.CHAR)
             entry.set_editable(True)
+            entry.set_focus_on_click(True)
             box.set_size_request(-1, 100)
             entry.get_buffer().connect("changed", on_change_textview)
             box.pack_start(entry, True, True, 0)
+
+            entry.connect("button-press-event", block_event) # bug mouse click when textview in box
         else:
             entry = Gtk.Entry()
             entry.set_text(self.layer.get_property(p.name))
