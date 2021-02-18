@@ -32,7 +32,8 @@ class Document:
 
     def crop(self, x1, y1, x2, y2):
         self._reload(self.image.crop((x1, y1, x2, y2)))
-        # TODO crop the layers
+        for layer in self.layers:
+            layer.crop(x1, y1, x2, y2)
 
     def add_layer(self, layer):
         self.layers.append(layer)

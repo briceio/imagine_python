@@ -31,10 +31,10 @@ class Tool:
             cr.set_line_width(1)
 
             cr.move_to(mouse_x, 0)
-            cr.line_to(mouse_x, w.get_allocation().height)
+            cr.line_to(mouse_x, doc.imageSurface.get_height())
 
             cr.move_to(0, mouse_y)
-            cr.line_to(w.get_allocation().width, mouse_y)
+            cr.line_to(doc.imageSurface.get_width(), mouse_y)
 
             cr.stroke()
 

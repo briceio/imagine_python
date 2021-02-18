@@ -197,7 +197,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
             if l == layer:
                break
 
-        self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(i)) # select newly added layer
+        # select newly added layer
+        self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(i))
 
     def build_layer_editor(self, layer):
 
@@ -217,16 +218,21 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def on_draw(self, w, cr):
 
-        # document
-        self.drawing_area.set_size_request(self.scale * self.document.imageSurface.get_width(), self.scale * self.document.imageSurface.get_height())
+        # scaling
+        w = self.scale * self.document.imageSurface.get_width()
+        h = self.scale * self.document.imageSurface.get_height()
+        self.drawing_area.set_size_request(w, h)
         cr.scale(self.scale, self.scale)
 
-        self.document.draw(w, cr)
+        # clipping
+        cr.rectangle(0, 0, w, h)
+        cr.clip()
 
-        # scale back to 1/1
-        #cr.scale(1/self.scale, 1/self.scale)
+        # render document
+        self.document.draw(w, cr)
 
         # tools
         if self.tool != None:
             self.tool.draw(self.document, w, cr, self.mouse_x, self.mouse_y)
+
 

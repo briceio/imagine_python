@@ -53,12 +53,14 @@ class LayerEditor(Gtk.ListBox):
     def _build_int_editor(self, p):
 
         def on_change(entry):
-            self.layer.set_property(p.name, int(entry.get_text()))
+            self.layer.set_property(p.name, entry.get_value())
             self._notify(p.name)
 
         box = self._build_property_editor(p)
-        entry = Gtk.Entry()
-        entry.set_text(str(self.layer.get_property(p.name)))
+        entry = Gtk.SpinButton()
+        entry.set_range(1, 100)
+        entry.set_increments(1, 5)
+        entry.set_value(self.layer.get_property(p.name))
         entry.connect("changed", on_change)
         box.pack_start(entry, True, True, 0)
 
