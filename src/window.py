@@ -306,7 +306,23 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 self.redraw()
 
     def _create_document_item_widget(self, document):
-        return Gtk.Label(label = str(document))
+
+        def on_updated_thumbnail(document):
+            thumbnail.set_from_pixbuf(document.thumbnail)
+
+        box = Gtk.VBox()
+        box.set_size_request(-1, 92)
+
+        # thumbnail
+        thumbnail = Gtk.Image(pixbuf = document.thumbnail)
+        document.on_updated_thumbnail = on_updated_thumbnail
+        box.pack_start(thumbnail, True, True, 0)
+
+        # label
+        box.pack_start(Gtk.Label(label = document.name), True, True, 0)
+
+        box.show_all()
+        return box
 
     def _create_layer_item_widget(self, layer):
 

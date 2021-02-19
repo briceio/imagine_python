@@ -1,8 +1,9 @@
 from PIL import Image
 import cairo
 from io import BytesIO
-from gi.repository import Gtk, Gio, GObject
+from gi.repository import Gtk, Gio, GObject, GdkPixbuf, GLib
 import enum
+import os
 
 from .layers import Layer
 
@@ -13,26 +14,49 @@ class LayerAction(enum.Enum):
 
 class Document(GObject.GObject):
 
-    # added layer callback
+    # callbacks
     on_updated_layers_list = None
+    on_updated_thumbnail = None
 
     # scale
     scale = GObject.Property(type=float, default=1.0)
 
     def __init__(self, path):
         GObject.GObject.__init__(self)
+        self.path = path
+        self.name = os.path.basename(path)
         self.image: Image = None
+        self.thumbnail: GdkPixbuf = None
         self.imageSurface: cairo.ImageSurface = None
         self.layers = Gio.ListStore()
         self._reload(Image.open(path))
 
     def _reload(self, image):
+
+        # image
         self.image = image
+
+        # thumbnail
+        thumbnail = self.image.copy()
+        thumbnail.thumbnail((92, 92), Image.ANTIALIAS)
+
+        p_buffer = BytesIO()
+        thumbnail.save(p_buffer, format="PNG")
+        p_buffer.seek(0)
+
+        loader = GdkPixbuf.PixbufLoader()
+        loader.write(p_buffer.read())
+        self.thumbnail = loader.get_pixbuf()
+        loader.close()
+
+        if self.on_updated_thumbnail != None:
+            self.on_updated_thumbnail(self)
+
+        # create cairo surface
         buffer = BytesIO()
         self.image.save(buffer, format="PNG")
         buffer.seek(0)
 
-        # create cairo surface
         self.imageSurface = cairo.ImageSurface.create_from_png(buffer)
 
     def resize(self, width, height):
