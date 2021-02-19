@@ -22,6 +22,7 @@ from .layer_editor import LayerEditor
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import Gio
 from gi.repository import GdkPixbuf
 import cairo
 import math
@@ -33,8 +34,11 @@ MOUSE_SCROLL_FACTOR = 2.0
 class ImagineWindow(Gtk.ApplicationWindow):
     __gtype_name__ = 'ImagineWindow'
 
-    # scale factor
-    scale = GObject.Property(type=float, default=1.0)
+    # documents
+    documents = Gio.ListStore()
+
+    # current document
+    document = GObject.Property(type=Document)
 
     # widgets
     scroll_area: Gtk.ScrolledWindow = Gtk.Template.Child()
@@ -42,14 +46,18 @@ class ImagineWindow(Gtk.ApplicationWindow):
     drawing_area: Gtk.DrawingArea = Gtk.Template.Child()
     zoom_spinbutton: Gtk.SpinButton = Gtk.Template.Child()
     layers_listbox: Gtk.ListBox = Gtk.Template.Child()
+    documents_listbox: Gtk.ListBox = Gtk.Template.Child()
     layer_editor_container: Gtk.Box = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        # document notify
+        self.connect("notify::document", self._on_document_mounted)
+
         # TODO DEBUG document
-        self.document = Document("/home/brice/Données/Temp/pic.jpg")
-        self.document.on_updated_layers_list = self._on_updated_layers_list
+        self.load("/home/brice/Données/Temp/pic.jpg")
+        self.load("/home/brice/Données/Temp/pic2.jpg")
 
         # current tool
         self.tool: Tool = None
@@ -71,7 +79,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_range(0.1, 10.0)
         self.zoom_spinbutton.set_increments(0.1, 1.0)
         self.zoom_spinbutton.set_value(1.0)
-        self.bind_property("scale", self.zoom_spinbutton, "value")
 
         # events
         self.connect("key-press-event", self.on_key_press)
@@ -82,13 +89,17 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.drawing_area.connect("button-press-event", self.mouse_down)
         self.drawing_area.connect("button-release-event", self.mouse_up)
 
-        # binding
-        self.layers_listbox.bind_model(self.document.layers, self.create_layer_item_widget)
-        self.layers_listbox.connect("row-selected", self.on_select_layer)
+        # documents biding
+        self.documents_listbox.bind_model(self.documents, self._create_document_item_widget)
+        self.documents_listbox.connect("row-selected", self._on_select_document)
 
         # center window
         self.set_size_request(1024, 768)
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+
+    def load(self, path):
+        self.document = Document(path)
+        self.documents.append(self.document)
 
     def save(self):
         # TODO surface.write_to_png
@@ -115,7 +126,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_zoom_changed")
     def on_zoom_changed(self, widget):
-        self.scale = self.zoom_spinbutton.get_value()
+        self.document.scale = self.zoom_spinbutton.get_value()
         self.redraw()
 
     @Gtk.Template.Callback("on_resize")
@@ -221,14 +232,14 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self._browsing_prev_y = event.y
         else:
             # tooling
-            self.mouse_x = event.x / self.scale
-            self.mouse_y = event.y / self.scale
+            self.mouse_x = event.x / self.document.scale
+            self.mouse_y = event.y / self.document.scale
 
             self.redraw()
 
     def mouse_down(self, w, event):
-        self.mouse_x = event.x / self.scale
-        self.mouse_y = event.y / self.scale
+        self.mouse_x = event.x / self.document.scale
+        self.mouse_y = event.y / self.document.scale
 
         if self.tool != None and event.button == 1:
             self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
@@ -240,8 +251,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.redraw()
 
     def mouse_up(self, w, event):
-        self.mouse_x = event.x / self.scale
-        self.mouse_y = event.y / self.scale
+        self.mouse_x = event.x / self.document.scale
+        self.mouse_y = event.y / self.document.scale
 
         if self.tool != None and event.button == 1:
             self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
@@ -265,9 +276,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         if event.state & accel_mask == Gdk.ModifierType.CONTROL_MASK:
             direction = event.get_scroll_deltas()[2]
             if direction < 0:
-                self.scale = min(10.0, self.scale + 0.5)
+                self.document.scale = min(10.0, self.document.scale + 0.5)
             else:
-                self.scale = max(0.1, self.scale - 0.5)
+                self.document.scale = max(0.1, self.document.scale - 0.5)
 
             # center zoom on mouse TODO bug not perfect
             rect, _ = self.scroll_area.get_allocated_size()
@@ -294,7 +305,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 # redraw
                 self.redraw()
 
-    def create_layer_item_widget(self, layer):
+    def _create_document_item_widget(self, document):
+        return Gtk.Label(label = str(document))
+
+    def _create_layer_item_widget(self, layer):
 
         def delete_layer(widget, layer):
             self.document.delete_layer(layer)
@@ -335,7 +349,23 @@ class ImagineWindow(Gtk.ApplicationWindow):
         box.show_all()
         return box
 
-    def on_select_layer(self, container, row):
+    def _on_document_mounted(self, window, document):
+        self.document.on_updated_layers_list = self._on_updated_layers_list
+        self.document.bind_property("scale", self.zoom_spinbutton, "value")
+
+        self.layers_listbox.bind_model(self.document.layers, self._create_layer_item_widget)
+        self.layers_listbox.connect("row-selected", self._on_select_layer)
+
+    def _on_select_document(self, container, row):
+        # cleanup
+        if self.document != None:
+            self.document.on_updated_layers_list = None
+
+        # switch document
+        self.document = self.documents[row.get_index()]
+        self.redraw()
+
+    def _on_select_layer(self, container, row):
 
         # cleanup
         if row == None:
@@ -355,9 +385,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self._build_layer_editor(layer)
 
     def _on_updated_layers_list(self, action, layer):
-
-        # refresh list
-        self.layers_listbox.bind_model(self.document.layers, self.create_layer_item_widget)
 
         # select first layer
         self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(0))
@@ -386,10 +413,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # scaling
         iw, ih = self.document.image.size
-        w = self.scale * iw
-        h = self.scale * ih
+        w = self.document.scale * iw
+        h = self.document.scale * ih
         self.drawing_area.set_size_request(w, h)
-        cr.scale(self.scale, self.scale)
+        cr.scale(self.document.scale, self.document.scale)
 
         # clipping
         cr.rectangle(0, 0, iw, ih)

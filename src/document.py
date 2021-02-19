@@ -11,12 +11,16 @@ class LayerAction(enum.Enum):
     DELETE = 2
     MOVE = 3
 
-class Document:
+class Document(GObject.GObject):
 
     # added layer callback
     on_updated_layers_list = None
 
+    # scale
+    scale = GObject.Property(type=float, default=1.0)
+
     def __init__(self, path):
+        GObject.GObject.__init__(self)
         self.image: Image = None
         self.imageSurface: cairo.ImageSurface = None
         self.layers = Gio.ListStore()

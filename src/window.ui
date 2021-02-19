@@ -12,278 +12,251 @@
         <property name="can-focus">True</property>
         <property name="position">150</property>
         <property name="position-set">True</property>
+        <property name="wide-handle">True</property>
         <child>
-          <object class="GtkToolPalette">
+          <object class="GtkScrolledWindow">
             <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="toolbar-style">both-horiz</property>
+            <property name="can-focus">True</property>
+            <property name="shadow-type">in</property>
             <child>
-              <object class="GtkToolItemGroup">
+              <object class="GtkViewport">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Transform</property>
                 <child>
-                  <object class="GtkToolButton">
+                  <object class="GtkListBox" id="documents_listbox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Resize</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">insert-image</property>
-                    <signal name="clicked" handler="on_resize" swapped="no"/>
                   </object>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Crop</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-cut</property>
-                    <signal name="clicked" handler="on_crop" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Rotate Left</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">object-rotate-left</property>
-                    <signal name="clicked" handler="on_rotate_left" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Rotate Right</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">object-rotate-right</property>
-                    <signal name="clicked" handler="on_rotate_right" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Flip Horizontal</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">object-flip-horizontal</property>
-                    <signal name="clicked" handler="on_flip_horizontal" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="position">4</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Flip Vertical</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">object-flip-vertical</property>
-                    <signal name="clicked" handler="on_flip_vertical" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="position">5</property>
-                  </packing>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToolItemGroup">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Annotations</property>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Rectangle</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
-                    <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Ellipse</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_ellipse" swapped="no"/>
-                    <accelerator key="e" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                  </object>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Circle</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
-                    <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                  </object>
-                  <packing>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Line</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_line" swapped="no"/>
-                    <accelerator key="l" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                  </object>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Arrow</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
-                    <accelerator key="a" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                  </object>
-                  <packing>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Text</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_text" swapped="no"/>
-                    <accelerator key="t" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                  </object>
-                  <packing>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkToolItemGroup">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Enhance</property>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Lighting</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">insert-object</property>
-                    <signal name="clicked" handler="on_enhance_lighting" swapped="no"/>
-                    <accelerator key="g" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Blur</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">image-missing</property>
-                    <signal name="clicked" handler="on_enhance_blur" swapped="no"/>
-                    <accelerator key="b" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                  </object>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
             </child>
           </object>
           <packing>
             <property name="resize">False</property>
-            <property name="shrink">False</property>
+            <property name="shrink">True</property>
           </packing>
         </child>
         <child>
           <object class="GtkPaned">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
-            <property name="position">300</property>
+            <property name="position">150</property>
             <property name="position-set">True</property>
-            <property name="wide-handle">True</property>
             <child>
-              <object class="GtkPaned">
+              <object class="GtkToolPalette">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
-                <property name="position">200</property>
-                <property name="position-set">True</property>
+                <property name="toolbar-style">both-horiz</property>
                 <child>
-                  <object class="GtkScrolledWindow">
+                  <object class="GtkToolItemGroup">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="shadow-type">in</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Transform</property>
                     <child>
-                      <object class="GtkViewport">
+                      <object class="GtkToolButton">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkListBox" id="layers_listbox">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                          </object>
-                        </child>
+                        <property name="label" translatable="yes">Resize</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">insert-image</property>
+                        <signal name="clicked" handler="on_resize" swapped="no"/>
                       </object>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Crop</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-cut</property>
+                        <signal name="clicked" handler="on_crop" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Rotate Left</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">object-rotate-left</property>
+                        <signal name="clicked" handler="on_rotate_left" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Rotate Right</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">object-rotate-right</property>
+                        <signal name="clicked" handler="on_rotate_right" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Flip Horizontal</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">object-flip-horizontal</property>
+                        <signal name="clicked" handler="on_flip_horizontal" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Flip Vertical</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">object-flip-vertical</property>
+                        <signal name="clicked" handler="on_flip_vertical" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">5</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="resize">False</property>
-                    <property name="shrink">True</property>
+                    <property name="expand">False</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="layer_editor_container">
+                  <object class="GtkToolItemGroup">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="orientation">vertical</property>
+                    <property name="label" translatable="yes">Annotations</property>
                     <child>
-                      <placeholder/>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Rectangle</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-select-all</property>
+                        <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
+                        <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Ellipse</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-select-all</property>
+                        <signal name="clicked" handler="on_annotate_ellipse" swapped="no"/>
+                        <accelerator key="e" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Circle</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-select-all</property>
+                        <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
+                        <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Line</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-select-all</property>
+                        <signal name="clicked" handler="on_annotate_line" swapped="no"/>
+                        <accelerator key="l" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Arrow</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-select-all</property>
+                        <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
+                        <accelerator key="a" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Text</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-select-all</property>
+                        <signal name="clicked" handler="on_annotate_text" swapped="no"/>
+                        <accelerator key="t" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="position">3</property>
+                      </packing>
                     </child>
                   </object>
                   <packing>
-                    <property name="resize">True</property>
-                    <property name="shrink">True</property>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolItemGroup">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Enhance</property>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Lighting</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">insert-object</property>
+                        <signal name="clicked" handler="on_enhance_lighting" swapped="no"/>
+                        <accelerator key="g" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Blur</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">image-missing</property>
+                        <signal name="clicked" handler="on_enhance_blur" swapped="no"/>
+                        <accelerator key="b" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                      <packing>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
                   </packing>
                 </child>
               </object>
@@ -293,32 +266,95 @@
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow" id="scroll_area">
+              <object class="GtkPaned">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
-                <property name="shadow-type">in</property>
+                <property name="position">300</property>
+                <property name="position-set">True</property>
+                <property name="wide-handle">True</property>
                 <child>
-                  <object class="GtkViewport" id="viewport">
+                  <object class="GtkPaned">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="orientation">vertical</property>
+                    <property name="position">200</property>
+                    <property name="position-set">True</property>
                     <child>
-                      <object class="GtkDrawingArea" id="drawing_area">
+                      <object class="GtkScrolledWindow">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="shadow-type">in</property>
+                        <child>
+                          <object class="GtkViewport">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <child>
+                              <object class="GtkListBox" id="layers_listbox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="resize">False</property>
+                        <property name="shrink">True</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="layer_editor_container">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="resize">True</property>
+                        <property name="shrink">True</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="resize">False</property>
+                    <property name="shrink">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow" id="scroll_area">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkViewport" id="viewport">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkDrawingArea" id="drawing_area">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
+                  <packing>
+                    <property name="resize">True</property>
+                    <property name="shrink">True</property>
+                  </packing>
                 </child>
               </object>
               <packing>
                 <property name="resize">True</property>
-                <property name="shrink">True</property>
+                <property name="shrink">False</property>
               </packing>
             </child>
           </object>
           <packing>
             <property name="resize">True</property>
-            <property name="shrink">False</property>
+            <property name="shrink">True</property>
           </packing>
         </child>
       </object>
