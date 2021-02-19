@@ -36,6 +36,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     # widgets
     scroll_area: Gtk.ScrolledWindow = Gtk.Template.Child()
+    viewport: Gtk.Viewport = Gtk.Template.Child()
     drawing_area: Gtk.DrawingArea = Gtk.Template.Child()
     zoom_spinbutton: Gtk.SpinButton = Gtk.Template.Child()
     layers_listbox: Gtk.ListBox = Gtk.Template.Child()
@@ -225,7 +226,30 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 self.scale = min(10.0, self.scale + 0.5)
             else:
                 self.scale = max(0.1, self.scale - 0.5)
+
+            # center zoom on mouse
+            rect, _ = self.scroll_area.get_allocated_size()
+
+            print("allocated: %dx%d" % (rect.width, rect.height))
+
+            offset_h = event.x - rect.width / 2
+            offset_v = event.y - rect.height / 2
+
+            print("ox = %d - oy = %d" % (offset_h, offset_h))
+
+            adj_v = self.scroll_area.get_vadjustment()
+            adj_v.set_value(adj_v.get_value() + offset_v)
+            self.scroll_area.set_vadjustment(adj_v)
+
+            adj_h = self.scroll_area.get_hadjustment()
+            adj_h.set_value(adj_h.get_value() + offset_h)
+            self.scroll_area.set_hadjustment(adj_h)
+
+            # redraw
             self.redraw()
+
+            return True
+        return False
 
     def on_key_press(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:
@@ -270,8 +294,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         layer_editor = LayerEditor(layer)
         layer_editor.on_update = on_update_editor
         self.layer_editor_container.add(layer_editor)
-
-        pass
 
     def on_draw(self, w, cr):
 

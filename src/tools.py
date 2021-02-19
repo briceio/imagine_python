@@ -38,8 +38,6 @@ class Tool:
 
             cr.stroke()
 
-        pass
-
 class PointTool(Tool):
 
     def __init__(self, document):
@@ -142,6 +140,7 @@ class LineTool(Tool):
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y)
+
         if not self._drawing:
             self.start_x = mouse_x
             self.start_y = mouse_y
@@ -156,6 +155,13 @@ class LineTool(Tool):
             self.apply()
 
         self._drawing = False
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.end_x = mouse_x
+            self.end_y = mouse_y
 
     def width(self):
         return int(self.end_x - self.start_x)
