@@ -52,6 +52,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        # load settings
+        self.user_settings = Gio.Settings.new("imagine.user-settings")
+
         # document notify
         self.connect("notify::document", self._on_document_mounted)
 
@@ -93,9 +96,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.documents_listbox.bind_model(self.documents, self._create_document_item_widget)
         self.documents_listbox.connect("row-selected", self._on_select_document)
 
-        # center window
-        self.set_size_request(1024, 768)
-        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+        # window management
+        self.connect("configure-event", self._save_window_state)
+        self.connect("destroy", self._save_window_state)
+        self._load_window_state()
 
     def load(self, path):
         self.document = Document(path)
@@ -104,6 +108,18 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def save(self):
         # TODO surface.write_to_png
         pass
+
+    def _load_window_state(self):
+        self.set_size_request(1024, 768)
+        if self.user_settings.get_boolean("start-centered"):
+            self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+        else:
+            self.set_position(Gtk.WindowPosition.NONE)
+            self.move(self.user_settings.get_int("window-position-x"), self.user_settings.get_int("window-position-y"))
+
+    def _save_window_state(self, window, event=None):
+        self.user_settings.set_int("window-position-x", self.get_position()[0])
+        self.user_settings.set_int("window-position-y", self.get_position()[1])
 
     @Gtk.Template.Callback("on_file_open")
     def on_file_open(self, widget):
@@ -120,7 +136,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
-            print("ok")
+            self.load(dialog.get_filename())
 
         dialog.destroy()
 
@@ -272,9 +288,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         adj_v.set_value(oy)
         self.scroll_area.set_vadjustment(adj_v)
 
-        self.document.scroll_offset_x = ox
-        self.document.scroll_offset_y = oy
-
     def on_scroll(self, widget, event):
 
         def remember_scroll_offset():
@@ -335,7 +348,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         box.pack_start(thumbnail, True, True, 0)
 
         # label
-        box.pack_start(Gtk.Label(label = document.name), True, True, 0)
+        label = Gtk.Label(label = document.name)
+        label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        box.pack_start(label, True, True, 0)
 
         box.show_all()
         return box
@@ -391,6 +406,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self._offset_scroll_area(self.document.scroll_offset_x, self.document.scroll_offset_y, absolute=True)
 
     def _on_select_document(self, container, row):
+
+        # deselect tool
+        if self.tool != None:
+            self.tool.cancel()
+            self.tool = None
+
         # cleanup
         if self.document != None:
             self.document.on_updated_layers_list = None
