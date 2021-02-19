@@ -64,6 +64,52 @@ class RectangleAnnotationLayer(Layer):
         cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
         cr.stroke()
 
+class EllipsisAnnotationLayer(Layer):
+
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width")
+    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
+    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
+
+    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__("Ellipsis")
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+
+    def get_tool(self):
+        return "EllipsisAnnotationTool"
+
+    def crop(self, x1, y1, x2, y2):
+        self.x1 -= x1
+        self.y1 -= y1
+        self.x2 -= x1
+        self.y2 -= y1
+
+    def draw(self, w, cr):
+
+        def draw_ellipsis():
+            width = self.x2 - self.x1
+            height = self.y2 - self.y1
+            ratio = width / height if height > 0 else 1
+            cr.save()
+            if width > 0 and ratio > 0:
+                cr.translate(self.x1, self.y1)
+                cr.scale(1, 1/ratio)
+                cr.translate(-self.x1, -self.y1)
+            cr.arc(self.x1, self.y1, width, 0, math.pi * 2)
+            cr.restore()
+
+        cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
+        cr.set_line_width(0)
+        draw_ellipsis()
+        cr.fill()
+
+        cr.set_source_rgba(self.stroke_color.red, self.stroke_color.green, self.stroke_color.blue, self.stroke_color.alpha)
+        cr.set_line_width(self.width)
+        cr.set_dash([])
+        draw_ellipsis()
+        cr.stroke()
 
 class LineAnnotationLayer(Layer):
 

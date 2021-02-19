@@ -17,7 +17,7 @@
 
 from .document import Document
 from .resize_dialog import ResizeDialog
-from .tools import Tool, CropTool, RectangleAnnotationTool, LineAnnotationTool, TextAnnotationTool
+from .tools import Tool, CropTool, RectangleAnnotationTool, LineAnnotationTool, TextAnnotationTool, EllipsisAnnotationTool
 from .layer_editor import LayerEditor
 
 from gi.repository import Gtk
@@ -129,6 +129,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback("on_annotate_rectangle")
     def on_annotate_rectangle(self, widget):
         self.set_active_tool(RectangleAnnotationTool(self.document), keep_selected=True)
+
+    @Gtk.Template.Callback("on_annotate_ellipsis")
+    def on_annotate_rectangle(self, widget):
+        self.set_active_tool(EllipsisAnnotationTool(self.document), keep_selected=True)
 
     @Gtk.Template.Callback("on_annotate_line")
     def on_annotate_line(self, widget):

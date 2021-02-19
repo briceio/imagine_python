@@ -1,4 +1,4 @@
-from .layers import RectangleAnnotationLayer, LineAnnotationLayer, TextAnnotationLayer
+from .layers import RectangleAnnotationLayer, LineAnnotationLayer, TextAnnotationLayer, EllipsisAnnotationLayer
 
 class Tool:
 
@@ -183,6 +183,26 @@ class RectangleAnnotationTool(RectTool):
         self.layer = layer
         if layer == None:
             self.layer = RectangleAnnotationLayer()
+            self.document.add_layer(self.layer)
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.layer.x1 = self.start_x
+            self.layer.y1 = self.start_y
+            self.layer.x2 = mouse_x
+            self.layer.y2 = mouse_y
+            self.layer.draw(w, cr)
+
+class EllipsisAnnotationTool(RectTool):
+
+    def __init__(self, document, layer=None):
+        super().__init__(document)
+
+        self.layer = layer
+        if layer == None:
+            self.layer = EllipsisAnnotationLayer()
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
