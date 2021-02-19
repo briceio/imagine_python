@@ -116,50 +116,8 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
-                    <accelerator key="r" signal="clicked"/>
+                    <accelerator key="r" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                   </object>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Line</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_line" swapped="no"/>
-                    <accelerator key="l" signal="clicked"/>
-                  </object>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Arrow</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
-                    <accelerator key="a" signal="clicked"/>
-                  </object>
-                  <packing>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Text</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_text" swapped="no"/>
-                    <accelerator key="t" signal="clicked"/>
-                  </object>
-                  <packing>
-                    <property name="position">3</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkToolButton">
@@ -169,7 +127,7 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_ellipse" swapped="no"/>
-                    <accelerator key="e" signal="clicked"/>
+                    <accelerator key="e" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -183,10 +141,52 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
-                    <accelerator key="c" signal="clicked"/>
+                    <accelerator key="c" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                   </object>
                   <packing>
                     <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Line</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-select-all</property>
+                    <signal name="clicked" handler="on_annotate_line" swapped="no"/>
+                    <accelerator key="l" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                  </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Arrow</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-select-all</property>
+                    <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
+                    <accelerator key="a" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Text</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-select-all</property>
+                    <signal name="clicked" handler="on_annotate_text" swapped="no"/>
+                    <accelerator key="t" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                  </object>
+                  <packing>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
@@ -207,6 +207,7 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">insert-object</property>
                     <signal name="clicked" handler="on_enhance_lighting" swapped="no"/>
+                    <accelerator key="g" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                   </object>
                 </child>
                 <child>
@@ -217,6 +218,7 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">image-missing</property>
                     <signal name="clicked" handler="on_enhance_blur" swapped="no"/>
+                    <accelerator key="b" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                   </object>
                   <packing>
                     <property name="position">1</property>

@@ -96,7 +96,7 @@ class Document:
         cr.paint()
 
         # layers
-        for layer in self.layers:
+        for layer in reversed(self.layers):
             layer.draw(w, cr)
 
 
