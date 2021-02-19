@@ -27,6 +27,8 @@ import cairo
 import math
 from PIL import Image
 
+MOUSE_SCROLL_FACTOR = 2.0
+
 @Gtk.Template(resource_path='/io/boite/imagine/window.ui')
 class ImagineWindow(Gtk.ApplicationWindow):
     __gtype_name__ = 'ImagineWindow'
@@ -56,19 +58,25 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_x = 0
         self.mouse_y = 0
 
+        # default is no browsing
+        self._browsing = False
+        self._browsing_prev_x = 0
+        self._browsing_prev_y = 0
+        self._skip_browse_signal = False
+
         # zoom
         self.zoom_spinbutton.set_range(0.1, 10.0)
         self.zoom_spinbutton.set_increments(0.1, 1.0)
         self.zoom_spinbutton.set_value(1.0)
 
         # events
-        self.scroll_area.connect("scroll-event", self.on_scroll)
         self.connect("key-press-event", self.on_key_press)
+        self.drawing_area.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
+        self.drawing_area.connect("scroll-event", self.on_scroll)
         self.drawing_area.connect("draw", self.on_draw)
         self.drawing_area.connect("motion-notify-event", self.mouse_move)
         self.drawing_area.connect("button-press-event", self.mouse_down)
         self.drawing_area.connect("button-release-event", self.mouse_up)
-        self.drawing_area.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
 
         # binding
         self.layers_listbox.bind_model(self.document.layers, self.create_layer_item_widget)
@@ -194,10 +202,25 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.drawing_area.queue_draw()
 
     def mouse_move(self, w, event):
-        self.mouse_x = event.x / self.scale
-        self.mouse_y = event.y / self.scale
 
-        self.redraw()
+        # browsing with the middle mouse button
+        if self._browsing:
+            delta_x = self._browsing_prev_x - event.x
+            delta_y = self._browsing_prev_y - event.y
+
+            if not self._skip_browse_signal: # hack
+                self._offset_scroll_area(delta_x * MOUSE_SCROLL_FACTOR, delta_y * MOUSE_SCROLL_FACTOR)
+
+            self._skip_browse_signal = not self._skip_browse_signal
+
+            self._browsing_prev_x = event.x
+            self._browsing_prev_y = event.y
+        else:
+            # tooling
+            self.mouse_x = event.x / self.scale
+            self.mouse_y = event.y / self.scale
+
+            self.redraw()
 
     def mouse_down(self, w, event):
         self.mouse_x = event.x / self.scale
@@ -205,6 +228,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         if self.tool != None and event.button == 1:
             self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
+        elif event.button == 2: # middle button
+            self._browsing_prev_x = event.x
+            self._browsing_prev_y = event.y
+            self._browsing = True
 
         self.redraw()
 
@@ -214,8 +241,19 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         if self.tool != None and event.button == 1:
             self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
+        elif event.button == 2: # middle button
+            self._browsing = False
 
         self.redraw()
+
+    def _offset_scroll_area(self, x, y):
+        adj_h = self.scroll_area.get_hadjustment()
+        adj_h.set_value(adj_h.get_value() + x)
+        self.scroll_area.set_hadjustment(adj_h)
+
+        adj_v = self.scroll_area.get_vadjustment()
+        adj_v.set_value(adj_v.get_value() + y)
+        self.scroll_area.set_vadjustment(adj_v)
 
     def on_scroll(self, widget, event):
         # zoom using mouse wheel & ctrl key
@@ -233,13 +271,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
             offset_h = event.x - rect.width / 2
             offset_v = event.y - rect.height / 2
 
-            adj_v = self.scroll_area.get_vadjustment()
-            adj_v.set_value(adj_v.get_value() + offset_v)
-            self.scroll_area.set_vadjustment(adj_v)
-
-            adj_h = self.scroll_area.get_hadjustment()
-            adj_h.set_value(adj_h.get_value() + offset_h)
-            self.scroll_area.set_hadjustment(adj_h)
+            self._offset_scroll_area(offset_h, offset_v)
 
             # redraw
             self.redraw()
