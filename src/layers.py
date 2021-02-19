@@ -186,37 +186,42 @@ class LightingLayer(RectLayer):
     def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__("Lighting", x1, y1, x2, y2)
         self._image_surface = None
+        self._image = None
         self.updating = False
+        self.enhancing = False
 
     def get_tool(self):
         return "LightingTool"
 
     def updated(self, obj, param):
-        self.updating = True
+        self.enhancing = True
 
     def draw(self, doc, w, cr):
 
         if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
             return
 
-        if self._image_surface == None or self.updating:
+        def enhance():
+            image = ImageEnhance.Brightness(self._image).enhance(self.brightness)
+            image = ImageEnhance.Contrast(image).enhance(self.contrast)
+            image = ImageEnhance.Sharpness(image).enhance(self.sharpness)
+            image = ImageEnhance.Color(image).enhance(self.color)
 
-            # crop the image
-            rect_image = doc.image.crop((self.x1, self.y1, self.x2, self.y2))
-
-            # enhance it
-            rect_image = ImageEnhance.Brightness(rect_image).enhance(self.brightness)
-            rect_image = ImageEnhance.Contrast(rect_image).enhance(self.contrast)
-            rect_image = ImageEnhance.Sharpness(rect_image).enhance(self.sharpness)
-            rect_image = ImageEnhance.Color(rect_image).enhance(self.color)
-
-            # convert it to surface
             buffer = BytesIO()
-            rect_image.save(buffer, format="PNG")
+            image.save(buffer, format="PNG")
             buffer.seek(0)
+
             self._image_surface = cairo.ImageSurface.create_from_png(buffer)
 
+            self.enhancing = False
+
+        if self._image == None or self.updating:
+            self._image = doc.image.crop((self.x1, self.y1, self.x2, self.y2))
+            enhance()
             self.updating = False
+
+        if not self._image_surface == None and self.enhancing:
+            enhance()
 
         # draw it
         cr.set_source_surface(self._image_surface, self.x1, self.y1)
@@ -230,35 +235,40 @@ class BlurLayer(RectLayer):
     def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__("Blur", x1, y1, x2, y2)
         self._image_surface = None
+        self._image = None
         self.updating = False
+        self.enhancing = False
 
     def get_tool(self):
         return "BlurTool"
 
     def updated(self, obj, param):
-        self.updating = True
+        self.enhancing = True
 
     def draw(self, doc, w, cr):
 
         if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
             return
 
-        if self._image_surface == None or self.updating:
+        def enhance():
+            image = self._image.filter(ImageFilter.BoxBlur(self.box))
+            image = image.filter(ImageFilter.GaussianBlur(self.gaussian))
 
-            # crop the image
-            rect_image = doc.image.crop((self.x1, self.y1, self.x2, self.y2))
-
-            # enhance it
-            rect_image = rect_image.filter(ImageFilter.BoxBlur(self.box))
-            rect_image = rect_image.filter(ImageFilter.GaussianBlur(self.gaussian))
-
-            # convert it to surface
             buffer = BytesIO()
-            rect_image.save(buffer, format="PNG")
+            image.save(buffer, format="PNG")
             buffer.seek(0)
+
             self._image_surface = cairo.ImageSurface.create_from_png(buffer)
 
+            self.enhancing = False
+
+        if self._image == None or self.updating:
+            self._image = doc.image.crop((self.x1, self.y1, self.x2, self.y2))
+            enhance()
             self.updating = False
+
+        if not self._image_surface == None and self.enhancing:
+            enhance()
 
         # draw it
         cr.set_source_surface(self._image_surface, self.x1, self.y1)

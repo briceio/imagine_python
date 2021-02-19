@@ -107,11 +107,24 @@ class RectTool(Tool):
 
         self._drawing = False
 
+    def normalize(self):
+        return (min(self.start_x, self.end_x),
+                min(self.start_y, self.end_y),
+                max(self.start_x, self.end_x),
+                max(self.start_y, self.end_y))
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.end_x = mouse_x
+            self.end_y = mouse_y
+
     def width(self):
-        return int(self.end_x - self.start_x)
+        return abs(int(self.end_x - self.start_x))
 
     def height(self):
-        return int(self.end_y - self.start_y)
+        return abs(int(self.end_y - self.start_y))
 
 class LineTool(Tool):
 
@@ -191,8 +204,8 @@ class RectangleAnnotationTool(RectTool):
         if self._drawing:
             self.layer.x1 = self.start_x
             self.layer.y1 = self.start_y
-            self.layer.x2 = mouse_x
-            self.layer.y2 = mouse_y
+            self.layer.x2 = self.end_x
+            self.layer.y2 = self.end_y
             self.layer.draw(doc, w, cr)
 
 class EllipsisAnnotationTool(RectTool):
@@ -211,8 +224,8 @@ class EllipsisAnnotationTool(RectTool):
         if self._drawing:
             self.layer.x1 = self.start_x
             self.layer.y1 = self.start_y
-            self.layer.x2 = mouse_x
-            self.layer.y2 = mouse_y
+            self.layer.x2 = self.end_x
+            self.layer.y2 = self.end_y
             self.layer.draw(doc, w, cr)
 
 class LineAnnotationTool(LineTool):
@@ -231,8 +244,8 @@ class LineAnnotationTool(LineTool):
         if self._drawing:
             self.layer.x1 = self.start_x
             self.layer.y1 = self.start_y
-            self.layer.x2 = mouse_x
-            self.layer.y2 = mouse_y
+            self.layer.x2 = self.end_x
+            self.layer.y2 = self.end_y
             self.layer.draw(doc, w, cr)
 
 class TextAnnotationTool(PointTool):
@@ -265,10 +278,11 @@ class LightingTool(RectTool):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
         if self._drawing:
-            self.layer.x1 = self.start_x
-            self.layer.y1 = self.start_y
-            self.layer.x2 = mouse_x
-            self.layer.y2 = mouse_y
+            (x1, y1, x2, y2) = self.normalize()
+            self.layer.x1 = x1
+            self.layer.y1 = y1
+            self.layer.x2 = x2
+            self.layer.y2 = y2
             self.layer.updating = True
             self.layer.draw(doc, w, cr)
 
@@ -286,9 +300,10 @@ class BlurTool(RectTool):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
         if self._drawing:
-            self.layer.x1 = self.start_x
-            self.layer.y1 = self.start_y
-            self.layer.x2 = mouse_x
-            self.layer.y2 = mouse_y
+            (x1, y1, x2, y2) = self.normalize()
+            self.layer.x1 = x1
+            self.layer.y1 = y1
+            self.layer.x2 = x2
+            self.layer.y2 = y2
             self.layer.updating = True
             self.layer.draw(doc, w, cr)
