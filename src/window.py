@@ -54,6 +54,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # current tool
         self.tool: Tool = None
 
+        # current layer
+        self.selected_layer: Layer = None
+
         # current mouse state
         self.mouse_x = 0
         self.mouse_y = 0
@@ -282,7 +285,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_key_press(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:
             if self.tool != None:
+                # cancel tool
                 self.tool.cancel()
+                self.tool = None
+                # remove current layer
+                self.document.delete_layer(self.selected_layer)
+                # redraw
                 self.redraw()
 
     def create_layer_item_widget(self, layer):
@@ -327,7 +335,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
         return box
 
     def on_select_layer(self, container, row):
+
+        # cleanup
         if row == None:
+            self._cleanup_layer_editor()
             return
 
         # build & select the default tool (if any)
@@ -336,8 +347,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
         if tool_name != None:
             self.tool = globals()[tool_name](self.document, layer)
 
+        # keep track of selected layer
+        self.selected_layer = layer
+
         # udpate the layer properties editor
-        self.build_layer_editor(layer)
+        self._build_layer_editor(layer)
 
     def _on_updated_layers_list(self, action, layer):
 
@@ -350,14 +364,17 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # redraw
         self.redraw()
 
-    def build_layer_editor(self, layer):
+    def _cleanup_layer_editor(self):
+        for child in self.layer_editor_container.get_children():
+            self.layer_editor_container.remove(child)
+
+    def _build_layer_editor(self, layer):
 
         def on_update_editor(layer):
             self.redraw() # TODO redraw only layer?
 
         # cleanup
-        for child in self.layer_editor_container.get_children():
-            self.layer_editor_container.remove(child)
+        self._cleanup_layer_editor()
 
         # add the new editor
         layer_editor = LayerEditor(layer)

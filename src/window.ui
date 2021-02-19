@@ -116,6 +116,7 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
+                    <accelerator key="r" signal="clicked"/>
                   </object>
                 </child>
                 <child>
@@ -126,6 +127,7 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_line" swapped="no"/>
+                    <accelerator key="l" signal="clicked"/>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -139,6 +141,7 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
+                    <accelerator key="a" signal="clicked"/>
                   </object>
                   <packing>
                     <property name="position">2</property>
@@ -152,6 +155,7 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_text" swapped="no"/>
+                    <accelerator key="t" signal="clicked"/>
                   </object>
                   <packing>
                     <property name="position">3</property>
@@ -165,6 +169,7 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_ellipsis" swapped="no"/>
+                    <accelerator key="e" signal="clicked"/>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -178,6 +183,7 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
+                    <accelerator key="c" signal="clicked"/>
                   </object>
                   <packing>
                     <property name="position">2</property>
