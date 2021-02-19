@@ -258,8 +258,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         def delete_layer(widget, layer):
             self.document.delete_layer(layer)
 
-        def move_layer(widget, data):
-            print("data = " + str(data))
+        def move_layer(widget, layer, offset):
+            self.document.move_layer(layer, offset)
 
         box = Gtk.HBox()
         box.set_size_request(-1, 30)
@@ -276,12 +276,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         buttons.set_size_request(30, -1)
 
         down_button = Gtk.ToolButton(stock_id = Gtk.STOCK_GO_DOWN)
-        down_button.connect("clicked", move_layer, -1)
+        down_button.connect("clicked", move_layer, layer, 1)
         down_button.set_sensitive(not layer.is_last_layer())
         buttons.add(down_button)
 
         up_button = Gtk.ToolButton(stock_id = Gtk.STOCK_GO_UP)
-        up_button.connect("clicked", move_layer, 1)
+        up_button.connect("clicked", move_layer, layer, -1)
         up_button.set_sensitive(not layer.is_first_layer())
         buttons.add(up_button)
 

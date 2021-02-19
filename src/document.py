@@ -9,6 +9,7 @@ from .layers import Layer
 class LayerAction(enum.Enum):
     ADD = 1
     DELETE = 2
+    MOVE = 3
 
 class Document:
 
@@ -52,11 +53,9 @@ class Document:
         # TODO flip layers
 
     def add_layer(self, layer):
-        for i, l in enumerate(self.layers):
-            l.position += 1
-
-        layer.position = 0
         self.layers.insert(0, layer)
+
+        self._update_layers_position()
 
         if self.on_updated_layers_list != None:
             self.on_updated_layers_list(LayerAction.ADD, layer)
@@ -69,8 +68,26 @@ class Document:
     def delete_layer(self, layer):
         self.layers.remove(self.index_of_layer(layer))
 
+        self._update_layers_position()
+
         if self.on_updated_layers_list != None:
             self.on_updated_layers_list(LayerAction.DELETE, layer)
+
+    def move_layer(self, layer, offset):
+        index = self.index_of_layer(layer)
+        new_index = index + offset
+
+        self.layers.remove(index)
+        self.layers.insert(new_index, layer)
+
+        self._update_layers_position()
+
+        if self.on_updated_layers_list != None:
+            self.on_updated_layers_list(LayerAction.MOVE, layer)
+
+    def _update_layers_position(self):
+        for i, l in enumerate(self.layers):
+            l.position = i
 
     def draw(self, w, cr):
 
