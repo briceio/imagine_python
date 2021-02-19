@@ -259,13 +259,14 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_draw(self, w, cr):
 
         # scaling
-        w = self.scale * self.document.imageSurface.get_width()
-        h = self.scale * self.document.imageSurface.get_height()
+        iw, ih = self.document.image.size
+        w = self.scale * iw
+        h = self.scale * ih
         self.drawing_area.set_size_request(w, h)
         cr.scale(self.scale, self.scale)
 
         # clipping
-        cr.rectangle(0, 0, w, h)
+        cr.rectangle(0, 0, iw, ih)
         cr.clip()
 
         # render document
