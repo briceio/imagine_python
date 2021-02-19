@@ -261,14 +261,19 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         self.redraw()
 
-    def _offset_scroll_area(self, x, y):
+    def _offset_scroll_area(self, x, y, absolute=False):
         adj_h = self.scroll_area.get_hadjustment()
-        adj_h.set_value(adj_h.get_value() + x)
+        ox = x if absolute else adj_h.get_value() + x
+        adj_h.set_value(ox)
         self.scroll_area.set_hadjustment(adj_h)
 
         adj_v = self.scroll_area.get_vadjustment()
-        adj_v.set_value(adj_v.get_value() + y)
+        oy = y if absolute else adj_v.get_value() + y
+        adj_v.set_value(oy)
         self.scroll_area.set_vadjustment(adj_v)
+
+        self.document.scroll_offset_x = ox
+        self.document.scroll_offset_y = oy
 
     def on_scroll(self, widget, event):
         # zoom using mouse wheel & ctrl key
@@ -292,6 +297,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.redraw()
 
             return True
+
+        # keep track of scrolling per document
+        self.document.scroll_offset_x = self.scroll_area.get_hadjustment().get_value()
+        self.document.scroll_offset_y = self.scroll_area.get_vadjustment().get_value()
+
         return False
 
     def on_key_press(self, widget, event):
@@ -371,6 +381,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         self.layers_listbox.bind_model(self.document.layers, self._create_layer_item_widget)
         self.layers_listbox.connect("row-selected", self._on_select_layer)
+
+        self._offset_scroll_area(self.document.scroll_offset_x, self.document.scroll_offset_y, absolute=True)
 
     def _on_select_document(self, container, row):
         # cleanup

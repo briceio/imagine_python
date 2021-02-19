@@ -31,6 +31,9 @@ class Document(GObject.GObject):
         self.layers = Gio.ListStore()
         self._reload(Image.open(path))
 
+        self.scroll_offset_x = 0
+        self.scroll_offset_y = 0
+
     def _reload(self, image):
 
         # image
