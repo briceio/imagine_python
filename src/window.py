@@ -34,7 +34,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     __gtype_name__ = 'ImagineWindow'
 
     # scale factor
-    scale = 1.0
+    scale = GObject.Property(type=float, default=1.0)
 
     # widgets
     scroll_area: Gtk.ScrolledWindow = Gtk.Template.Child()
@@ -71,6 +71,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_range(0.1, 10.0)
         self.zoom_spinbutton.set_increments(0.1, 1.0)
         self.zoom_spinbutton.set_value(1.0)
+        self.bind_property("scale", self.zoom_spinbutton, "value")
 
         # events
         self.connect("key-press-event", self.on_key_press)
