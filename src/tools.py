@@ -1,4 +1,4 @@
-from .layers import RectangleAnnotationLayer, LineAnnotationLayer, TextAnnotationLayer, EllipsisAnnotationLayer
+from .layers import *
 
 class Tool:
 
@@ -193,7 +193,7 @@ class RectangleAnnotationTool(RectTool):
             self.layer.y1 = self.start_y
             self.layer.x2 = mouse_x
             self.layer.y2 = mouse_y
-            self.layer.draw(w, cr)
+            self.layer.draw(doc, w, cr)
 
 class EllipsisAnnotationTool(RectTool):
 
@@ -213,7 +213,7 @@ class EllipsisAnnotationTool(RectTool):
             self.layer.y1 = self.start_y
             self.layer.x2 = mouse_x
             self.layer.y2 = mouse_y
-            self.layer.draw(w, cr)
+            self.layer.draw(doc, w, cr)
 
 class LineAnnotationTool(LineTool):
 
@@ -233,7 +233,7 @@ class LineAnnotationTool(LineTool):
             self.layer.y1 = self.start_y
             self.layer.x2 = mouse_x
             self.layer.y2 = mouse_y
-            self.layer.draw(w, cr)
+            self.layer.draw(doc, w, cr)
 
 class TextAnnotationTool(PointTool):
 
@@ -249,4 +249,39 @@ class TextAnnotationTool(PointTool):
         super().draw(doc, w, cr, mouse_x, mouse_y)
         self.layer.x = self.x
         self.layer.y = self.y
-        self.layer.draw(w, cr)
+        self.layer.draw(doc, w, cr)
+
+class LightingTool(RectTool):
+
+    def __init__(self, document, layer=None):
+        super().__init__(document)
+
+        self.layer = layer
+        if layer == None:
+            self.layer = LightingLayer()
+            self.document.add_layer(self.layer)
+
+    def apply(self):
+        super().apply()
+        self.layer.x1 = self.start_x
+        self.layer.y1 = self.start_y
+        self.layer.x2 = self.end_x
+        self.layer.y2 = self.end_y
+        self.layer.prepare(self.document)
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            width = doc.imageSurface.get_width()
+            height = doc.imageSurface.get_height()
+
+            cr.set_source_rgba(0, 0, 0, 0.5)
+            cr.set_line_width(0)
+            cr.set_dash([])
+            cr.rectangle(0, 0, width, self.start_y)
+            cr.rectangle(0, 0, self.start_x, height)
+            cr.rectangle(mouse_x, 0, mouse_x, height)
+            cr.rectangle(0, mouse_y, width, mouse_y)
+            cr.fill()
+

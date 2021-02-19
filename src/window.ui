@@ -122,32 +122,6 @@
                   <object class="GtkToolButton">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Ellipsis</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_ellipsis" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Circle</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Line</property>
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
@@ -182,6 +156,52 @@
                   <packing>
                     <property name="position">3</property>
                   </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ellipsis</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-select-all</property>
+                    <signal name="clicked" handler="on_annotate_ellipsis" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Circle</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-select-all</property>
+                    <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolItemGroup">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Enhance</property>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Lighting</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">insert-object</property>
+                    <signal name="clicked" handler="on_enhance_lighting" swapped="no"/>
+                  </object>
                 </child>
               </object>
               <packing>

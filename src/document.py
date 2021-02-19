@@ -61,6 +61,6 @@ class Document:
 
         # layers
         for layer in self.layers:
-            layer.draw(w, cr)
+            layer.draw(self, w, cr)
 
 

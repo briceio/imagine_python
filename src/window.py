@@ -17,7 +17,7 @@
 
 from .document import Document
 from .resize_dialog import ResizeDialog
-from .tools import Tool, CropTool, RectangleAnnotationTool, LineAnnotationTool, TextAnnotationTool, EllipsisAnnotationTool
+from .tools import *
 from .layer_editor import LayerEditor
 
 from gi.repository import Gtk
@@ -169,6 +169,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_flip_vertical(self, widget):
         self.document.flip_vertical()
         self.redraw()
+
+    @Gtk.Template.Callback("on_enhance_lighting")
+    def on_enhance_lighting(self, widget):
+        self.set_active_tool(LightingTool(self.document), keep_selected=True)
 
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():

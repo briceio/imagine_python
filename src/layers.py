@@ -1,3 +1,5 @@
+from PIL import Image, ImageEnhance
+from io import BytesIO
 import cairo
 import gi
 import math
@@ -24,7 +26,7 @@ class Layer(GObject.GObject):
     def get_tool(self):
         return None
 
-    def draw(self, w, cr):
+    def draw(self, doc, w, cr):
         pass
 
     def crop(self, x1, y1, x2, y2):
@@ -52,7 +54,7 @@ class RectangleAnnotationLayer(Layer):
         self.x2 -= x1
         self.y2 -= y1
 
-    def draw(self, w, cr):
+    def draw(self, doc, w, cr):
         cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
         cr.set_line_width(0)
         cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
@@ -88,7 +90,7 @@ class EllipsisAnnotationLayer(Layer):
         self.x2 -= x1
         self.y2 -= y1
 
-    def draw(self, w, cr):
+    def draw(self, doc, w, cr):
 
         def draw_ellipsis():
             width = self.x2 - self.x1
@@ -136,7 +138,7 @@ class LineAnnotationLayer(Layer):
         self.x2 -= x1
         self.y2 -= y1
 
-    def draw(self, w, cr):
+    def draw(self, doc, w, cr):
         cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         cr.set_line_width(self.width)
         cr.set_dash([])
@@ -174,7 +176,7 @@ class TextAnnotationLayer(Layer):
         self.x -= x1
         self.y -= y1
 
-    def draw(self, w, cr):
+    def draw(self, doc, w, cr):
         cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         cr.move_to(self.x, self.y)
 
@@ -185,3 +187,42 @@ class TextAnnotationLayer(Layer):
         layout.set_text(self.text, -1)
         PangoCairo.show_layout(cr, layout)
         
+class LightingLayer(Layer):
+
+    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__("Lighting")
+        self._image_surface = None
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+
+    def get_tool(self):
+        return "LightingTool"
+
+    def crop(self, x1, y1, x2, y2):
+        self.x1 -= x1
+        self.y1 -= y1
+        self.x2 -= x1
+        self.y2 -= y1
+
+    def prepare(self, doc):
+
+        # crop the image
+        rect_image = doc.image.crop((self.x1, self.y1, self.x2, self.y2))
+
+        # enhance it
+        enhancer = ImageEnhance.Brightness(rect_image)
+        rect_image = enhancer.enhance(2)
+
+        # convert it to surface
+        buffer = BytesIO()
+        rect_image.save(buffer, format="PNG")
+        buffer.seek(0)
+        self._image_surface = cairo.ImageSurface.create_from_png(buffer)
+
+    def draw(self, doc, w, cr):
+        if self._image_surface != None:
+            # draw it
+            cr.set_source_surface(self._image_surface, self.x1, self.y1)
+            cr.paint()
