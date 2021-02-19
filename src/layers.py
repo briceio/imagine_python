@@ -18,9 +18,11 @@ class Font(GObject.GObject):
 class Layer(GObject.GObject):
 
     name = GObject.Property(type=str, nick="Name")
+    position = GObject.Property(type=int, default=-1)
 
-    def __init__(self, name):
+    def __init__(self, document, name):
         GObject.GObject.__init__(self)
+        self.document = document
         self.name = name
         self.connect("notify", self.updated)
 
@@ -30,16 +32,22 @@ class Layer(GObject.GObject):
     def get_tool(self):
         return None
 
-    def draw(self, doc, w, cr):
+    def draw(self, w, cr):
         pass
 
     def crop(self, x1, y1, x2, y2):
         pass
 
+    def is_first_layer(self):
+        return self.position == 0
+
+    def is_last_layer(self):
+        return self.position == len(self.document.layers) - 1
+
 class RectLayer(Layer):
 
-    def __init__(self, name, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
-        super().__init__(name)
+    def __init__(self, document, name, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__(document, name)
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
@@ -57,13 +65,13 @@ class RectangleAnnotationLayer(RectLayer):
     stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
 
-    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
-        super().__init__("Rectangle", x1, x2, y1, y2)
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__(document, "Rectangle", x1, x2, y1, y2)
 
     def get_tool(self):
         return "RectangleAnnotationTool"
 
-    def draw(self, doc, w, cr):
+    def draw(self, w, cr):
         cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
         cr.set_line_width(0)
         cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
@@ -82,14 +90,14 @@ class EllipsisAnnotationLayer(RectLayer):
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
     circle = GObject.Property(type=bool, default=False, nick="Circle")
 
-    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0, circle = False):
-        super().__init__("Ellipsis", x1, y1, x2, y2)
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0, circle = False):
+        super().__init__(document, "Ellipsis", x1, y1, x2, y2)
         self.circle = circle
 
     def get_tool(self):
         return "EllipsisAnnotationTool"
 
-    def draw(self, doc, w, cr):
+    def draw(self, w, cr):
 
         def draw_ellipsis():
             width = self.x2 - self.x1
@@ -120,14 +128,14 @@ class LineAnnotationLayer(RectLayer):
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
     arrow = GObject.Property(type=bool, default=False, nick="Arrow")
 
-    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0, arrow = False):
-        super().__init__("Arrow" if arrow else "Line", x1, y1, x2, y2)
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0, arrow = False):
+        super().__init__(document, "Arrow" if arrow else "Line", x1, y1, x2, y2)
         self.arrow = arrow
 
     def get_tool(self):
         return "LineAnnotationTool"
 
-    def draw(self, doc, w, cr):
+    def draw(self, w, cr):
         cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         cr.set_line_width(self.width)
         cr.set_dash([])
@@ -153,8 +161,8 @@ class TextAnnotationLayer(Layer):
     font = GObject.Property(type=Font, default=Font("Noto Sans Bold 30"), nick="Font")
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
 
-    def __init__(self, x = 0, y = 0):
-        super().__init__("Text")
+    def __init__(self, document, x = 0, y = 0):
+        super().__init__(document, "Text")
         self.x = x
         self.y = y
 
@@ -165,7 +173,7 @@ class TextAnnotationLayer(Layer):
         self.x -= x1
         self.y -= y1
 
-    def draw(self, doc, w, cr):
+    def draw(self, w, cr):
         cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         cr.move_to(self.x, self.y)
 
@@ -183,8 +191,8 @@ class LightingLayer(RectLayer):
     sharpness = GObject.Property(type=float, default=1.0, nick="Sharpness")
     color = GObject.Property(type=float, default=1.0, nick="Color")
 
-    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
-        super().__init__("Lighting", x1, y1, x2, y2)
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__(document, "Lighting", x1, y1, x2, y2)
         self._image_surface = None
         self._image = None
         self.updating = False
@@ -196,7 +204,7 @@ class LightingLayer(RectLayer):
     def updated(self, obj, param):
         self.enhancing = True
 
-    def draw(self, doc, w, cr):
+    def draw(self, w, cr):
 
         if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
             return
@@ -216,7 +224,7 @@ class LightingLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = doc.image.crop((self.x1, self.y1, self.x2, self.y2))
+            self._image = self.document.image.crop((self.x1, self.y1, self.x2, self.y2))
             enhance()
             self.updating = False
 
@@ -232,8 +240,8 @@ class BlurLayer(RectLayer):
     box = GObject.Property(type=float, default=0.0, nick="Box Blur")
     gaussian = GObject.Property(type=float, default=10.0, nick="Gaussian Blur")
 
-    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
-        super().__init__("Blur", x1, y1, x2, y2)
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__(document, "Blur", x1, y1, x2, y2)
         self._image_surface = None
         self._image = None
         self.updating = False
@@ -245,7 +253,7 @@ class BlurLayer(RectLayer):
     def updated(self, obj, param):
         self.enhancing = True
 
-    def draw(self, doc, w, cr):
+    def draw(self, w, cr):
 
         if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
             return
@@ -263,7 +271,7 @@ class BlurLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = doc.image.crop((self.x1, self.y1, self.x2, self.y2))
+            self._image = document.image.crop((self.x1, self.y1, self.x2, self.y2))
             enhance()
             self.updating = False
 

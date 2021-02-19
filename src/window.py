@@ -47,7 +47,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # TODO DEBUG document
         self.document = Document("/home/brice/Données/Temp/pic.jpg")
-        self.document.on_added_layer = self._on_added_layer
+        self.document.on_updated_layers_list = self._on_updated_layers_list
 
         # current tool
         self.tool: Tool = None
@@ -227,15 +227,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
             else:
                 self.scale = max(0.1, self.scale - 0.5)
 
-            # center zoom on mouse
+            # center zoom on mouse TODO bug not perfect
             rect, _ = self.scroll_area.get_allocated_size()
-
-            print("allocated: %dx%d" % (rect.width, rect.height))
 
             offset_h = event.x - rect.width / 2
             offset_v = event.y - rect.height / 2
-
-            print("ox = %d - oy = %d" % (offset_h, offset_h))
 
             adj_v = self.scroll_area.get_vadjustment()
             adj_v.set_value(adj_v.get_value() + offset_v)
@@ -258,9 +254,49 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 self.redraw()
 
     def create_layer_item_widget(self, layer):
-        return Gtk.Label(label = layer.name, justify = Gtk.Justification.LEFT)
+
+        def delete_layer(widget, layer):
+            self.document.delete_layer(layer)
+
+        def move_layer(widget, data):
+            print("data = " + str(data))
+
+        box = Gtk.HBox()
+        box.set_size_request(-1, 30)
+        box.set_homogeneous(False)
+
+        # label
+        label = Gtk.Label(label = layer.name)
+        layer.bind_property("name", label, "label")
+        box.pack_start(label, True, True, 0)
+
+        # commands
+        buttons = Gtk.HBox()
+        buttons.set_homogeneous(True)
+        buttons.set_size_request(30, -1)
+
+        down_button = Gtk.ToolButton(stock_id = Gtk.STOCK_GO_DOWN)
+        down_button.connect("clicked", move_layer, -1)
+        down_button.set_sensitive(not layer.is_last_layer())
+        buttons.add(down_button)
+
+        up_button = Gtk.ToolButton(stock_id = Gtk.STOCK_GO_UP)
+        up_button.connect("clicked", move_layer, 1)
+        up_button.set_sensitive(not layer.is_first_layer())
+        buttons.add(up_button)
+
+        delete_button = Gtk.ToolButton(stock_id = Gtk.STOCK_DELETE)
+        delete_button.connect("clicked", delete_layer, layer)
+        buttons.add(delete_button)
+
+        box.pack_end(buttons, False, False, 0)
+
+        box.show_all()
+        return box
 
     def on_select_layer(self, container, row):
+        if row == None:
+            return
 
         # build & select the default tool (if any)
         layer = self.document.layers[row.get_index()]
@@ -271,15 +307,16 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # udpate the layer properties editor
         self.build_layer_editor(layer)
 
-    def _on_added_layer(self, layer):
+    def _on_updated_layers_list(self, action, layer):
 
-        # find the layer index to select
-        for i, l in enumerate(self.document.layers):
-            if l == layer:
-               break
+        # refresh list
+        self.layers_listbox.bind_model(self.document.layers, self.create_layer_item_widget)
 
-        # select newly added layer
-        self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(i))
+        # select first layer
+        self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(0))
+
+        # redraw
+        self.redraw()
 
     def build_layer_editor(self, layer):
 

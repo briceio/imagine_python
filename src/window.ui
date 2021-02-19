@@ -122,32 +122,6 @@
                   <object class="GtkToolButton">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Ellipsis</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_ellipsis" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Circle</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Line</property>
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
@@ -181,6 +155,32 @@
                   </object>
                   <packing>
                     <property name="position">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ellipsis</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-select-all</property>
+                    <signal name="clicked" handler="on_annotate_ellipsis" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Circle</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-select-all</property>
+                    <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
@@ -242,12 +242,25 @@
                 <property name="position">200</property>
                 <property name="position-set">True</property>
                 <child>
-                  <object class="GtkListBox" id="layers_listbox">
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkViewport">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkListBox" id="layers_listbox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                   <packing>
-                    <property name="resize">True</property>
+                    <property name="resize">False</property>
                     <property name="shrink">True</property>
                   </packing>
                 </child>

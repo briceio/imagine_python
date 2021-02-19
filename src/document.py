@@ -2,14 +2,18 @@ from PIL import Image
 import cairo
 from io import BytesIO
 from gi.repository import Gtk, Gio, GObject
-
+import enum
 
 from .layers import Layer
+
+class LayerAction(enum.Enum):
+    ADD = 1
+    DELETE = 2
 
 class Document:
 
     # added layer callback
-    on_added_layer = None
+    on_updated_layers_list = None
 
     def __init__(self, path):
         self.image: Image = None
@@ -48,10 +52,25 @@ class Document:
         # TODO flip layers
 
     def add_layer(self, layer):
-        self.layers.append(layer)
+        for i, l in enumerate(self.layers):
+            l.position += 1
 
-        if self.on_added_layer != None:
-            self.on_added_layer(layer)
+        layer.position = 0
+        self.layers.insert(0, layer)
+
+        if self.on_updated_layers_list != None:
+            self.on_updated_layers_list(LayerAction.ADD, layer)
+
+    def index_of_layer(self, layer):
+        for i, l in enumerate(self.layers):
+            if l == layer:
+                return i
+
+    def delete_layer(self, layer):
+        self.layers.remove(self.index_of_layer(layer))
+
+        if self.on_updated_layers_list != None:
+            self.on_updated_layers_list(LayerAction.DELETE, layer)
 
     def draw(self, w, cr):
 
@@ -61,6 +80,6 @@ class Document:
 
         # layers
         for layer in self.layers:
-            layer.draw(self, w, cr)
+            layer.draw(w, cr)
 
 

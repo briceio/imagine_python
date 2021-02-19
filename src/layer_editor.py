@@ -27,7 +27,8 @@ class LayerEditor(Gtk.ListBox):
 
         # build properties editors
         for p in self.layer.list_properties():
-            switcher[p.value_type.name](p)
+            if p.nick != "":
+                switcher[p.value_type.name](p)
 
         self.show_all()
 

@@ -201,7 +201,7 @@ class RectangleAnnotationTool(RectTool):
 
         self.layer = layer
         if layer == None:
-            self.layer = RectangleAnnotationLayer()
+            self.layer = RectangleAnnotationLayer(document)
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
@@ -212,7 +212,7 @@ class RectangleAnnotationTool(RectTool):
             self.layer.y1 = self.start_y
             self.layer.x2 = self.end_x
             self.layer.y2 = self.end_y
-            self.layer.draw(doc, w, cr)
+            self.layer.draw(w, cr)
 
 class EllipsisAnnotationTool(RectTool):
 
@@ -221,7 +221,7 @@ class EllipsisAnnotationTool(RectTool):
 
         self.layer = layer
         if layer == None:
-            self.layer = EllipsisAnnotationLayer(circle=circle)
+            self.layer = EllipsisAnnotationLayer(document,circle=circle)
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
@@ -232,7 +232,7 @@ class EllipsisAnnotationTool(RectTool):
             self.layer.y1 = self.start_y
             self.layer.x2 = self.end_x
             self.layer.y2 = self.end_y
-            self.layer.draw(doc, w, cr)
+            self.layer.draw(w, cr)
 
 class LineAnnotationTool(LineTool):
 
@@ -241,7 +241,7 @@ class LineAnnotationTool(LineTool):
 
         self.layer = layer
         if layer == None:
-            self.layer = LineAnnotationLayer(arrow=arrow)
+            self.layer = LineAnnotationLayer(document, arrow=arrow)
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
@@ -252,7 +252,7 @@ class LineAnnotationTool(LineTool):
             self.layer.y1 = self.start_y
             self.layer.x2 = self.end_x
             self.layer.y2 = self.end_y
-            self.layer.draw(doc, w, cr)
+            self.layer.draw(w, cr)
 
 class TextAnnotationTool(PointTool):
 
@@ -261,14 +261,14 @@ class TextAnnotationTool(PointTool):
 
         self.layer = layer
         if layer == None:
-            self.layer = TextAnnotationLayer()
+            self.layer = TextAnnotationLayer(document)
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
         self.layer.x = self.x
         self.layer.y = self.y
-        self.layer.draw(doc, w, cr)
+        self.layer.draw(w, cr)
 
 class LightingTool(RectTool):
 
@@ -277,7 +277,7 @@ class LightingTool(RectTool):
 
         self.layer = layer
         if layer == None:
-            self.layer = LightingLayer()
+            self.layer = LightingLayer(document)
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
@@ -290,7 +290,7 @@ class LightingTool(RectTool):
             self.layer.x2 = x2
             self.layer.y2 = y2
             self.layer.updating = True
-            self.layer.draw(doc, w, cr)
+            self.layer.draw(w, cr)
 
 class BlurTool(RectTool):
 
@@ -299,7 +299,7 @@ class BlurTool(RectTool):
 
         self.layer = layer
         if layer == None:
-            self.layer = BlurLayer()
+            self.layer = BlurLayer(document)
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
@@ -312,4 +312,4 @@ class BlurTool(RectTool):
             self.layer.x2 = x2
             self.layer.y2 = y2
             self.layer.updating = True
-            self.layer.draw(doc, w, cr)
+            self.layer.draw(w, cr)
