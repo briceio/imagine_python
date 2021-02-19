@@ -61,6 +61,7 @@
                         <property name="use-underline">True</property>
                         <property name="icon-name">insert-image</property>
                         <signal name="clicked" handler="on_resize" swapped="no"/>
+                        <accelerator key="r" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                       </object>
                     </child>
                     <child>
@@ -71,6 +72,7 @@
                         <property name="use-underline">True</property>
                         <property name="icon-name">edit-cut</property>
                         <signal name="clicked" handler="on_crop" swapped="no"/>
+                        <accelerator key="c" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                       </object>
                       <packing>
                         <property name="position">1</property>

@@ -284,7 +284,7 @@ class BlurLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = document.image.crop((self.x1, self.y1, self.x2, self.y2))
+            self._image = self.document.image.crop((self.x1, self.y1, self.x2, self.y2))
             enhance()
             self.updating = False
 

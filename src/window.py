@@ -276,6 +276,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.document.scroll_offset_y = oy
 
     def on_scroll(self, widget, event):
+
+        def remember_scroll_offset():
+            # keep track of scrolling per document
+            self.document.scroll_offset_x = self.scroll_area.get_hadjustment().get_value()
+            self.document.scroll_offset_y = self.scroll_area.get_vadjustment().get_value()
+
         # zoom using mouse wheel & ctrl key
         accel_mask = Gtk.accelerator_get_default_mod_mask()
         if event.state & accel_mask == Gdk.ModifierType.CONTROL_MASK:
@@ -293,14 +299,14 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
             self._offset_scroll_area(offset_h, offset_v)
 
+            remember_scroll_offset()
+
             # redraw
             self.redraw()
 
             return True
 
-        # keep track of scrolling per document
-        self.document.scroll_offset_x = self.scroll_area.get_hadjustment().get_value()
-        self.document.scroll_offset_y = self.scroll_area.get_vadjustment().get_value()
+        remember_scroll_offset()
 
         return False
 
@@ -413,6 +419,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self._build_layer_editor(layer)
 
     def _on_updated_layers_list(self, action, layer):
+
+        # refresh layers list
+        self.layers_listbox.bind_model(self.document.layers, self._create_layer_item_widget)
 
         # select first layer
         self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(0))
