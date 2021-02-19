@@ -197,12 +197,12 @@ class RectangleAnnotationTool(RectTool):
 
 class EllipsisAnnotationTool(RectTool):
 
-    def __init__(self, document, layer=None):
+    def __init__(self, document, layer=None, circle=False):
         super().__init__(document)
 
         self.layer = layer
         if layer == None:
-            self.layer = EllipsisAnnotationLayer()
+            self.layer = EllipsisAnnotationLayer(circle=circle)
             self.document.add_layer(self.layer)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):

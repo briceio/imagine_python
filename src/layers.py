@@ -69,13 +69,15 @@ class EllipsisAnnotationLayer(Layer):
     width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width")
     stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
+    circle = GObject.Property(type=bool, default=False, nick="Circle")
 
-    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0, circle = False):
         super().__init__("Ellipsis")
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
+        self.circle = circle
 
     def get_tool(self):
         return "EllipsisAnnotationTool"
@@ -93,7 +95,7 @@ class EllipsisAnnotationLayer(Layer):
             height = self.y2 - self.y1
             ratio = width / height if height > 0 else 1
             cr.save()
-            if width > 0 and ratio > 0:
+            if not self.circle and width > 0 and ratio > 0:
                 cr.translate(self.x1, self.y1)
                 cr.scale(1, 1/ratio)
                 cr.translate(-self.x1, -self.y1)

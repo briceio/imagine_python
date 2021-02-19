@@ -131,8 +131,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.set_active_tool(RectangleAnnotationTool(self.document), keep_selected=True)
 
     @Gtk.Template.Callback("on_annotate_ellipsis")
-    def on_annotate_rectangle(self, widget):
+    def on_annotate_ellipsis(self, widget):
         self.set_active_tool(EllipsisAnnotationTool(self.document), keep_selected=True)
+
+    @Gtk.Template.Callback("on_annotate_circle")
+    def on_annotate_circle(self, widget):
+        self.set_active_tool(EllipsisAnnotationTool(self.document, circle = True), keep_selected=True)
 
     @Gtk.Template.Callback("on_annotate_line")
     def on_annotate_line(self, widget):
