@@ -160,6 +160,16 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.document.rotate(-90)
         self.redraw()
 
+    @Gtk.Template.Callback("on_flip_horizontal")
+    def on_flip_horizontal(self, widget):
+        self.document.flip_horizontal()
+        self.redraw()
+
+    @Gtk.Template.Callback("on_flip_vertical")
+    def on_flip_vertical(self, widget):
+        self.document.flip_vertical()
+        self.redraw()
+
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
             # unselect if requested
