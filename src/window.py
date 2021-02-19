@@ -35,6 +35,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     scale = 1.0
 
     # widgets
+    scroll_area: Gtk.ScrolledWindow = Gtk.Template.Child()
     drawing_area: Gtk.DrawingArea = Gtk.Template.Child()
     zoom_spinbutton: Gtk.SpinButton = Gtk.Template.Child()
     layers_listbox: Gtk.ListBox = Gtk.Template.Child()
@@ -60,6 +61,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_value(1.0)
 
         # events
+        self.scroll_area.connect("scroll-event", self.on_scroll)
         self.connect("key-press-event", self.on_key_press)
         self.drawing_area.connect("draw", self.on_draw)
         self.drawing_area.connect("motion-notify-event", self.mouse_move)
@@ -213,6 +215,17 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
 
         self.redraw()
+
+    def on_scroll(self, widget, event):
+        # zoom using mouse wheel & ctrl key
+        accel_mask = Gtk.accelerator_get_default_mod_mask()
+        if event.state & accel_mask == Gdk.ModifierType.CONTROL_MASK:
+            direction = event.get_scroll_deltas()[2]
+            if direction < 0:
+                self.scale = min(10.0, self.scale + 0.5)
+            else:
+                self.scale = max(0.1, self.scale - 0.5)
+            self.redraw()
 
     def on_key_press(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:
