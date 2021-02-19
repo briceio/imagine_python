@@ -261,27 +261,14 @@ class LightingTool(RectTool):
             self.layer = LightingLayer()
             self.document.add_layer(self.layer)
 
-    def apply(self):
-        super().apply()
-        self.layer.x1 = self.start_x
-        self.layer.y1 = self.start_y
-        self.layer.x2 = self.end_x
-        self.layer.y2 = self.end_y
-        self.layer.prepare(self.document)
-
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
         if self._drawing:
-            width = doc.imageSurface.get_width()
-            height = doc.imageSurface.get_height()
-
-            cr.set_source_rgba(0, 0, 0, 0.5)
-            cr.set_line_width(0)
-            cr.set_dash([])
-            cr.rectangle(0, 0, width, self.start_y)
-            cr.rectangle(0, 0, self.start_x, height)
-            cr.rectangle(mouse_x, 0, mouse_x, height)
-            cr.rectangle(0, mouse_y, width, mouse_y)
-            cr.fill()
+            self.layer.x1 = self.start_x
+            self.layer.y1 = self.start_y
+            self.layer.x2 = mouse_x
+            self.layer.y2 = mouse_y
+            self.layer.updating = True
+            self.layer.draw(doc, w, cr)
 

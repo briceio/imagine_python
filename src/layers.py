@@ -22,6 +22,10 @@ class Layer(GObject.GObject):
     def __init__(self, name):
         GObject.GObject.__init__(self)
         self.name = name
+        self.connect("notify", self.updated)
+
+    def updated(self, obj, param):
+        pass
 
     def get_tool(self):
         return None
@@ -189,9 +193,15 @@ class TextAnnotationLayer(Layer):
         
 class LightingLayer(Layer):
 
+    brightness = GObject.Property(type=float, default=1.5, nick="Brightness")
+    contrast = GObject.Property(type=float, default=1.0, nick="Contrast")
+    sharpness = GObject.Property(type=float, default=1.0, nick="Sharpness")
+    color = GObject.Property(type=float, default=1.0, nick="Color")
+
     def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__("Lighting")
         self._image_surface = None
+        self.updating = False
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
@@ -206,23 +216,33 @@ class LightingLayer(Layer):
         self.x2 -= x1
         self.y2 -= y1
 
-    def prepare(self, doc):
-
-        # crop the image
-        rect_image = doc.image.crop((self.x1, self.y1, self.x2, self.y2))
-
-        # enhance it
-        enhancer = ImageEnhance.Brightness(rect_image)
-        rect_image = enhancer.enhance(2)
-
-        # convert it to surface
-        buffer = BytesIO()
-        rect_image.save(buffer, format="PNG")
-        buffer.seek(0)
-        self._image_surface = cairo.ImageSurface.create_from_png(buffer)
+    def updated(self, obj, param):
+        self.updating = True
 
     def draw(self, doc, w, cr):
-        if self._image_surface != None:
-            # draw it
-            cr.set_source_surface(self._image_surface, self.x1, self.y1)
-            cr.paint()
+
+        if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
+            return
+
+        if self._image_surface == None or self.updating:
+
+            # crop the image
+            rect_image = doc.image.crop((self.x1, self.y1, self.x2, self.y2))
+
+            # enhance it
+            rect_image = ImageEnhance.Brightness(rect_image).enhance(self.brightness)
+            rect_image = ImageEnhance.Contrast(rect_image).enhance(self.contrast)
+            rect_image = ImageEnhance.Sharpness(rect_image).enhance(self.sharpness)
+            rect_image = ImageEnhance.Color(rect_image).enhance(self.color)
+
+            # convert it to surface
+            buffer = BytesIO()
+            rect_image.save(buffer, format="PNG")
+            buffer.seek(0)
+            self._image_surface = cairo.ImageSurface.create_from_png(buffer)
+
+            self.updating = False
+
+        # draw it
+        cr.set_source_surface(self._image_surface, self.x1, self.y1)
+        cr.paint()

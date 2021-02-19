@@ -21,6 +21,7 @@ class LayerEditor(Gtk.ListBox):
             "gint": self._build_int_editor,
             "GdkRGBA": self._build_color_editor,
             "gboolean": self._build_checkbox_editor,
+            "gdouble": self._build_double_editor,
             "imagine+layers+Font": self._build_font_editor,
         }
 
@@ -93,6 +94,21 @@ class LayerEditor(Gtk.ListBox):
         entry = Gtk.SpinButton()
         entry.set_range(1, 100)
         entry.set_increments(1, 5)
+        entry.set_value(self.layer.get_property(p.name))
+        entry.connect("changed", on_change)
+        box.pack_start(entry, True, True, 0)
+
+    def _build_double_editor(self, p):
+
+        def on_change(entry):
+            self.layer.set_property(p.name, entry.get_value())
+            self._notify(p.name)
+
+        box = self._build_property_editor(p)
+        entry = Gtk.SpinButton()
+        entry.set_range(0.0, 10000.0)
+        entry.set_increments(0.1, 1.0)
+        entry.set_digits(2)
         entry.set_value(self.layer.get_property(p.name))
         entry.connect("changed", on_change)
         box.pack_start(entry, True, True, 0)
