@@ -35,6 +35,10 @@ class Document:
         for layer in self.layers:
             layer.crop(x1, y1, x2, y2)
 
+    def rotate(self, angle):
+        self._reload(self.image.rotate(angle, expand=True))
+        # TODO rotate layers
+
     def add_layer(self, layer):
         self.layers.append(layer)
 

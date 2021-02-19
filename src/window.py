@@ -150,6 +150,16 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_annotate_text(self, widget):
         self.set_active_tool(TextAnnotationTool(self.document), keep_selected=True)
 
+    @Gtk.Template.Callback("on_rotate_left")
+    def on_rotate_left(self, widget):
+        self.document.rotate(90)
+        self.redraw()
+
+    @Gtk.Template.Callback("on_rotate_right")
+    def on_rotate_right(self, widget):
+        self.document.rotate(-90)
+        self.redraw()
+
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
             # unselect if requested

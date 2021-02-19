@@ -46,6 +46,32 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Rotate Left</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">object-rotate-left</property>
+                    <signal name="clicked" handler="on_rotate_left" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Rotate Right</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">object-rotate-right</property>
+                    <signal name="clicked" handler="on_rotate_right" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -64,26 +90,6 @@
                     <property name="use-underline">True</property>
                     <property name="icon-name">edit-select-all</property>
                     <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Ellipsis</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_ellipsis" swapped="no"/>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkToolButton">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Circle</property>
-                    <property name="use-underline">True</property>
-                    <property name="icon-name">edit-select-all</property>
-                    <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
                   </object>
                 </child>
                 <child>
@@ -123,6 +129,32 @@
                   </object>
                   <packing>
                     <property name="position">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Ellipsis</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-select-all</property>
+                    <signal name="clicked" handler="on_annotate_ellipsis" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Circle</property>
+                    <property name="use-underline">True</property>
+                    <property name="icon-name">edit-select-all</property>
+                    <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>
