@@ -174,6 +174,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_enhance_lighting(self, widget):
         self.set_active_tool(LightingTool(self.document), keep_selected=True)
 
+    @Gtk.Template.Callback("on_enhance_blur")
+    def on_enhance_blur(self, widget):
+        self.set_active_tool(BlurTool(self.document), keep_selected=True)
+
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
             # unselect if requested

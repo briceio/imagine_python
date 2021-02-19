@@ -272,3 +272,23 @@ class LightingTool(RectTool):
             self.layer.updating = True
             self.layer.draw(doc, w, cr)
 
+class BlurTool(RectTool):
+
+    def __init__(self, document, layer=None):
+        super().__init__(document)
+
+        self.layer = layer
+        if layer == None:
+            self.layer = BlurLayer()
+            self.document.add_layer(self.layer)
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.layer.x1 = self.start_x
+            self.layer.y1 = self.start_y
+            self.layer.x2 = mouse_x
+            self.layer.y2 = mouse_y
+            self.layer.updating = True
+            self.layer.draw(doc, w, cr)
