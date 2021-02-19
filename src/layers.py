@@ -83,43 +83,56 @@ class RectangleAnnotationLayer(RectLayer):
         cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
         cr.stroke()
 
-class EllipsisAnnotationLayer(RectLayer):
+class EllipseAnnotationLayer(RectLayer):
 
     width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width")
     stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
-    circle = GObject.Property(type=bool, default=False, nick="Circle")
 
     def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0, circle = False):
-        super().__init__(document, "Ellipsis", x1, y1, x2, y2)
+        super().__init__(document, "Circle" if circle else "Ellipse", x1, y1, x2, y2)
         self.circle = circle
 
     def get_tool(self):
-        return "EllipsisAnnotationTool"
+        return "EllipseAnnotationTool"
 
     def draw(self, w, cr):
 
-        def draw_ellipsis():
+        def draw():
+            cr.save()
+            if self.circle:
+                draw_circle()
+            else:
+                draw_ellipse()
+            cr.restore()
+
+        def draw_ellipse():
+            width = self.x2 - self.x1
+            height = self.y2 - self.y1
+            if width > 0 and height > 0:
+                center_x = self.x1 + width / 2
+                center_y = self.y1 + height / 2
+                radius = math.sqrt(pow(width, 2) + pow(height, 2))
+
+                cr.translate(center_x, center_y)
+                cr.scale(width / 2.0, height / 2.0)
+                cr.arc(0.0, 0.0, 1.0, 0.0, 2.0 * math.pi)
+
+        def draw_circle():
             width = self.x2 - self.x1
             height = self.y2 - self.y1
             ratio = width / height if height > 0 else 1
-            cr.save()
-            if not self.circle and width > 0 and ratio > 0:
-                cr.translate(self.x1, self.y1)
-                cr.scale(1, 1/ratio)
-                cr.translate(-self.x1, -self.y1)
             cr.arc(self.x1, self.y1, width, 0, math.pi * 2)
-            cr.restore()
 
         cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
         cr.set_line_width(0)
-        draw_ellipsis()
+        draw()
         cr.fill()
 
         cr.set_source_rgba(self.stroke_color.red, self.stroke_color.green, self.stroke_color.blue, self.stroke_color.alpha)
         cr.set_line_width(self.width)
         cr.set_dash([])
-        draw_ellipsis()
+        draw()
         cr.stroke()
 
 class LineAnnotationLayer(RectLayer):
