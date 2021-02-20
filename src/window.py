@@ -129,9 +129,21 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.document = Document(path)
         self.documents.append(self.document)
 
-    def save(self):
-        # TODO surface.write_to_png
-        pass
+    def _save(self):
+
+        size = self.drawing_area.get_size()
+        pixbuf = GdkPixbuf(GdkPixbuf.Colorspace.RGB, False, 8, size)
+
+        buffer = BytesIO(data)
+        buffer.seek(0)
+        final_image = Image.frombuffer('RGB', (width, height), buffer.getvalue(), decoder_name="raw")
+        buffer.close()
+
+        path = "{path}-test.jpg".format(path = self.document.path)
+        final_image.save(path)
+
+        # TODO info box message
+        print("Saved to: %s" % path)
 
     def _load_window_state(self):
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
@@ -159,6 +171,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.load(dialog.get_filename())
 
         dialog.destroy()
+
+    @Gtk.Template.Callback("on_file_save")
+    def on_file_save(self, widget):
+        self._save()
 
     @Gtk.Template.Callback("on_zoom_changed")
     def on_zoom_changed(self, widget):

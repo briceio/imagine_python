@@ -392,11 +392,12 @@
             <child>
               <object class="GtkButton">
                 <property name="label" translatable="yes">Open</property>
-                <property name="name">on_file_open</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <property name="margin-end">5</property>
                 <signal name="clicked" handler="on_file_open" swapped="no"/>
+                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                 <style>
                   <class name="suggested-action"/>
                 </style>
@@ -408,17 +409,37 @@
               </packing>
             </child>
             <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Save</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <signal name="clicked" handler="on_file_save" swapped="no"/>
+                <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                <style>
+                  <class name="destructive-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-start">10</property>
+                <property name="margin-start">50</property>
                 <property name="margin-end">10</property>
                 <property name="label" translatable="yes">Zoom</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -436,7 +457,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>

@@ -43,6 +43,8 @@ class Accelerator:
             self._process_buffer()
             return True
 
+        return False
+
     def stop(self):
         self.running = False # to stop the thread
 

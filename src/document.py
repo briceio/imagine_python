@@ -25,6 +25,7 @@ class Document(GObject.GObject):
         GObject.GObject.__init__(self)
         self.path = path
         self.name = os.path.basename(path)
+        self.extension = os.path.splitext(path)[1]
         self.image: Image = None
         self.thumbnail: GdkPixbuf = None
         self.imageSurface: cairo.ImageSurface = None
