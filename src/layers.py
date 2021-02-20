@@ -16,6 +16,16 @@ class Font(GObject.GObject):
         GObject.GObject.__init__(self)
         self.desc = desc
 
+class Selector(GObject.GObject):
+
+    def __init__(self, options, index=0):
+        GObject.GObject.__init__(self)
+        self.options = options
+        self.index = index
+
+    def value(self):
+        return self.options[self.index]
+
 class Layer(GObject.GObject):
 
     name = GObject.Property(type=str, nick="Name")
@@ -201,7 +211,7 @@ class TextAnnotationLayer(Layer):
 
         # font options
         fo = cairo.FontOptions()
-        fo.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
+        fo.set_antialias(cairo.ANTIALIAS_DEFAULT) # ANTIALIAS_SUBPIXEL
         PangoCairo.context_set_font_options(layout.get_context(), fo)
 
         # center or not
@@ -215,16 +225,6 @@ class TextAnnotationLayer(Layer):
         cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         PangoCairo.show_layout(cr, layout)
         
-class Selector(GObject.GObject):
-
-    def __init__(self, options, index=0):
-        GObject.GObject.__init__(self)
-        self.options = options
-        self.index = index
-
-    def value(self):
-        return self.options[self.index]
-
 Selector.FULL_EMOJI_SELECTOR = Selector(emojis.db.get_emoji_aliases().values()) # TODO bug perf use iter() instead of dict in Selector
 Selector.SMALL_EMOJI_SELECTOR = Selector([
     "😀", "😁", "😂", "😄", "😅", "😆", "😇", "😉", "😊", "😋",
@@ -249,7 +249,6 @@ Selector.SMALL_EMOJI_SELECTOR = Selector([
 
 class EmojiAnnotationLayer(Layer):
 
-    alpha = GObject.Property(type=float, default=1.0, nick="Alpha", minimum=0.0, maximum=1.0)
     size = GObject.Property(type=int, default=150, nick="Size", minimum=1, maximum=1000)
     emoji = GObject.Property(type=Selector, default=Selector.SMALL_EMOJI_SELECTOR, nick="Emoji")
 
@@ -279,15 +278,15 @@ class EmojiAnnotationLayer(Layer):
 
         # font options
         fo = cairo.FontOptions()
-        fo.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
+        fo.set_antialias(cairo.ANTIALIAS_DEFAULT)
         PangoCairo.context_set_font_options(layout.get_context(), fo)
 
         # center
         width, height = layout.get_pixel_size()
         cr.move_to(self.x - width / 2, self.y - height / 2)
 
-        # render
-        cr.set_source_rgba(1, 1, 1, self.alpha)
+        # render on surface to apply alpha
+        cr.set_source_rgba(1, 1, 1, 1)
         PangoCairo.show_layout(cr, layout)
 
 class LightingLayer(RectLayer):

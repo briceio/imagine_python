@@ -19,6 +19,7 @@ from .document import Document
 from .resize_dialog import ResizeDialog
 from .tools import *
 from .layer_editor import LayerEditor
+from .accelerator import Accelerator
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -86,6 +87,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_range(0.1, 10.0)
         self.zoom_spinbutton.set_increments(0.1, 1.0)
         self.zoom_spinbutton.set_value(1.0)
+
+        # register the accelerator
+        self.accelerator = Accelerator(activation_key=Gdk.KEY_a)
+        self.accelerator.add("general", "a r", lambda: self.on_annotate_rectangle(None))
+        self.accelerator.set_context("general")
+        self.connect("key-press-event", self.accelerator.key_handler)
 
         # events
         self.connect("key-press-event", self.on_key_press)
