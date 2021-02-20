@@ -98,6 +98,7 @@ class LayerEditor(Gtk.ListBox):
         entry.set_increments(1, 5)
         entry.set_value(self.layer.get_property(p.name))
         entry.connect("changed", on_change)
+        entry.connect("value-changed", on_change)
         box.pack_start(entry, True, True, 0)
 
     def _build_double_editor(self, p):
@@ -113,6 +114,7 @@ class LayerEditor(Gtk.ListBox):
         entry.set_digits(2)
         entry.set_value(self.layer.get_property(p.name))
         entry.connect("changed", on_change)
+        entry.connect("value-changed", on_change)
         box.pack_start(entry, True, True, 0)
 
     def _build_color_editor(self, p):

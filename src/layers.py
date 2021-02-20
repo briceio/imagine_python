@@ -394,7 +394,7 @@ class ZoomAnnotationLayer(RectLayer):
     zoom = GObject.Property(type=float, default=2, nick="Zoom", minimum=1.0, maximum=10.0)
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
     frame = GObject.Property(type=bool, default=True, nick="Frame")
-    frame_width = GObject.Property(type=int, default=3, nick="Frame Width")
+    frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10)
 
     def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__(document, "Zoom")
@@ -450,7 +450,7 @@ class ZoomAnnotationLayer(RectLayer):
                 cr.stroke()
 
                 # source to target frame effect
-                cr.set_dash([5, 5])
+                cr.set_dash([self.frame_width * 2, self.frame_width * 2])
                 cr.move_to(source_x, source_y)
                 cr.line_to(target_frame_x, target_frame_y)
                 cr.move_to(source_x + source_width, source_y)
