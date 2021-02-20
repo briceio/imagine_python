@@ -389,7 +389,12 @@ class BlurLayer(RectLayer):
 
 class ZoomAnnotationLayer(RectLayer):
 
-    zoom = GObject.Property(type=float, default=2.0, nick="Zoom", minimum=1.0, maximum=10.0)
+    FRAME_OFFSET = (-20, -20)
+
+    zoom = GObject.Property(type=float, default=1.5, nick="Zoom", minimum=1.0, maximum=10.0)
+    color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
+    frame = GObject.Property(type=bool, default=True, nick="Frame")
+    frame_width = GObject.Property(type=int, default=3, nick="Frame Width")
 
     def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__(document, "Zoom")
@@ -415,18 +420,57 @@ class ZoomAnnotationLayer(RectLayer):
 
         self._image_surface = cairo.ImageSurface.create_from_png(buffer)
 
-        w_2 = ((self.x2 - self.x1) / 2) * self.zoom
-        h_2 = ((self.y2 - self.y1) / 2) * self.zoom
-        self.frame_x = self.x1 + w_2
-        self.frame_y = self.y1 + h_2
+        self.frame_x = self.x1 + ((self.x2 - self.x1) / 2)
+        self.frame_y = self.y1 + ((self.y2 - self.y1) / 2)
 
     def draw(self, w, cr):
 
         if self._image_surface != None:
+
+            # computation
+            source_x = self.x1
+            source_y = self.y1
+            source_width = self.x2 - self.x1
+            source_height = self.y2 - self.y1
+            offset_x = self.FRAME_OFFSET[0]
+            offset_y = self.FRAME_OFFSET[1]
+            target_frame_x = self.frame_x + offset_x
+            target_frame_y = self.frame_y + offset_y
+            target_width = (self.x2 - self.x1) * self.zoom
+            target_height = (self.y2 - self.y1) * self.zoom
+
+            # source frame
+            if self.frame:
+                cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
+                cr.set_line_width(self.frame_width)
+                cr.set_dash([])
+                cr.rectangle(source_x, source_y, source_width, source_height)
+                cr.stroke()
+
+                # source to target frame effect
+                cr.set_dash([5, 5])
+                cr.move_to(source_x, source_y)
+                cr.line_to(target_frame_x, target_frame_y)
+                cr.move_to(source_x + source_width, source_y)
+                cr.line_to(target_frame_x + target_width, target_frame_y)
+                cr.move_to(source_x + source_width, source_y + source_height)
+                cr.line_to(target_frame_x + target_width, target_frame_y + target_height)
+                cr.move_to(source_x, source_y + source_height)
+                cr.line_to(target_frame_x, target_frame_y + target_height)
+                cr.stroke()
+
+            # zoomed image
             cr.save()
-            cr.translate(self.frame_x, self.frame_y)
+            cr.translate(self.frame_x + offset_x, self.frame_y + offset_y)
             cr.scale(self.zoom, self.zoom)
             cr.set_source_surface(self._image_surface, 0, 0)
+            # TODO drop shadow
             cr.paint()
             cr.restore()
+
+            # target frame
+            if self.frame:
+                cr.set_dash([])
+                cr.rectangle(target_frame_x, target_frame_y, target_width, target_height)
+                cr.stroke()
 

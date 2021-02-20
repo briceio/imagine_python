@@ -87,7 +87,7 @@ class Accelerator:
 
     def add(self, context, command, action):
         self.contexts.setdefault(context, {})[command] = action
-        print("Accelerator command '%s' added in context: %s" % (command, context))
+        #print("Accelerator command '%s' added in context: %s" % (command, context))
 
     def set_context(self, context):
         if self.contexts.__contains__(context):
