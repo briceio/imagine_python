@@ -46,9 +46,6 @@ class Accelerator:
         self.running = False # to stop the thread
 
     def _thread(self):
-        def exec_in_main_thread(f):
-            GLib.idle_add(lambda: f())
-
         print("Accelerator thread started.")
 
         while (self.running):
@@ -64,15 +61,33 @@ class Accelerator:
         print("Accelerator thread killed successfully.")
 
     def _process_buffer(self):
-        print("Buffer: %s" % self.buffer)
         for _, (command, action) in enumerate(self._current_context.items()):
-            print("%s - %s" % (command, action))
+            valid = False
+
+            # parse command
+            codes = list(map(lambda c: ord(c), command.split(",")))
+
+            if len(self.buffer) == len(codes):
+                for i, j in zip(self.buffer, codes):
+                    if i != j:
+                        break
+                valid = True
+
+            if valid:
+                self.buffer = []
+                self.action_pending = False
+                self._execute_action(action)
+
+            break
+
+    def _execute_action(self, action):
+        print("Executing: %s" % action)
+
+        if callable(action):
+            GLib.idle_add(lambda: action())
 
     def add(self, context, command, action):
-        # convert char command to keyval
-        codes = map(lambda c: ord(c), command.split(","))
-
-        self.contexts.setdefault(context, {})[command] = codes
+        self.contexts.setdefault(context, {})[command] = action
         print("Accelerator command '%s' added in context: %s" % (command, context))
 
     def set_context(self, context):

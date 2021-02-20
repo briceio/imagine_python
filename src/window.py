@@ -337,10 +337,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 # cancel tool
                 self.tool.cancel()
                 self.tool = None
-                # remove current layer
-                self.document.delete_layer(self.selected_layer)
                 # redraw
                 self.redraw()
+        elif event.keyval == Gdk.KEY_Delete or event.keyval == Gdk.KEY_BackSpace:
+            # remove current layer
+            self.document.delete_layer(self.selected_layer)
+            # redraw
+            self.redraw()
 
     def _create_document_item_widget(self, document):
 
