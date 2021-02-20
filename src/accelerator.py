@@ -106,4 +106,6 @@ class Accelerator:
         self.enabled = True
 
     def disable(self):
+        self.buffer = []
+        self.action_pending = False
         self.enabled = False

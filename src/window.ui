@@ -206,6 +206,19 @@
                       <object class="GtkToolButton">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Zoom</property>
+                        <property name="use-underline">True</property>
+                        <property name="icon-name">edit-select-all</property>
+                        <signal name="clicked" handler="on_annotate_zoom" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="position">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToolButton">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
                         <property name="label" translatable="yes">Ellipse</property>
                         <property name="use-underline">True</property>
                         <property name="icon-name">edit-select-all</property>

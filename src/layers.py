@@ -386,3 +386,47 @@ class BlurLayer(RectLayer):
         # draw it
         cr.set_source_surface(self._image_surface, self.x1, self.y1)
         cr.paint()
+
+class ZoomAnnotationLayer(RectLayer):
+
+    zoom = GObject.Property(type=float, default=2.0, nick="Zoom", minimum=1.0, maximum=10.0)
+
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__(document, "Zoom")
+        self._image_surface = None
+        self.frame_x = 0
+        self.frame_y = 0
+
+    def get_tool(self):
+        return "ZoomAnnotationTool"
+
+    def updated(self, obj, param):
+        self.update()
+
+    def update(self):
+        if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
+            return
+
+        image = self.document.image.crop((self.x1, self.y1, self.x2, self.y2))
+
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        buffer.seek(0)
+
+        self._image_surface = cairo.ImageSurface.create_from_png(buffer)
+
+        w_2 = ((self.x2 - self.x1) / 2) * self.zoom
+        h_2 = ((self.y2 - self.y1) / 2) * self.zoom
+        self.frame_x = self.x1 + w_2
+        self.frame_y = self.y1 + h_2
+
+    def draw(self, w, cr):
+
+        if self._image_surface != None:
+            cr.save()
+            cr.translate(self.frame_x, self.frame_y)
+            cr.scale(self.zoom, self.zoom)
+            cr.set_source_surface(self._image_surface, 0, 0)
+            cr.paint()
+            cr.restore()
+

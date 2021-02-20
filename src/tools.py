@@ -16,10 +16,10 @@ class Tool:
     def cancel(self):
         pass
 
-    def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         pass
 
-    def mouse_up(self, doc, w, cr, mouse_x, mouse_y):
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         pass
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
@@ -50,15 +50,15 @@ class PointTool(Tool):
         super().cancel()
         self._drawing = False
 
-    def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
-        super().mouse_down(doc, w, cr, mouse_x, mouse_y)
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
         if not self._drawing:
             self.x = mouse_x
             self.y = mouse_y
             self._drawing = True
 
-    def mouse_up(self, doc, w, cr, mouse_x, mouse_y):
-        super().mouse_up(doc, w, cr, mouse_x, mouse_y)
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
         if self._drawing:
             self.x = mouse_x
@@ -88,15 +88,16 @@ class RectTool(Tool):
         super().cancel()
         self._drawing = False
 
-    def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
-        super().mouse_down(doc, w, cr, mouse_x, mouse_y)
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
         if not self._drawing:
             self.start_x = mouse_x
             self.start_y = mouse_y
             self._drawing = True
 
-    def mouse_up(self, doc, w, cr, mouse_x, mouse_y):
-        super().mouse_up(doc, w, cr, mouse_x, mouse_y)
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
         if self._drawing:
             self.end_x = mouse_x
@@ -138,16 +139,16 @@ class LineTool(Tool):
         super().cancel()
         self._drawing = False
 
-    def mouse_down(self, doc, w, cr, mouse_x, mouse_y):
-        super().mouse_down(doc, w, cr, mouse_x, mouse_y)
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
         if not self._drawing:
             self.start_x = mouse_x
             self.start_y = mouse_y
             self._drawing = True
 
-    def mouse_up(self, doc, w, cr, mouse_x, mouse_y):
-        super().mouse_up(doc, w, cr, mouse_x, mouse_y)
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
         if self._drawing:
             self.end_x = mouse_x
@@ -329,3 +330,80 @@ class BlurTool(RectTool):
             self.layer.y2 = y2
             self.layer.updating = True
             self.layer.draw(w, cr)
+
+class ZoomAnnotationTool(Tool):
+
+    def __init__(self, document, layer=None):
+        super().__init__(document, reticule = True)
+
+        self.layer = layer
+        if layer == None:
+            self.layer = ZoomAnnotationLayer(document)
+            self.document.add_layer(self.layer)
+
+        self._drawing = False
+        self.start_x = 0
+        self.start_y = 0
+        self.end_x = 0
+        self.end_y = 0
+
+    def cancel(self):
+        super().cancel()
+        self._drawing = False
+
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
+        if not self._drawing:
+            self.start_x = mouse_x
+            self.start_y = mouse_y
+            self._drawing = True
+
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
+        if self._drawing:
+            self.end_x = mouse_x
+            self.end_y = mouse_y
+            self.apply()
+
+        self._drawing = False
+
+    def normalize(self):
+        return (min(self.start_x, self.end_x),
+                min(self.start_y, self.end_y),
+                max(self.start_x, self.end_x),
+                max(self.start_y, self.end_y))
+
+    def apply(self):
+        super().apply()
+
+        (x1, y1, x2, y2) = self.normalize()
+        self.layer.x1 = x1
+        self.layer.y1 = y1
+        self.layer.x2 = x2
+        self.layer.y2 = y2
+        self.layer.update()
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            width = doc.imageSurface.get_width()
+            height = doc.imageSurface.get_height()
+
+            cr.set_source_rgba(0, 0, 0, 0.5)
+            cr.set_line_width(0)
+            cr.set_dash([])
+            cr.rectangle(0, 0, width, self.start_y)
+            cr.rectangle(0, 0, self.start_x, height)
+            cr.rectangle(mouse_x, 0, mouse_x, height)
+            cr.rectangle(0, mouse_y, width, mouse_y)
+            cr.fill()
+
+    def width(self):
+        return abs(int(self.end_x - self.start_x))
+
+    def height(self):
+        return abs(int(self.end_y - self.start_y))
+        

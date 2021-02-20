@@ -90,7 +90,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # register the accelerator
         self.accelerator = Accelerator(activation_key=Gdk.KEY_a)
-        self.accelerator.add("general", "r", lambda: self.on_resize(None))
+        self.accelerator.add("general", "s", lambda: self.on_resize(None))
         self.accelerator.add("general", "c", lambda: self.on_crop(None))
         self.accelerator.add("general", "r,l", lambda: self.on_rotate_left(None))
         self.accelerator.add("general", "r,r", lambda: self.on_rotate_right(None))
@@ -102,7 +102,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.add("general", "a,e", lambda: self.on_annotate_ellipse(None))
         self.accelerator.add("general", "a,c", lambda: self.on_annotate_circle(None))
         self.accelerator.add("general", "a,t", lambda: self.on_annotate_text(None))
-        self.accelerator.add("general", "a,z", lambda: self.on_annotate_emoji(None))
+        self.accelerator.add("general", "a,j", lambda: self.on_annotate_emoji(None))
+        self.accelerator.add("general", "a,z", lambda: self.on_annotate_zoom(None))
         self.accelerator.add("general", "e,l", lambda: self.on_enhance_lighting(None))
         self.accelerator.add("general", "e,b", lambda: self.on_enhance_blur(None))
         self.accelerator.set_context("general")
@@ -215,6 +216,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_annotate_emoji(self, widget):
         self.set_active_tool(EmojiAnnotationTool(self.document), keep_selected=True)
 
+    @Gtk.Template.Callback("on_annotate_zoom")
+    def on_annotate_zoom(self, widget):
+        self.set_active_tool(ZoomAnnotationTool(self.document), keep_selected=True)
+
     @Gtk.Template.Callback("on_rotate_left")
     def on_rotate_left(self, widget):
         self.document.rotate(90)
@@ -281,7 +286,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_y = event.y / self.document.scale
 
         if self.tool != None and event.button == 1:
-            self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
+            self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
         elif event.button == 2: # middle button
             self._browsing_prev_x = event.x
             self._browsing_prev_y = event.y
@@ -295,7 +300,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_y = event.y / self.document.scale
 
         if self.tool != None and event.button == 1:
-            self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
+            self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
         elif event.button == 2: # middle button
             self._browsing = False
 
