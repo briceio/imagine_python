@@ -389,9 +389,9 @@ class BlurLayer(RectLayer):
 
 class ZoomAnnotationLayer(RectLayer):
 
-    FRAME_OFFSET = (-20, -20)
+    AUTO_FRAME_OFFSET = (-20, -20)
 
-    zoom = GObject.Property(type=float, default=1.5, nick="Zoom", minimum=1.0, maximum=10.0)
+    zoom = GObject.Property(type=float, default=2, nick="Zoom", minimum=1.0, maximum=10.0)
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
     frame = GObject.Property(type=bool, default=True, nick="Frame")
     frame_width = GObject.Property(type=int, default=3, nick="Frame Width")
@@ -401,6 +401,7 @@ class ZoomAnnotationLayer(RectLayer):
         self._image_surface = None
         self.frame_x = 0
         self.frame_y = 0
+        self.frame_position_forced = False
 
     def get_tool(self):
         return "ZoomAnnotationTool"
@@ -420,8 +421,9 @@ class ZoomAnnotationLayer(RectLayer):
 
         self._image_surface = cairo.ImageSurface.create_from_png(buffer)
 
-        self.frame_x = self.x1 + ((self.x2 - self.x1) / 2)
-        self.frame_y = self.y1 + ((self.y2 - self.y1) / 2)
+        if not self.frame_position_forced:
+            self.frame_x = self.x1 + ((self.x2 - self.x1) / 2)
+            self.frame_y = self.y1 + ((self.y2 - self.y1) / 2)
 
     def draw(self, w, cr):
 
@@ -432,12 +434,12 @@ class ZoomAnnotationLayer(RectLayer):
             source_y = self.y1
             source_width = self.x2 - self.x1
             source_height = self.y2 - self.y1
-            offset_x = self.FRAME_OFFSET[0]
-            offset_y = self.FRAME_OFFSET[1]
-            target_frame_x = self.frame_x + offset_x
-            target_frame_y = self.frame_y + offset_y
             target_width = (self.x2 - self.x1) * self.zoom
             target_height = (self.y2 - self.y1) * self.zoom
+            offset_x = self.AUTO_FRAME_OFFSET[0] if not self.frame_position_forced else -target_width / 2
+            offset_y = self.AUTO_FRAME_OFFSET[1] if not self.frame_position_forced else -target_height / 2
+            target_frame_x = self.frame_x + offset_x
+            target_frame_y = self.frame_y + offset_y
 
             # source frame
             if self.frame:

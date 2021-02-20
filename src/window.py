@@ -279,19 +279,22 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.mouse_x = event.x / self.document.scale
             self.mouse_y = event.y / self.document.scale
 
+            if self.tool != None:
+                self.tool.mouse_move(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
+
             self.redraw()
 
     def mouse_down(self, w, event):
         self.mouse_x = event.x / self.document.scale
         self.mouse_y = event.y / self.document.scale
 
-        if self.tool != None and event.button == 1:
-            self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
-        elif event.button == 2: # middle button
+        if not self._browsing and event.button == 2:
             self._browsing_prev_x = event.x
             self._browsing_prev_y = event.y
             self._browsing = True
             self._remember_scroll_offset()
+        elif self.tool != None:
+            self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
 
         self.redraw()
 
@@ -299,10 +302,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_x = event.x / self.document.scale
         self.mouse_y = event.y / self.document.scale
 
-        if self.tool != None and event.button == 1:
-            self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
-        elif event.button == 2: # middle button
+        if self._browsing and event.button == 2:
             self._browsing = False
+        elif self.tool != None:
+            self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
 
         self.redraw()
 

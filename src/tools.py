@@ -22,6 +22,9 @@ class Tool:
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         pass
 
+    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
+        pass
+
     def draw(self, doc, w, cr, mouse_x, mouse_y):
 
         # reticule
@@ -342,6 +345,7 @@ class ZoomAnnotationTool(Tool):
             self.document.add_layer(self.layer)
 
         self._drawing = False
+        self._moving = False
         self.start_x = 0
         self.start_y = 0
         self.end_x = 0
@@ -354,20 +358,34 @@ class ZoomAnnotationTool(Tool):
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if not self._drawing:
+        if not self._drawing and mouse_button == 1:
             self.start_x = mouse_x
             self.start_y = mouse_y
             self._drawing = True
 
+        if not self._moving and mouse_button == 3:
+            self._moving = True
+
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if self._drawing:
-            self.end_x = mouse_x
-            self.end_y = mouse_y
-            self.apply()
+        if mouse_button == 1:
+            if self._drawing:
+                self.end_x = mouse_x
+                self.end_y = mouse_y
+                self.apply()
+            self._drawing = False
 
-        self._drawing = False
+        if self._moving and mouse_button == 3:
+            self._moving = False
+
+    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_move(doc, w, cr, mouse_x, mouse_y)
+
+        if self._moving:
+            self.layer.frame_position_forced = True
+            self.layer.frame_x = mouse_x
+            self.layer.frame_y = mouse_y
 
     def normalize(self):
         return (min(self.start_x, self.end_x),
