@@ -173,6 +173,7 @@ class TextAnnotationLayer(Layer):
     text = GObject.Property(type=str, default="Text", nick="Text", blurb="multiline")
     font = GObject.Property(type=Font, default=Font("Noto Sans Bold 30"), nick="Font")
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
+    centered = GObject.Property(type=bool, default=True, nick="Center")
 
     def __init__(self, document, x = 0, y = 0):
         super().__init__(document, "Text")
@@ -187,14 +188,30 @@ class TextAnnotationLayer(Layer):
         self.y -= y1
 
     def draw(self, w, cr):
-        cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
-        cr.move_to(self.x, self.y)
 
+        # map GTK font description to Pango
         desc = Pango.font_description_from_string(self.font.desc)
 
+        # layout options
         layout = PangoCairo.create_layout(cr)
         layout.set_font_description(desc)
+        layout.set_alignment(Pango.Alignment.CENTER if self.centered else Pango.Alignment.LEFT)
         layout.set_text(self.text, -1)
+
+        # font options
+        fo = cairo.FontOptions()
+        fo.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
+        PangoCairo.context_set_font_options(layout.get_context(), fo)
+
+        # center or not
+        width, height = layout.get_pixel_size()
+        if self.centered:
+            cr.move_to(self.x - width / 2, self.y - height / 2)
+        else:
+            cr.move_to(self.x, self.y)
+
+        # render
+        cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         PangoCairo.show_layout(cr, layout)
         
 class LightingLayer(RectLayer):
