@@ -90,10 +90,25 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # register the accelerator
         self.accelerator = Accelerator(activation_key=Gdk.KEY_a)
+        self.accelerator.add("general", "r", lambda: self.on_resize(None))
+        self.accelerator.add("general", "c", lambda: self.on_crop(None))
+        self.accelerator.add("general", "r,l", lambda: self.on_rotate_left(None))
+        self.accelerator.add("general", "r,r", lambda: self.on_rotate_right(None))
+        self.accelerator.add("general", "f,h", lambda: self.on_flip_horizontal(None))
+        self.accelerator.add("general", "f,v", lambda: self.on_flip_vertical(None))
         self.accelerator.add("general", "a,r", lambda: self.on_annotate_rectangle(None))
         self.accelerator.add("general", "a,l", lambda: self.on_annotate_line(None))
+        self.accelerator.add("general", "a,a", lambda: self.on_annotate_arrow(None))
+        self.accelerator.add("general", "a,e", lambda: self.on_annotate_ellipse(None))
+        self.accelerator.add("general", "a,c", lambda: self.on_annotate_circle(None))
+        self.accelerator.add("general", "a,t", lambda: self.on_annotate_text(None))
+        self.accelerator.add("general", "a,z", lambda: self.on_annotate_emoji(None))
+        self.accelerator.add("general", "e,l", lambda: self.on_enhance_lighting(None))
+        self.accelerator.add("general", "e,b", lambda: self.on_enhance_blur(None))
         self.accelerator.set_context("general")
         self.connect("key-press-event", self.accelerator.key_handler)
+        self.scroll_area.connect("enter-notify-event", lambda w, e: self.accelerator.enable())
+        self.scroll_area.connect("leave-notify-event", lambda w, e: self.accelerator.disable())
         self.connect("destroy", lambda e: self.accelerator.stop())
 
         # events

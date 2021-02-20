@@ -13,6 +13,7 @@ class Accelerator:
         self.contexts = {}
         self.commands = {}
         self.buffer = []
+        self.disable()
 
         print("Acceleration activation key: %d" % self.activation_key)
         print("Acceleration activation timeout: %f" % self.activation_timeout)
@@ -28,6 +29,9 @@ class Accelerator:
         self.thread.start()
 
     def key_handler(self, widget, event):
+        if not self.enabled:
+            return
+
         if not self.action_pending and event.keyval == self.activation_key:
             self.last_action_time = time()
             self.buffer = []
@@ -98,3 +102,8 @@ class Accelerator:
         else:
             print("Unknown accelerator command: %s" % command)
 
+    def enable(self):
+        self.enabled = True
+
+    def disable(self):
+        self.enabled = False
