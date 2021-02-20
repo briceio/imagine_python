@@ -100,7 +100,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.documents_listbox.bind_model(self.documents, self._create_document_item_widget)
         self.documents_listbox.connect("row-selected", self._on_select_document)
 
-
     def load(self, path):
         self.document = Document(path)
         self.documents.append(self.document)
@@ -398,6 +397,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         return box
 
     def _on_document_mounted(self, window, document):
+        # TODO BUG this is called 3 times at start
         self.document.on_updated_layers_list = self._on_updated_layers_list
         self.document.bind_property("scale", self.zoom_spinbutton, "value")
         self.zoom_spinbutton.set_value(self.document.scale)

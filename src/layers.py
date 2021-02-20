@@ -5,6 +5,7 @@ import gi
 import math
 gi.require_version('PangoCairo', '1.0')
 from gi.repository import Gtk, Gdk, Gio, GObject, Pango, PangoCairo
+import emojis
 
 # common default tool widths
 DEFAULT_WIDTH = 5
@@ -214,10 +215,43 @@ class TextAnnotationLayer(Layer):
         cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         PangoCairo.show_layout(cr, layout)
         
+class Selector(GObject.GObject):
+
+    def __init__(self, options, index=0):
+        GObject.GObject.__init__(self)
+        self.options = options
+        self.index = index
+
+    def value(self):
+        return self.options[self.index]
+
+Selector.FULL_EMOJI_SELECTOR = Selector(emojis.db.get_emoji_aliases().values()) # TODO bug perf use iter() instead of dict in Selector
+Selector.SMALL_EMOJI_SELECTOR = Selector([
+    "😀", "😁", "😂", "😄", "😅", "😆", "😇", "😉", "😊", "😋",
+    "😍", "🤩", "😎", "😑", "😜", "😝", "😡", "🤬", "😖", "😤",
+    "😥", "😧", "😨", "😰", "😱", "😲", "😳", "😵", "😶", "😬",
+    "😵", "😵", "😷", "🙃", "🙄", "🤤", "🤧", "🤪", "🤐", "🤕",
+    "😢", "🤯", "🤢", "🤤", "🧐", "🤘", "🤟", "🤙", "🤝", "🤞",
+    "🙈", "🙉", "🙊", "🧚", "🧜", "🌹", "🌺", "🌸", "🌷", "🌼",
+    "🐄", "🐖", "🐽", "🍆", "🌽", "🍌", "🥕", "🥖", "🍑", "🍒", "🥩", "🍖", "🍗", "🥚",
+    "🍡", "🍢", "🍣", "🍤", "🍥", "🍭", "🍬", "🍩", "🍳", "🍴",
+    "🍷", "🍸", "🍹", "🍺", "🍻", "🍾", "🍿", "🥂", "🍼", "🔪",
+    "🥄", "🎀", "🎁", "🃏", "🎆", "🎇", "🎈", "🎉", "🎊", "🎋",
+    "🎯", "🏅", "🏆", "🥊", "🥇", "🥈", "🥉", "🥋", "🔥", "⚡", "⭐", "🌟", "💡"
+    "🌀", "☔", "⚓", "⏳", "⌚", "🌈", "🌋", "🌊", "🌞", "🌜",
+    "🎠", "🏡", "🎰", "🎭", "🎨", "💒", "🎶", "🎺", "🏹", "💉",
+    "💊", "💰", "📌", "📍", "📎", "📏", "📈", "📞", "📢", "📣",
+    "📡", "📫", "📺", "🔍", "🔎", "🔒", "🔑", "🔋", "🔌", "✅",
+    "⛔", "❌", "❎", "❓", "❗", "➕", "➖", "⭕", "🆘", "🆙",
+    "🆗", "🆔", "🆒", "💯", "🔙", "🔟", "🔆", "🔴", "🔵", "🏁",
+    "🏴", "🚩"
+])
+
 class EmojiAnnotationLayer(Layer):
 
     alpha = GObject.Property(type=float, default=1.0, nick="Alpha", minimum=0.0, maximum=1.0)
-    size = GObject.Property(type=int, default=100, nick="Size", minimum=1, maximum=1000)
+    size = GObject.Property(type=int, default=150, nick="Size", minimum=1, maximum=1000)
+    emoji = GObject.Property(type=Selector, default=Selector.SMALL_EMOJI_SELECTOR, nick="Emoji")
 
     def __init__(self, document, x = 0, y = 0):
         super().__init__(document, "Emoji")
@@ -241,7 +275,7 @@ class EmojiAnnotationLayer(Layer):
         layout = PangoCairo.create_layout(cr)
         layout.set_font_description(desc)
         layout.set_alignment(Pango.Alignment.CENTER)
-        layout.set_text("😅", -1)
+        layout.set_text(self.emoji.value(), -1)
 
         # font options
         fo = cairo.FontOptions()

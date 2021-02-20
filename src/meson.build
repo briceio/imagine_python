@@ -28,6 +28,7 @@ configure_file(
 imagine_sources = [
   '__init__.py',
   'main.py',
+  'GObject_async.py',
   'layers.py',
   'document.py',
   'window.py',

@@ -23,6 +23,7 @@ class LayerEditor(Gtk.ListBox):
             "gboolean": self._build_checkbox_editor,
             "gdouble": self._build_double_editor,
             "imagine+layers+Font": self._build_font_editor,
+            "imagine+layers+Selector": self._build_selector,
         }
 
         # build properties editors
@@ -154,3 +155,19 @@ class LayerEditor(Gtk.ListBox):
         entry.set_font_name(font.desc)
         entry.connect("font-set", on_change)
         box.pack_start(entry, True, True, 0)
+
+    def _build_selector(self, p):
+        box = self._build_property_editor(p)
+        selector = self.layer.get_property(p.name)
+
+        def on_change(entry):
+            selector.index = int(entry.get_active())
+            self._notify(p.name)
+
+        combo = Gtk.ComboBoxText()
+        for i, option in enumerate(selector.options):
+            combo.append(str(i), option)
+        combo.set_active(selector.index)
+        combo.connect("changed", on_change)
+
+        box.pack_start(combo, True, True, 0)
