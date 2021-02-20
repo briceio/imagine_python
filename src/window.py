@@ -91,6 +91,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # register the accelerator
         self.accelerator = Accelerator(activation_key=Gdk.KEY_a)
         self.accelerator.add("general", "a,r", lambda: self.on_annotate_rectangle(None))
+        self.accelerator.add("general", "a,l", lambda: self.on_annotate_line(None))
         self.accelerator.set_context("general")
         self.connect("key-press-event", self.accelerator.key_handler)
         self.connect("destroy", lambda e: self.accelerator.stop())

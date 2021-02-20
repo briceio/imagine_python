@@ -28,10 +28,7 @@ class Accelerator:
         self.thread.start()
 
     def key_handler(self, widget, event):
-        print("event: %s" % str(event.keyval))
-
         if not self.action_pending and event.keyval == self.activation_key:
-            print("Accelerator action started...")
             self.last_action_time = time()
             self.buffer = []
             self.action_pending = True
@@ -53,35 +50,33 @@ class Accelerator:
             if self.action_pending:
                 delta = time() - self.last_action_time
                 if delta >= self.activation_timeout:
-                    print("Accelerator action timeout!")
                     self.action_pending = False
 
-            sleep(0.1)
+            sleep(0.25)
 
         print("Accelerator thread killed successfully.")
 
     def _process_buffer(self):
         for _, (command, action) in enumerate(self._current_context.items()):
-            valid = False
 
             # parse command
             codes = list(map(lambda c: ord(c), command.split(",")))
 
             if len(self.buffer) == len(codes):
+                valid = True
                 for i, j in zip(self.buffer, codes):
                     if i != j:
+                        valid = False
                         break
-                valid = True
 
-            if valid:
-                self.buffer = []
-                self.action_pending = False
-                self._execute_action(action)
+                if valid:
+                    self.buffer = []
+                    self.action_pending = False
+                    self._execute_action(command, action)
+                    break
 
-            break
-
-    def _execute_action(self, action):
-        print("Executing: %s" % action)
+    def _execute_action(self, command, action):
+        print("Acceleration action triggered: %s" % command)
 
         if callable(action):
             GLib.idle_add(lambda: action())
