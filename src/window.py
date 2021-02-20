@@ -55,6 +55,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # load settings
         self.user_settings = Gio.Settings.new("imagine.user-settings")
 
+        # window management
+        self._load_window_state()
+        self.connect("configure-event", self._save_window_state)
+
         # document notify
         self.connect("notify::document", self._on_document_mounted)
 
@@ -96,10 +100,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.documents_listbox.bind_model(self.documents, self._create_document_item_widget)
         self.documents_listbox.connect("row-selected", self._on_select_document)
 
-        # window management
-        self.connect("configure-event", self._save_window_state)
-        self.connect("destroy", self._save_window_state)
-        self._load_window_state()
 
     def load(self, path):
         self.document = Document(path)
@@ -110,16 +110,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         pass
 
     def _load_window_state(self):
-        self.set_size_request(1024, 768)
-        if self.user_settings.get_boolean("start-centered"):
-            self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
-        else:
-            self.set_position(Gtk.WindowPosition.NONE)
-            self.move(self.user_settings.get_int("window-position-x"), self.user_settings.get_int("window-position-y"))
+        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+        self.set_default_size(self.user_settings.get_int("window-width"), self.user_settings.get_int("window-height"))
 
     def _save_window_state(self, window, event=None):
-        self.user_settings.set_int("window-position-x", self.get_position()[0])
-        self.user_settings.set_int("window-position-y", self.get_position()[1])
+        self.user_settings.set_int("window-width", self.get_size()[0])
+        self.user_settings.set_int("window-height", self.get_size()[1])
 
     @Gtk.Template.Callback("on_file_open")
     def on_file_open(self, widget):
@@ -263,6 +259,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self._browsing_prev_x = event.x
             self._browsing_prev_y = event.y
             self._browsing = True
+            self._remember_scroll_offset()
 
         self.redraw()
 
@@ -288,12 +285,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         adj_v.set_value(oy)
         self.scroll_area.set_vadjustment(adj_v)
 
-    def on_scroll(self, widget, event):
+    def _remember_scroll_offset(self):
+        # keep track of scrolling per document
+        self.document.scroll_offset_x = self.scroll_area.get_hadjustment().get_value()
+        self.document.scroll_offset_y = self.scroll_area.get_vadjustment().get_value()
 
-        def remember_scroll_offset():
-            # keep track of scrolling per document
-            self.document.scroll_offset_x = self.scroll_area.get_hadjustment().get_value()
-            self.document.scroll_offset_y = self.scroll_area.get_vadjustment().get_value()
+    def on_scroll(self, widget, event):
 
         # zoom using mouse wheel & ctrl key
         accel_mask = Gtk.accelerator_get_default_mod_mask()
@@ -312,14 +309,14 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
             self._offset_scroll_area(offset_h, offset_v)
 
-            remember_scroll_offset()
+            self._remember_scroll_offset()
 
             # redraw
             self.redraw()
 
             return True
 
-        remember_scroll_offset()
+        self._remember_scroll_offset()
 
         return False
 
@@ -399,6 +396,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def _on_document_mounted(self, window, document):
         self.document.on_updated_layers_list = self._on_updated_layers_list
         self.document.bind_property("scale", self.zoom_spinbutton, "value")
+        self.zoom_spinbutton.set_value(self.document.scale)
 
         self.layers_listbox.bind_model(self.document.layers, self._create_layer_item_widget)
         self.layers_listbox.connect("row-selected", self._on_select_layer)

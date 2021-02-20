@@ -1,26 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="imagine.user-settings" path="/apps/imagine/">
-    <key type="b" name="start-centered">
-      <default>true</default>
-      <summary>Start centered</summary>
-      <description>Should the application start centered?.</description>
-    </key>
-    <key type="b" name="remember-window-position">
-      <default>true</default>
-      <summary>Remember window position</summary>
-      <description>Remember last window position?.</description>
-    </key>
-    <key name="window-position-x" type="i">
-      <default>-1</default>
-      <summary>Window position X</summary>
-      <description>Window position (x).</description>
-    </key>
-    <key name="window-position-y" type="i">
-      <default>-1</default>
-      <summary>Window position Y</summary>
-      <description>Window position (y).</description>
-    </key>
     <key name="window-width" type="i">
       <default>1024</default>
       <summary>Window width</summary>
