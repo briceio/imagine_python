@@ -190,8 +190,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_annotate_emoji")
     def on_annotate_emoji(self, widget):
-        #self.set_active_tool(TextAnnotationTool(self.document), keep_selected=True)
-        pass
+        self.set_active_tool(EmojiAnnotationTool(self.document), keep_selected=True)
 
     @Gtk.Template.Callback("on_rotate_left")
     def on_rotate_left(self, widget):

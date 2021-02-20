@@ -93,7 +93,7 @@ class LayerEditor(Gtk.ListBox):
 
         box = self._build_property_editor(p)
         entry = Gtk.SpinButton()
-        entry.set_range(1, 100)
+        entry.set_range(p.minimum, p.maximum)
         entry.set_increments(1, 5)
         entry.set_value(self.layer.get_property(p.name))
         entry.connect("changed", on_change)
@@ -107,7 +107,7 @@ class LayerEditor(Gtk.ListBox):
 
         box = self._build_property_editor(p)
         entry = Gtk.SpinButton()
-        entry.set_range(0.0, 10000.0)
+        entry.set_range(p.minimum, p.maximum)
         entry.set_increments(0.1, 1.0)
         entry.set_digits(2)
         entry.set_value(self.layer.get_property(p.name))

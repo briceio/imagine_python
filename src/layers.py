@@ -61,7 +61,7 @@ class RectLayer(Layer):
 
 class RectangleAnnotationLayer(RectLayer):
 
-    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=0, maximum=50)
     stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
 
@@ -85,7 +85,7 @@ class RectangleAnnotationLayer(RectLayer):
 
 class EllipseAnnotationLayer(RectLayer):
 
-    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=0, maximum=50)
     stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
 
@@ -137,7 +137,7 @@ class EllipseAnnotationLayer(RectLayer):
 
 class LineAnnotationLayer(RectLayer):
 
-    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=1, maximum=50)
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
     arrow = GObject.Property(type=bool, default=False, nick="Arrow")
 
@@ -214,12 +214,54 @@ class TextAnnotationLayer(Layer):
         cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         PangoCairo.show_layout(cr, layout)
         
+class EmojiAnnotationLayer(Layer):
+
+    alpha = GObject.Property(type=float, default=1.0, nick="Alpha", minimum=0.0, maximum=1.0)
+    size = GObject.Property(type=int, default=100, nick="Size", minimum=1, maximum=1000)
+
+    def __init__(self, document, x = 0, y = 0):
+        super().__init__(document, "Emoji")
+        self.x = x
+        self.y = y
+
+    def get_tool(self):
+        return "EmojiAnnotationTool"
+
+    def crop(self, x1, y1, x2, y2):
+        self.x -= x1
+        self.y -= y1
+
+    def draw(self, w, cr):
+
+        # prepare font
+        desc = Pango.font_description_from_string("Noto Sans Bold")
+        desc.set_absolute_size(Pango.SCALE * self.size)
+
+        # layout options
+        layout = PangoCairo.create_layout(cr)
+        layout.set_font_description(desc)
+        layout.set_alignment(Pango.Alignment.CENTER)
+        layout.set_text("😅", -1)
+
+        # font options
+        fo = cairo.FontOptions()
+        fo.set_antialias(cairo.ANTIALIAS_SUBPIXEL)
+        PangoCairo.context_set_font_options(layout.get_context(), fo)
+
+        # center
+        width, height = layout.get_pixel_size()
+        cr.move_to(self.x - width / 2, self.y - height / 2)
+
+        # render
+        cr.set_source_rgba(1, 1, 1, self.alpha)
+        PangoCairo.show_layout(cr, layout)
+
 class LightingLayer(RectLayer):
 
-    brightness = GObject.Property(type=float, default=1.5, nick="Brightness")
-    contrast = GObject.Property(type=float, default=1.0, nick="Contrast")
-    sharpness = GObject.Property(type=float, default=1.0, nick="Sharpness")
-    color = GObject.Property(type=float, default=1.0, nick="Color")
+    brightness = GObject.Property(type=float, default=1.5, nick="Brightness", minimum=0.0, maximum=10.0)
+    contrast = GObject.Property(type=float, default=1.0, nick="Contrast", minimum=0.0, maximum=10.0)
+    sharpness = GObject.Property(type=float, default=1.0, nick="Sharpness", minimum=0.0, maximum=10.0)
+    color = GObject.Property(type=float, default=1.0, nick="Color", minimum=0.0, maximum=10.0)
 
     def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__(document, "Lighting", x1, y1, x2, y2)
@@ -267,8 +309,8 @@ class LightingLayer(RectLayer):
 
 class BlurLayer(RectLayer):
 
-    box = GObject.Property(type=float, default=0.0, nick="Box Blur")
-    gaussian = GObject.Property(type=float, default=10.0, nick="Gaussian Blur")
+    box = GObject.Property(type=float, default=0.0, nick="Box Blur", minimum=0.0, maximum=10.0)
+    gaussian = GObject.Property(type=float, default=10.0, nick="Gaussian Blur", minimum=0.0, maximum=10.0)
 
     def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__(document, "Blur", x1, y1, x2, y2)
