@@ -21,6 +21,9 @@ class Document(GObject.GObject):
     # scale
     scale = GObject.Property(type=float, default=1.0)
 
+    # name
+    name = GObject.Property(type=str)
+
     # dirty flag
     dirty = GObject.Property(type=bool, default=False)
 
@@ -65,6 +68,11 @@ class Document(GObject.GObject):
         buffer.seek(0)
 
         self.imageSurface = cairo.ImageSurface.create_from_png(buffer)
+
+    def rename(self, path):
+        self.path = path
+        self.name = os.path.basename(path)
+        self.extension = os.path.splitext(path)[1]
 
     def resize(self, width, height):
         self.dirty = True

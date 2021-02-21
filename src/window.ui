@@ -2,10 +2,55 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkPopoverMenu" id="popover_save">
+    <property name="width-request">200</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkModelButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="text" translatable="yes">Save as...</property>
+            <signal name="clicked" handler="on_file_save_as" swapped="no"/>
+            <accelerator key="s" signal="clicked" modifiers="GDK_MOD1_MASK"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="text" translatable="yes">Save all</property>
+            <signal name="clicked" handler="on_file_save_all" swapped="no"/>
+            <accelerator key="s" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="submenu">main</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
   <template class="ImagineWindow" parent="GtkApplicationWindow">
     <property name="can-focus">False</property>
-    <property name="default-width">600</property>
-    <property name="default-height">300</property>
+    <property name="default-width">800</property>
+    <property name="default-height">600</property>
     <child>
       <object class="GtkPaned">
         <property name="visible">True</property>
@@ -420,6 +465,7 @@
                 <property name="use-stock">True</property>
                 <property name="always-show-image">True</property>
                 <signal name="clicked" handler="on_file_save" swapped="no"/>
+                <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
                 <style>
                   <class name="destructive-action"/>
                 </style>
@@ -488,10 +534,4 @@
       </object>
     </child>
   </template>
-  <object class="GtkPopover" id="popover_save">
-    <property name="can-focus">False</property>
-    <child>
-      <placeholder/>
-    </child>
-  </object>
 </interface>

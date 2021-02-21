@@ -24,7 +24,6 @@ from gi.repository import Gtk, Gio, Gdk
 
 from .window import ImagineWindow
 
-
 class Application(Gtk.Application):
     def __init__(self):
         super().__init__(application_id='io.boite.imagine',

@@ -71,9 +71,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator = Accelerator(activation_timeout=1.0)
         self.accelerator.disable()
         self.accelerator.add(None, "Tab", lambda: self._switch_document())
-        self.accelerator.add(None, "o", lambda: self.on_file_open(None))
-        self.accelerator.add("document", "s", lambda: self.on_file_save(None))
-        self.accelerator.add("document", "r", lambda: self.on_resize(None), wait_timeout=True)
+        self.accelerator.add("document", "s", lambda: self.on_resize(None))
         self.accelerator.add("document", "c", lambda: self.on_crop(None))
         self.accelerator.add("document", "r,l", lambda: self.on_rotate_left(None))
         self.accelerator.add("document", "r,r", lambda: self.on_rotate_right(None))
@@ -148,7 +146,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         width, height = self.document.image.size
 
-        path = "{path}-modified{extension}".format(path = self.document.path, extension = self.document.extension)
+        path = self.document.path
 
         self._saving = True
 
@@ -205,6 +203,35 @@ class ImagineWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback("on_file_save")
     def on_file_save(self, widget):
         self._save()
+
+    @Gtk.Template.Callback("on_file_save_as")
+    def on_file_save_as(self, widget):
+        if self.document == None: return
+
+        dialog = Gtk.FileChooserDialog("Save destination", self, Gtk.FileChooserAction.SAVE,
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE_AS, Gtk.ResponseType.OK))
+
+        filter = Gtk.FileFilter()
+        filter.set_name("Images")
+        filter.add_pattern("*.png")
+        filter.add_pattern("*.jpg")
+        filter.add_pattern("*.jpeg")
+        dialog.add_filter(filter)
+
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            self.document.rename(dialog.get_filename())
+            self._save()
+            self.document = self.document
+
+        dialog.destroy()
+
+    @Gtk.Template.Callback("on_file_save_all")
+    def on_file_save_all(self, widget):
+        #self._save()
+        # TODO toast notification
+        print("save all")
 
     @Gtk.Template.Callback("on_zoom_changed")
     def on_zoom_changed(self, widget):
@@ -469,6 +496,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # label
         label = Gtk.Label(label = document.name)
+        document.bind_property("name", label, "label")
         label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         box.pack_start(label, True, True, 0)
 
