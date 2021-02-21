@@ -61,6 +61,9 @@ class LayerEditor(Gtk.ListBox):
             self.layer.set_property(p.name, entry.get_text(start, end, True))
             self._notify(p.name)
 
+        def on_change_file_entry(entry):
+            self.layer.set_property(p.name, entry.get_filename())
+
         def block_event(widget, event):
             if not widget.has_focus():
                 widget.grab_focus()
@@ -81,7 +84,10 @@ class LayerEditor(Gtk.ListBox):
 
             entry.connect("button-press-event", block_event) # bug mouse click when textview in box
         elif p.blurb == "file":
-            pass
+            entry = Gtk.FileChooserButton()
+            entry.set_title(p.nick)
+            entry.connect("file-set", on_change_file_entry)
+            box.pack_start(entry, True, True, 0)
         else:
             entry = Gtk.Entry()
             entry.set_text(self.layer.get_property(p.name))
