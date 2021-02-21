@@ -20,7 +20,7 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, Gdk
 
 from .window import ImagineWindow
 
@@ -31,6 +31,14 @@ class Application(Gtk.Application):
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
 
     def do_activate(self):
+
+        # custom theming
+        provider = Gtk.CssProvider()
+        provider.load_from_resource("/io/boite/imagine/custom.css")
+        context = Gtk.StyleContext()
+        context.add_provider_for_screen(Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        # load main window
         win = self.props.active_window
         if not win:
             win = ImagineWindow(application=self)

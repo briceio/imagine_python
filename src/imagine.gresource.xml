@@ -3,5 +3,6 @@
   <gresource prefix="/io/boite/imagine">
     <file>window.ui</file>
     <file>resize_dialog.ui</file>
+    <file>custom.css</file>
   </gresource>
 </gresources>

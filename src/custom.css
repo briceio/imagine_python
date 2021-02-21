@@ -1,0 +1,9 @@
+#button_save {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+#button_save_as {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
