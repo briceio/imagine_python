@@ -67,6 +67,33 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_y = 0
         self.selected_layer: Layer = None
 
+        # register the accelerator
+        self.accelerator = Accelerator(activation_timeout=1.0)
+        self.accelerator.disable()
+        self.accelerator.add(None, "Tab", lambda: self._switch_document())
+        self.accelerator.add(None, "o", lambda: self.on_file_open(None))
+        self.accelerator.add("document", "s", lambda: self.on_file_save(None))
+        self.accelerator.add("document", "r", lambda: self.on_resize(None), wait_timeout=True)
+        self.accelerator.add("document", "c", lambda: self.on_crop(None))
+        self.accelerator.add("document", "r,l", lambda: self.on_rotate_left(None))
+        self.accelerator.add("document", "r,r", lambda: self.on_rotate_right(None))
+        self.accelerator.add("document", "f,h", lambda: self.on_flip_horizontal(None))
+        self.accelerator.add("document", "f,v", lambda: self.on_flip_vertical(None))
+        self.accelerator.add("document", "a,r", lambda: self.on_annotate_rectangle(None))
+        self.accelerator.add("document", "a,l", lambda: self.on_annotate_line(None))
+        self.accelerator.add("document", "a,a", lambda: self.on_annotate_arrow(None))
+        self.accelerator.add("document", "a,e", lambda: self.on_annotate_ellipse(None))
+        self.accelerator.add("document", "a,c", lambda: self.on_annotate_circle(None))
+        self.accelerator.add("document", "a,t", lambda: self.on_annotate_text(None))
+        self.accelerator.add("document", "a,j", lambda: self.on_annotate_emoji(None))
+        self.accelerator.add("document", "a,z", lambda: self.on_annotate_zoom(None))
+        self.accelerator.add("document", "e,l", lambda: self.on_enhance_lighting(None))
+        self.accelerator.add("document", "e,b", lambda: self.on_enhance_blur(None))
+        self.connect("key-press-event", self.accelerator.key_handler)
+        self.scroll_area.connect("enter-notify-event", lambda w, e: self.accelerator.enable())
+        self.scroll_area.connect("leave-notify-event", lambda w, e: self.accelerator.disable())
+        self.connect("destroy", lambda e: self.accelerator.stop())
+
         # load settings
         self.user_settings = Gio.Settings.new("imagine.user-settings")
 
@@ -86,31 +113,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_increments(0.1, 1.0)
         self.zoom_spinbutton.set_value(1.0)
 
-        # register the accelerator
-        self.accelerator = Accelerator(activation_timeout=1.0)
-        self.accelerator.add(None, "Tab", lambda: self._switch_document())
-        self.accelerator.add("general", "s", lambda: self.on_resize(None))
-        self.accelerator.add("general", "c", lambda: self.on_crop(None))
-        self.accelerator.add("general", "r,l", lambda: self.on_rotate_left(None))
-        self.accelerator.add("general", "r,r", lambda: self.on_rotate_right(None))
-        self.accelerator.add("general", "f,h", lambda: self.on_flip_horizontal(None))
-        self.accelerator.add("general", "f,v", lambda: self.on_flip_vertical(None))
-        self.accelerator.add("general", "a,a,r", lambda: self.on_annotate_rectangle(None))
-        self.accelerator.add("general", "a,a,l", lambda: self.on_annotate_line(None))
-        self.accelerator.add("general", "a,a,a", lambda: self.on_annotate_arrow(None))
-        self.accelerator.add("general", "a,a,e", lambda: self.on_annotate_ellipse(None))
-        self.accelerator.add("general", "a,a,c", lambda: self.on_annotate_circle(None))
-        self.accelerator.add("general", "a,a,t", lambda: self.on_annotate_text(None))
-        self.accelerator.add("general", "a,a,j", lambda: self.on_annotate_emoji(None))
-        self.accelerator.add("general", "a,a,z", lambda: self.on_annotate_zoom(None))
-        self.accelerator.add("general", "a,e,l", lambda: self.on_enhance_lighting(None))
-        self.accelerator.add("general", "a,e,b", lambda: self.on_enhance_blur(None))
-        self.accelerator.set_context("general")
-        self.connect("key-press-event", self.accelerator.key_handler)
-        self.scroll_area.connect("enter-notify-event", lambda w, e: self.accelerator.enable())
-        self.scroll_area.connect("leave-notify-event", lambda w, e: self.accelerator.disable())
-        self.connect("destroy", lambda e: self.accelerator.stop())
-
         # events
         self.connect("key-press-event", self.on_key_press)
         self.connect("delete-event", self.on_exit_app)
@@ -121,15 +123,19 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.drawing_area.connect("button-press-event", self.mouse_down)
         self.drawing_area.connect("button-release-event", self.mouse_up)
 
-        # documents biding
+        # documents binding
         self.documents_listbox.bind_model(self.documents, self._create_document_item_widget)
         self.documents_listbox.connect("row-selected", self._on_select_document)
+
+        # binding
+        self.button_save.bind_property("sensitive", self, "document")
 
     def load(self, path):
         self.document = Document(path)
         self.documents.append(self.document)
 
     def _save(self):
+        if self.document == None: return
 
         def save_png(surface):
             surface.write_to_png(path)
@@ -202,6 +208,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_zoom_changed")
     def on_zoom_changed(self, widget):
+        if self.document == None: return
         self.document.scale = self.zoom_spinbutton.get_value()
         self.redraw()
 
@@ -311,6 +318,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.header_bar.set_subtitle(subtitle)
 
     def mouse_move(self, w, event):
+        if self.document == None: return
 
         # browsing with the middle mouse button
         if self._browsing:
@@ -335,6 +343,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.redraw()
 
     def mouse_down(self, w, event):
+        if self.document == None: return
+
         self.mouse_x = event.x / self.document.scale
         self.mouse_y = event.y / self.document.scale
 
@@ -349,6 +359,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.redraw()
 
     def mouse_up(self, w, event):
+        if self.document == None: return
+
         self.mouse_x = event.x / self.document.scale
         self.mouse_y = event.y / self.document.scale
 
@@ -376,6 +388,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.document.scroll_offset_y = self.scroll_area.get_vadjustment().get_value()
 
     def on_scroll(self, widget, event):
+        if self.document == None: return
 
         # zoom using mouse wheel & ctrl key
         accel_mask = Gtk.accelerator_get_default_mod_mask()
@@ -523,6 +536,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         self._offset_scroll_area(self.document.scroll_offset_x, self.document.scroll_offset_y, absolute=True)
 
+        # accelerator context
+        self.accelerator.set_context("document")
+
     def _on_select_document(self, container, row):
 
         # cleanup
@@ -586,6 +602,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.layer_editor_container.add(layer_editor)
 
     def on_draw(self, w, cr):
+
+        if self.document == None: return
 
         # scaling
         iw, ih = self.document.image.size
