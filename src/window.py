@@ -129,8 +129,17 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.button_save.bind_property("sensitive", self, "document")
 
     def load(self, path):
-        self.document = Document(path)
-        self.documents.append(self.document)
+        # check if the file is already opened
+        existing = [i for i, doc in enumerate(self.documents) if doc.path == path]
+
+        if len(existing) > 0:
+            # select existing file which already opened
+            self.documents_listbox.select_row(self.documents_listbox.get_row_at_index(existing[0]))
+        else:
+            # load new document and select it
+            self.document = Document(path)
+            self.documents.append(self.document)
+            self.documents_listbox.select_row(self.documents_listbox.get_row_at_index(len(self.documents) - 1))
 
     def _save(self, document=None):
         if document == None: document = self.document
@@ -227,6 +236,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.document = self.document
 
         dialog.destroy()
+
+    @Gtk.Template.Callback("on_file_close")
+    def on_file_close(self, widget):
+        # TODO check dirty
+        index = self.documents_listbox.get_selected_row().get_index()
+        self._switch_document()
+        self.documents.remove(index)
 
     @Gtk.Template.Callback("on_file_save_all")
     def on_file_save_all(self, widget):
@@ -331,6 +347,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         new_row = self.documents_listbox.get_row_at_index(index)
         if new_row != None:
             self.documents_listbox.select_row(new_row)
+        else:
+            self.document = None # no more document in the stack
 
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
@@ -549,6 +567,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         return box
 
     def _on_document_mounted(self, window, document):
+        if self.document == None: return
 
         # document title
         self._set_header_subtitle(self.document.path)
@@ -577,7 +596,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.document.on_updated_layers_list = None
 
         # switch document
-        self.document = self.documents[row.get_index()]
+        self.document = self.documents[row.get_index()] if len(self.documents) > 0 else None
+
+        # redraw
         self.redraw()
 
     def _on_select_layer(self, container, row):
@@ -622,7 +643,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def _build_layer_editor(self, layer):
 
         def on_update_editor(layer):
-            self.redraw() # TODO redraw only layer?
+            self.redraw()
 
         # cleanup
         self._cleanup_layer_editor()
@@ -644,7 +665,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def on_draw(self, w, cr):
 
-        if self.document == None: return
+        # nothing to draw?
+        if self.document == None:
+            self.drawing_area.set_size_request(0, 0)
+            return
 
         # scaling
         iw, ih = self.document.image.size
