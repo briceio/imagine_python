@@ -198,6 +198,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         dialog = Gtk.FileChooserDialog("Image to open", self, Gtk.FileChooserAction.OPEN,
                                        (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
+        dialog.set_select_multiple(True)
+
         filter = Gtk.FileFilter()
         filter.set_name("Images")
         filter.add_pattern("*.png")
@@ -208,7 +210,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
-            self.load(dialog.get_filename())
+            for filename in dialog.get_filenames():
+                self.load(filename)
 
         dialog.destroy()
 
