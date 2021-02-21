@@ -28,6 +28,7 @@ from gi.repository import GdkPixbuf
 import cairo
 import math
 from PIL import Image
+import functools
 
 MOUSE_SCROLL_FACTOR = 2.0
 
@@ -49,6 +50,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     layers_listbox: Gtk.ListBox = Gtk.Template.Child()
     documents_listbox: Gtk.ListBox = Gtk.Template.Child()
     layer_editor_container: Gtk.Box = Gtk.Template.Child()
+    button_save: Gtk.Button = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -110,6 +112,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # events
         self.connect("key-press-event", self.on_key_press)
+        self.connect("delete-event", self.on_exit_app)
         self.drawing_area.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
         self.drawing_area.connect("scroll-event", self.on_scroll)
         self.drawing_area.connect("draw", self.on_draw)
@@ -160,6 +163,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 print("Unsupported format!") # TODO info box message
 
         self._saving = False
+
+        self.document.dirty = False
 
         print("Saved to: %s" % path) # TODO info box message
 
@@ -283,7 +288,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.set_active_tool(BlurTool(self.document), keep_selected=True)
 
     def _switch_document(self):
-        print("Switching document")
+        index = self.documents_listbox.get_selected_row().get_index()
+        index = index + 1 if index < len(self.documents) - 1 else 0
+        new_row = self.documents_listbox.get_row_at_index(index)
+        if new_row != None:
+            self.documents_listbox.select_row(new_row)
 
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
@@ -406,6 +415,25 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.document.delete_layer(self.selected_layer)
             # redraw
             self.redraw()
+
+    def on_exit_app(self, widget, event):
+
+        # check if there are dirty documents
+        dirty_docs_count = functools.reduce(lambda a, b: int(a.dirty) + int(b.dirty), self.documents)
+
+        if dirty_docs_count > 0:
+            dialog = Gtk.MessageDialog(parent=self, type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO)
+            dialog.set_title("Warning !")
+            dialog.format_secondary_markup("<b>There is <u>%d document%s</u> not saved.</b>\n\nDo you really want to quit?" % (dirty_docs_count, "s" if dirty_docs_count > 1 else ""))
+
+            response = dialog.run()
+
+            dialog.destroy()
+
+            if response == Gtk.ResponseType.NO:
+                return True
+
+        return False
 
     def _create_document_item_widget(self, document):
 

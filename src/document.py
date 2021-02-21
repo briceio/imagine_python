@@ -21,6 +21,9 @@ class Document(GObject.GObject):
     # scale
     scale = GObject.Property(type=float, default=1.0)
 
+    # dirty flag
+    dirty = GObject.Property(type=bool, default=False)
+
     def __init__(self, path):
         GObject.GObject.__init__(self)
         self.path = path
@@ -64,27 +67,34 @@ class Document(GObject.GObject):
         self.imageSurface = cairo.ImageSurface.create_from_png(buffer)
 
     def resize(self, width, height):
+        self.dirty = True
         self._reload(self.image.resize((width, height), resample=Image.BILINEAR))
         # TODO resize the layers
 
     def crop(self, x1, y1, x2, y2):
+        self.dirty = True
         self._reload(self.image.crop((x1, y1, x2, y2)))
         for layer in self.layers:
             layer.crop(x1, y1, x2, y2)
 
     def rotate(self, angle):
+        self.dirty = True
         self._reload(self.image.rotate(angle, expand=True))
         # TODO rotate layers
 
     def flip_horizontal(self):
+        self.dirty = True
         self._reload(self.image.transpose(Image.FLIP_LEFT_RIGHT))
         # TODO flip layers
 
     def flip_vertical(self):
+        self.dirty = True
         self._reload(self.image.transpose(Image.FLIP_TOP_BOTTOM))
         # TODO flip layers
 
     def add_layer(self, layer):
+        self.dirty = True
+
         self.layers.insert(0, layer)
 
         self._update_layers_position()
@@ -98,6 +108,8 @@ class Document(GObject.GObject):
                 return i
 
     def delete_layer(self, layer):
+        self.dirty = True
+
         self.layers.remove(self.index_of_layer(layer))
 
         self._update_layers_position()
@@ -106,6 +118,8 @@ class Document(GObject.GObject):
             self.on_updated_layers_list(LayerAction.DELETE, layer)
 
     def move_layer(self, layer, offset):
+        self.dirty = True
+
         index = self.index_of_layer(layer)
         new_index = index + offset
 
