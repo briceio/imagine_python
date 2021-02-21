@@ -510,3 +510,95 @@ class PathAnnotationLayer(Layer):
             cr.set_line_width(self.width)
 
             cr.stroke()
+
+class ImageAnnotationLayer(RectLayer):
+
+    path = GObject.Property(type=str, nick="Path", blurb="file")
+    keep_aspect = GObject.Property(type=bool, default=True, nick="Keep Aspect")
+    alpha = GObject.Property(type=float, default=1.0, nick="Alpha", minimum=0.0, maximum=1.0)
+
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__(document, "Image", x1, x2, y1, y2)
+
+        self.path = None
+        self._image_surface = None
+
+    def get_tool(self):
+        return "ImageAnnotationTool"
+
+    def updated(self, obj, param):
+        super().updated(obj, param)
+
+        if param.name == "path":
+            self._reload_image()
+
+    def _reload_image(self):
+        if self.path != None:
+            buffer = BytesIO()
+            Image.open(self.path).save(buffer, format="PNG")
+            buffer.seek(0)
+
+            self._image_surface = cairo.ImageSurface.create_from_png(buffer)
+        else:
+            self._image = None
+
+    def ask_for_image_if_needed(self):
+        if self.path == None:
+            win = Gdk.Screen.get_active_window(Gdk.Screen.get_default())
+
+            dialog = Gtk.FileChooserDialog("Image to insert", win, Gtk.FileChooserAction.OPEN,
+                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+            dialog.set_transient_for(win) # link dialog to parent
+
+            filter = Gtk.FileFilter()
+            filter.set_name("Images")
+            filter.add_pattern("*.png")
+            filter.add_pattern("*.jpg")
+            filter.add_pattern("*.jpeg")
+            dialog.add_filter(filter)
+
+            response = dialog.run()
+
+            if response == Gtk.ResponseType.OK:
+                self.path = dialog.get_filename()
+                self._reload_image()
+
+            dialog.destroy()
+
+    def draw(self, w, cr):
+        if self._image_surface == None:
+            cr.set_source_rgba(1, 1, 1, 0.75)
+            cr.set_line_width(DEFAULT_WIDTH)
+            cr.set_dash([10, 10])
+            cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
+            cr.stroke()
+        else:
+            source_w = self._image_surface.get_width()
+            source_h = self._image_surface.get_height()
+            target_w = self.x2 - self.x1
+            target_h = self.y2 - self.y1
+            scale_x = 1.0
+            scale_y = 1.0
+
+            if target_w > 0 and target_h > 0:
+                if self.keep_aspect:
+                    source_ratio = source_w / source_h
+                    target_ratio = target_w / target_h
+
+                    if source_ratio >= target_ratio:
+                        scale_x = target_w / source_w
+                        scale_y = scale_x
+                    else:
+                        scale_y = target_h / source_h
+                        scale_x = scale_y
+                else:
+                    scale_x = target_w / source_w
+                    scale_y = target_h / source_h
+
+                cr.save()
+                cr.translate(self.x1, self.y1)
+                cr.scale(scale_x, scale_y)
+                cr.set_source_surface(self._image_surface, 0, 0)
+                cr.paint_with_alpha(self.alpha)
+                cr.restore()
+

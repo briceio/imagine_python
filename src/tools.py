@@ -82,32 +82,58 @@ class RectTool(Tool):
     def __init__(self, document):
         super().__init__(document, reticule = True)
         self._drawing = False
+        self._moving = False
         self.start_x = 0
         self.start_y = 0
         self.end_x = 0
         self.end_y = 0
 
+        self._start_move_offset_x = 0
+        self._start_move_offset_y = 0
+        self._end_move_offset_x = 0
+        self._end_move_offset_y = 0
+
     def cancel(self):
         super().cancel()
         self._drawing = False
+        self._moving = False
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if not self._drawing:
+        if not self._drawing and mouse_button == 1:
             self.start_x = mouse_x
             self.start_y = mouse_y
             self._drawing = True
 
+        if not self._moving and mouse_button == 3:
+            self._start_move_offset_x = mouse_x - self.start_x
+            self._start_move_offset_y = mouse_y - self.start_y
+            self._end_move_offset_x = mouse_x - self.end_x
+            self._end_move_offset_y = mouse_y - self.end_y
+            self._moving = True
+
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if self._drawing:
-            self.end_x = mouse_x
-            self.end_y = mouse_y
-            self.apply()
+        if mouse_button == 1:
+            if self._drawing:
+                self.end_x = mouse_x
+                self.end_y = mouse_y
+                self.apply()
+            self._drawing = False
 
-        self._drawing = False
+        if self._moving and mouse_button == 3:
+            self._moving = False
+
+    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_move(doc, w, cr, mouse_x, mouse_y)
+
+        if self._moving:
+            self.start_x = mouse_x - self._start_move_offset_x
+            self.start_y = mouse_y - self._start_move_offset_y
+            self.end_x = mouse_x - self._end_move_offset_x
+            self.end_y = mouse_y - self._end_move_offset_y
 
     def normalize(self):
         return (min(self.start_x, self.end_x),
@@ -133,10 +159,16 @@ class LineTool(Tool):
     def __init__(self, document):
         super().__init__(document, reticule = True)
         self._drawing = False
+        self._moving = False
         self.start_x = 0
         self.start_y = 0
         self.end_x = 0
         self.end_y = 0
+
+        self._start_move_offset_x = 0
+        self._start_move_offset_y = 0
+        self._end_move_offset_x = 0
+        self._end_move_offset_y = 0
 
     def cancel(self):
         super().cancel()
@@ -145,20 +177,39 @@ class LineTool(Tool):
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if not self._drawing:
+        if not self._drawing and mouse_button == 1:
             self.start_x = mouse_x
             self.start_y = mouse_y
             self._drawing = True
 
+        if not self._moving and mouse_button == 3:
+            self._start_move_offset_x = mouse_x - self.start_x
+            self._start_move_offset_y = mouse_y - self.start_y
+            self._end_move_offset_x = mouse_x - self.end_x
+            self._end_move_offset_y = mouse_y - self.end_y
+            self._moving = True
+
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if self._drawing:
-            self.end_x = mouse_x
-            self.end_y = mouse_y
-            self.apply()
+        if mouse_button == 1:
+            if self._drawing:
+                self.end_x = mouse_x
+                self.end_y = mouse_y
+                self.apply()
+            self._drawing = False
 
-        self._drawing = False
+        if self._moving and mouse_button == 3:
+            self._moving = False
+
+    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_move(doc, w, cr, mouse_x, mouse_y)
+
+        if self._moving:
+            self.start_x = mouse_x - self._start_move_offset_x
+            self.start_y = mouse_y - self._start_move_offset_y
+            self.end_x = mouse_x - self._end_move_offset_x
+            self.end_y = mouse_y - self._end_move_offset_y
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
@@ -185,7 +236,7 @@ class CropTool(RectTool):
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
-        if self._drawing:
+        if self._drawing or self._moving:
             width = doc.imageSurface.get_width()
             height = doc.imageSurface.get_height()
 
@@ -211,11 +262,12 @@ class RectangleAnnotationTool(RectTool):
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
-        if self._drawing:
-            self.layer.x1 = self.start_x
-            self.layer.y1 = self.start_y
-            self.layer.x2 = self.end_x
-            self.layer.y2 = self.end_y
+        if self._drawing or self._moving:
+            (x1, y1, x2, y2) = self.normalize()
+            self.layer.x1 = x1
+            self.layer.y1 = y1
+            self.layer.x2 = x2
+            self.layer.y2 = y2
             self.layer.draw(w, cr)
 
 class EllipseAnnotationTool(RectTool):
@@ -231,11 +283,12 @@ class EllipseAnnotationTool(RectTool):
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
-        if self._drawing:
-            self.layer.x1 = self.start_x
-            self.layer.y1 = self.start_y
-            self.layer.x2 = self.end_x
-            self.layer.y2 = self.end_y
+        if self._drawing or self._moving:
+            (x1, y1, x2, y2) = self.normalize()
+            self.layer.x1 = x1
+            self.layer.y1 = y1
+            self.layer.x2 = x2
+            self.layer.y2 = y2
             self.layer.draw(w, cr)
 
 class LineAnnotationTool(LineTool):
@@ -251,7 +304,7 @@ class LineAnnotationTool(LineTool):
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
-        if self._drawing:
+        if self._drawing or self._moving:
             self.layer.x1 = self.start_x
             self.layer.y1 = self.start_y
             self.layer.x2 = self.end_x
@@ -307,7 +360,7 @@ class LightingTool(RectTool):
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
-        if self._drawing:
+        if self._drawing or self._moving:
             (x1, y1, x2, y2) = self.normalize()
             self.layer.x1 = x1
             self.layer.y1 = y1
@@ -329,7 +382,7 @@ class BlurTool(RectTool):
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
-        if self._drawing:
+        if self._drawing or self._moving:
             (x1, y1, x2, y2) = self.normalize()
             self.layer.x1 = x1
             self.layer.y1 = y1
@@ -468,4 +521,34 @@ class PathAnnotationTool(Tool):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
         if self._drawing:
+            self.layer.draw(w, cr)
+
+class ImageAnnotationTool(RectTool):
+
+    def __init__(self, document, layer=None):
+        super().__init__(document)
+
+        self.layer = layer
+        if layer == None:
+            self.layer = ImageAnnotationLayer(document)
+            self.document.add_layer(self.layer)
+
+    def cancel(self):
+        super().cancel()
+
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
+        # ask for the image at first
+        self.layer.ask_for_image_if_needed()
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing or self._moving:
+            (x1, y1, x2, y2) = self.normalize()
+            self.layer.x1 = x1
+            self.layer.y1 = y1
+            self.layer.x2 = x2
+            self.layer.y2 = y2
             self.layer.draw(w, cr)

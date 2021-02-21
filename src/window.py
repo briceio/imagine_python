@@ -86,6 +86,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.add("document", "a,t", lambda: self.on_annotate_text(None))
         self.accelerator.add("document", "a,j", lambda: self.on_annotate_emoji(None))
         self.accelerator.add("document", "a,z", lambda: self.on_annotate_zoom(None))
+        self.accelerator.add("document", "a,i", lambda: self.on_annotate_image(None))
         self.accelerator.add("document", "e,l", lambda: self.on_enhance_lighting(None))
         self.accelerator.add("document", "e,b", lambda: self.on_enhance_blur(None))
         self.connect("key-press-event", self.accelerator.key_handler)
@@ -317,6 +318,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback("on_annotate_zoom")
     def on_annotate_zoom(self, widget):
         self.set_active_tool(ZoomAnnotationTool(self.document), keep_selected=True)
+
+    @Gtk.Template.Callback("on_annotate_image")
+    def on_annotate_image(self, widget):
+        self.set_active_tool(ImageAnnotationTool(self.document), keep_selected=True)
 
     @Gtk.Template.Callback("on_rotate_left")
     def on_rotate_left(self, widget):

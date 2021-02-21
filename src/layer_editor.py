@@ -80,6 +80,8 @@ class LayerEditor(Gtk.ListBox):
             box.pack_start(entry, True, True, 0)
 
             entry.connect("button-press-event", block_event) # bug mouse click when textview in box
+        elif p.blurb == "file":
+            pass
         else:
             entry = Gtk.Entry()
             entry.set_text(self.layer.get_property(p.name))
