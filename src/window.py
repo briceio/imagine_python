@@ -84,23 +84,24 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_value(1.0)
 
         # register the accelerator
-        self.accelerator = Accelerator(activation_key=Gdk.KEY_a)
-        self.accelerator.add("general", "s", lambda: self.on_resize(None))
-        self.accelerator.add("general", "c", lambda: self.on_crop(None))
-        self.accelerator.add("general", "r,l", lambda: self.on_rotate_left(None))
-        self.accelerator.add("general", "r,r", lambda: self.on_rotate_right(None))
-        self.accelerator.add("general", "f,h", lambda: self.on_flip_horizontal(None))
-        self.accelerator.add("general", "f,v", lambda: self.on_flip_vertical(None))
-        self.accelerator.add("general", "a,r", lambda: self.on_annotate_rectangle(None))
-        self.accelerator.add("general", "a,l", lambda: self.on_annotate_line(None))
-        self.accelerator.add("general", "a,a", lambda: self.on_annotate_arrow(None))
-        self.accelerator.add("general", "a,e", lambda: self.on_annotate_ellipse(None))
-        self.accelerator.add("general", "a,c", lambda: self.on_annotate_circle(None))
-        self.accelerator.add("general", "a,t", lambda: self.on_annotate_text(None))
-        self.accelerator.add("general", "a,j", lambda: self.on_annotate_emoji(None))
-        self.accelerator.add("general", "a,z", lambda: self.on_annotate_zoom(None))
-        self.accelerator.add("general", "e,l", lambda: self.on_enhance_lighting(None))
-        self.accelerator.add("general", "e,b", lambda: self.on_enhance_blur(None))
+        self.accelerator = Accelerator(activation_timeout=1.0)
+        self.accelerator.add(None, "Tab", lambda: self._switch_document())
+        self.accelerator.add("general", "a,s", lambda: self.on_resize(None))
+        self.accelerator.add("general", "a,c", lambda: self.on_crop(None))
+        self.accelerator.add("general", "a,r,l", lambda: self.on_rotate_left(None))
+        self.accelerator.add("general", "a,r,r", lambda: self.on_rotate_right(None))
+        self.accelerator.add("general", "a,f,h", lambda: self.on_flip_horizontal(None))
+        self.accelerator.add("general", "a,f,v", lambda: self.on_flip_vertical(None))
+        self.accelerator.add("general", "a,a,r", lambda: self.on_annotate_rectangle(None))
+        self.accelerator.add("general", "a,a,l", lambda: self.on_annotate_line(None))
+        self.accelerator.add("general", "a,a,a", lambda: self.on_annotate_arrow(None))
+        self.accelerator.add("general", "a,a,e", lambda: self.on_annotate_ellipse(None))
+        self.accelerator.add("general", "a,a,c", lambda: self.on_annotate_circle(None))
+        self.accelerator.add("general", "a,a,t", lambda: self.on_annotate_text(None))
+        self.accelerator.add("general", "a,a,j", lambda: self.on_annotate_emoji(None))
+        self.accelerator.add("general", "a,a,z", lambda: self.on_annotate_zoom(None))
+        self.accelerator.add("general", "a,e,l", lambda: self.on_enhance_lighting(None))
+        self.accelerator.add("general", "a,e,b", lambda: self.on_enhance_blur(None))
         self.accelerator.set_context("general")
         self.connect("key-press-event", self.accelerator.key_handler)
         self.scroll_area.connect("enter-notify-event", lambda w, e: self.accelerator.enable())
@@ -280,6 +281,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback("on_enhance_blur")
     def on_enhance_blur(self, widget):
         self.set_active_tool(BlurTool(self.document), keep_selected=True)
+
+    def _switch_document(self):
+        print("Switching document")
 
     def set_active_tool(self, tool, keep_selected = False):
         def apply_callback():
