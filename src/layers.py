@@ -86,12 +86,11 @@ class RectangleAnnotationLayer(RectLayer):
         cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
         cr.set_line_width(0)
         cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
-        cr.fill()
+        cr.fill_preserve()
 
         cr.set_source_rgba(self.stroke_color.red, self.stroke_color.green, self.stroke_color.blue, self.stroke_color.alpha)
         cr.set_line_width(self.width)
         cr.set_dash([])
-        cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
         cr.stroke()
 
 class EllipseAnnotationLayer(RectLayer):
@@ -138,12 +137,11 @@ class EllipseAnnotationLayer(RectLayer):
         cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
         cr.set_line_width(0)
         draw()
-        cr.fill()
+        cr.fill_preserve()
 
         cr.set_source_rgba(self.stroke_color.red, self.stroke_color.green, self.stroke_color.blue, self.stroke_color.alpha)
         cr.set_line_width(self.width)
         cr.set_dash([])
-        draw()
         cr.stroke()
 
 class LineAnnotationLayer(RectLayer):
