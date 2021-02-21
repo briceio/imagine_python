@@ -53,6 +53,17 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        # current tool
+        self._browsing = False
+        self._browsing_prev_x = 0
+        self._browsing_prev_y = 0
+        self._skip_browse_signal = False
+        self._saving = False
+        self.tool: Tool = None
+        self.mouse_x = 0
+        self.mouse_y = 0
+        self.selected_layer: Layer = None
+
         # load settings
         self.user_settings = Gio.Settings.new("imagine.user-settings")
 
@@ -66,25 +77,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # TODO DEBUG document
         self.load("/home/brice/Données/Temp/pic.jpg")
         self.load("/home/brice/Données/Temp/pic2.jpg")
-
-        # current tool
-        self.tool: Tool = None
-
-        # current layer
-        self.selected_layer: Layer = None
-
-        # current document state
-        self._saving = False
-
-        # current mouse state
-        self.mouse_x = 0
-        self.mouse_y = 0
-
-        # default is no browsing
-        self._browsing = False
-        self._browsing_prev_x = 0
-        self._browsing_prev_y = 0
-        self._skip_browse_signal = False
 
         # zoom
         self.zoom_spinbutton.set_range(0.1, 10.0)
@@ -397,6 +389,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         return False
 
     def on_key_press(self, widget, event):
+        accel_mask = Gtk.accelerator_get_default_mod_mask()
         if event.keyval == Gdk.KEY_Escape:
             if self.tool != None:
                 # cancel tool
@@ -404,7 +397,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 self.tool = None
                 # redraw
                 self.redraw()
-        elif event.keyval == Gdk.KEY_Delete or event.keyval == Gdk.KEY_BackSpace:
+        elif (event.keyval == Gdk.KEY_Delete or event.keyval == Gdk.KEY_BackSpace) and event.state & accel_mask == Gdk.ModifierType.CONTROL_MASK:
             # remove current layer
             self.document.delete_layer(self.selected_layer)
             # redraw
@@ -473,7 +466,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         return box
 
     def _on_document_mounted(self, window, document):
-        # TODO BUG this is called 3 times at start
+
+        # deselect tool
+        if self.tool != None:
+            self.tool.cancel()
+            self.tool = None
+
         self.document.on_updated_layers_list = self._on_updated_layers_list
         self.document.bind_property("scale", self.zoom_spinbutton, "value")
         self.zoom_spinbutton.set_value(self.document.scale)
@@ -485,11 +483,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def _on_select_document(self, container, row):
 
-        # deselect tool
-        if self.tool != None:
-            self.tool.cancel()
-            self.tool = None
-
         # cleanup
         if self.document != None:
             self.document.on_updated_layers_list = None
@@ -500,7 +493,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def _on_select_layer(self, container, row):
 
-        # cleanup
+        # deselect tool
+        if self.tool != None:
+            self.tool.cancel()
+            self.tool = None
+
+        # cleanup layer editor
         if row == None:
             self._cleanup_layer_editor()
             return

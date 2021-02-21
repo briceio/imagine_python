@@ -270,9 +270,11 @@ class TextAnnotationTool(PointTool):
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
-        self.layer.x = self.x
-        self.layer.y = self.y
-        self.layer.draw(w, cr)
+
+        if self._drawing:
+            self.layer.x = self.x
+            self.layer.y = self.y
+            self.layer.draw(w, cr)
 
 class EmojiAnnotationTool(PointTool):
 
@@ -286,9 +288,11 @@ class EmojiAnnotationTool(PointTool):
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
-        self.layer.x = self.x
-        self.layer.y = self.y
-        self.layer.draw(w, cr)
+
+        if self._drawing:
+            self.layer.x = self.x
+            self.layer.y = self.y
+            self.layer.draw(w, cr)
 
 class LightingTool(RectTool):
 
@@ -354,6 +358,7 @@ class ZoomAnnotationTool(Tool):
     def cancel(self):
         super().cancel()
         self._drawing = False
+        self._moving = False
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
