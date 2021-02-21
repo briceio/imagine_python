@@ -71,6 +71,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator = Accelerator(activation_timeout=1.0)
         self.accelerator.disable()
         self.accelerator.add(None, "Tab", lambda: self._switch_document())
+        self.accelerator.add("document", "<Primary>w", lambda: self.on_file_close(None))
+        self.accelerator.add("document", "<Primary><Shift>s", lambda: self.on_file_save_all(None))
+        self.accelerator.add("document", "<Alt>s", lambda: self.on_file_save_as(None))
         self.accelerator.add("document", "s", lambda: self.on_resize(None))
         self.accelerator.add("document", "c", lambda: self.on_crop(None))
         self.accelerator.add("document", "r,l", lambda: self.on_rotate_left(None))
@@ -233,6 +236,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         filter.add_pattern("*.jpeg")
         dialog.add_filter(filter)
 
+        dialog.set_filename(self.document.path)
+
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
@@ -361,6 +366,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         if new_row != None:
             self.documents_listbox.select_row(new_row)
         else:
+            self._set_header_subtitle(None)
             self.document = None # no more document in the stack
 
     def set_active_tool(self, tool, keep_selected = False):
@@ -580,7 +586,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         return box
 
     def _on_document_mounted(self, window, document):
-        if self.document == None: return
+        if self.document == None:
+            self._set_header_subtitle(None)
+            return
 
         # document title
         self._set_header_subtitle(self.document.path)
