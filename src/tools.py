@@ -154,76 +154,6 @@ class RectTool(Tool):
     def height(self):
         return abs(int(self.end_y - self.start_y))
 
-class LineTool(Tool):
-
-    def __init__(self, document):
-        super().__init__(document, reticule = True)
-        self._drawing = False
-        self._moving = False
-        self.start_x = 0
-        self.start_y = 0
-        self.end_x = 0
-        self.end_y = 0
-
-        self._start_move_offset_x = 0
-        self._start_move_offset_y = 0
-        self._end_move_offset_x = 0
-        self._end_move_offset_y = 0
-
-    def cancel(self):
-        super().cancel()
-        self._drawing = False
-
-    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
-        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
-
-        if not self._drawing and mouse_button == 1:
-            self.start_x = mouse_x
-            self.start_y = mouse_y
-            self._drawing = True
-
-        if not self._moving and mouse_button == 3:
-            self._start_move_offset_x = mouse_x - self.start_x
-            self._start_move_offset_y = mouse_y - self.start_y
-            self._end_move_offset_x = mouse_x - self.end_x
-            self._end_move_offset_y = mouse_y - self.end_y
-            self._moving = True
-
-    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
-        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
-
-        if mouse_button == 1:
-            if self._drawing:
-                self.end_x = mouse_x
-                self.end_y = mouse_y
-                self.apply()
-            self._drawing = False
-
-        if self._moving and mouse_button == 3:
-            self._moving = False
-
-    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
-        super().mouse_move(doc, w, cr, mouse_x, mouse_y)
-
-        if self._moving:
-            self.start_x = mouse_x - self._start_move_offset_x
-            self.start_y = mouse_y - self._start_move_offset_y
-            self.end_x = mouse_x - self._end_move_offset_x
-            self.end_y = mouse_y - self._end_move_offset_y
-
-    def draw(self, doc, w, cr, mouse_x, mouse_y):
-        super().draw(doc, w, cr, mouse_x, mouse_y)
-
-        if self._drawing:
-            self.end_x = mouse_x
-            self.end_y = mouse_y
-
-    def width(self):
-        return int(self.end_x - self.start_x)
-
-    def height(self):
-        return int(self.end_y - self.start_y)
-
 class CropTool(RectTool):
 
     def __init__(self, document):
@@ -291,7 +221,7 @@ class EllipseAnnotationTool(RectTool):
             self.layer.y2 = y2
             self.layer.draw(w, cr)
 
-class LineAnnotationTool(LineTool):
+class LineAnnotationTool(RectTool):
 
     def __init__(self, document, layer=None, arrow=False):
         super().__init__(document)
