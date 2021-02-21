@@ -28,7 +28,7 @@ from gi.repository import GdkPixbuf
 import cairo
 import math
 from PIL import Image
-import functools
+import functools, operator
 
 MOUSE_SCROLL_FACTOR = 2.0
 
@@ -43,6 +43,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     document = GObject.Property(type=Document)
 
     # widgets
+    header_bar: Gtk.HeaderBar = Gtk.Template.Child()
     scroll_area: Gtk.ScrolledWindow = Gtk.Template.Child()
     viewport: Gtk.Viewport = Gtk.Template.Child()
     drawing_area: Gtk.DrawingArea = Gtk.Template.Child()
@@ -88,12 +89,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # register the accelerator
         self.accelerator = Accelerator(activation_timeout=1.0)
         self.accelerator.add(None, "Tab", lambda: self._switch_document())
-        self.accelerator.add("general", "a,s", lambda: self.on_resize(None))
-        self.accelerator.add("general", "a,c", lambda: self.on_crop(None))
-        self.accelerator.add("general", "a,r,l", lambda: self.on_rotate_left(None))
-        self.accelerator.add("general", "a,r,r", lambda: self.on_rotate_right(None))
-        self.accelerator.add("general", "a,f,h", lambda: self.on_flip_horizontal(None))
-        self.accelerator.add("general", "a,f,v", lambda: self.on_flip_vertical(None))
+        self.accelerator.add("general", "s", lambda: self.on_resize(None))
+        self.accelerator.add("general", "c", lambda: self.on_crop(None))
+        self.accelerator.add("general", "r,l", lambda: self.on_rotate_left(None))
+        self.accelerator.add("general", "r,r", lambda: self.on_rotate_right(None))
+        self.accelerator.add("general", "f,h", lambda: self.on_flip_horizontal(None))
+        self.accelerator.add("general", "f,v", lambda: self.on_flip_vertical(None))
         self.accelerator.add("general", "a,a,r", lambda: self.on_annotate_rectangle(None))
         self.accelerator.add("general", "a,a,l", lambda: self.on_annotate_line(None))
         self.accelerator.add("general", "a,a,a", lambda: self.on_annotate_arrow(None))
@@ -306,6 +307,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def redraw(self):
         self.drawing_area.queue_draw()
 
+    def _set_header_subtitle(self, subtitle):
+        self.header_bar.set_subtitle(subtitle)
+
     def mouse_move(self, w, event):
 
         # browsing with the middle mouse button
@@ -418,13 +422,15 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def on_exit_app(self, widget, event):
 
-        # check if there are dirty documents
-        dirty_docs_count = functools.reduce(lambda a, b: int(a.dirty) + int(b.dirty), self.documents)
+        # build up dirt documents list
+        dirty_documents = ["▸ %s\n" % document.name for document in self.documents if document.dirty]
 
-        if dirty_docs_count > 0:
+        if len(dirty_documents) > 0:
+            dirty_docs_list = functools.reduce(operator.add, dirty_documents)
+
             dialog = Gtk.MessageDialog(parent=self, type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO)
             dialog.set_title("Warning !")
-            dialog.format_secondary_markup("<b>There is <u>%d document%s</u> not saved.</b>\n\nDo you really want to quit?" % (dirty_docs_count, "s" if dirty_docs_count > 1 else ""))
+            dialog.format_secondary_markup("<b>There %s <u>%d document%s</u> not saved:</b>\n\n%s\nDo you really want to quit?" % ("is" if len(dirty_documents) <= 1 else "are", len(dirty_documents), "s" if len(dirty_documents) > 1 else "", dirty_docs_list))
 
             response = dialog.run()
 
@@ -495,9 +501,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
         box.pack_end(buttons, False, False, 0)
 
         box.show_all()
+
         return box
 
     def _on_document_mounted(self, window, document):
+
+        # document title
+        self._set_header_subtitle(self.document.path)
 
         # deselect tool
         if self.tool != None:
