@@ -20,7 +20,7 @@ from .resize_dialog import ResizeDialog
 from .tools import *
 from .layer_editor import LayerEditor
 from .accelerator import Accelerator
-
+#
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
@@ -72,6 +72,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # current layer
         self.selected_layer: Layer = None
+
+        # current document state
+        self._saving = False
 
         # current mouse state
         self.mouse_x = 0
@@ -131,19 +134,22 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def _save(self):
 
-        size = self.drawing_area.get_size()
-        pixbuf = GdkPixbuf(GdkPixbuf.Colorspace.RGB, False, 8, size)
+        width, height = self.document.image.size
 
-        buffer = BytesIO(data)
-        buffer.seek(0)
-        final_image = Image.frombuffer('RGB', (width, height), buffer.getvalue(), decoder_name="raw")
-        buffer.close()
+        path = "{path}-test.png".format(path = self.document.path)
+        print("Saving (%d, %d) to: %s" % (width, height, path))
 
-        path = "{path}-test.jpg".format(path = self.document.path)
-        final_image.save(path)
+        self._saving = True
+
+        with cairo.ImageSurface(cairo.FORMAT_RGB24, width, height) as surface:
+            context = cairo.Context(surface)
+            self.drawing_area.draw(context)
+            surface.write_to_png(path)
+
+        self._saving = False
 
         # TODO info box message
-        print("Saved to: %s" % path)
+        print("Saved!")
 
     def _load_window_state(self):
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
@@ -524,10 +530,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # scaling
         iw, ih = self.document.image.size
-        w = self.document.scale * iw
-        h = self.document.scale * ih
-        self.drawing_area.set_size_request(w, h)
-        cr.scale(self.document.scale, self.document.scale)
+        if not self._saving:
+            w = self.document.scale * iw
+            h = self.document.scale * ih
+            self.drawing_area.set_size_request(w, h)
+            cr.scale(self.document.scale, self.document.scale)
 
         # clipping
         cr.rectangle(0, 0, iw, ih)
@@ -537,7 +544,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.document.draw(w, cr)
 
         # tools
-        if self.tool != None:
+        if not self._saving and self.tool != None:
             self.tool.draw(self.document, w, cr, self.mouse_x, self.mouse_y)
-
 
