@@ -132,8 +132,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.document = Document(path)
         self.documents.append(self.document)
 
-    def _save(self):
-        if self.document == None: return
+    def _save(self, document=None):
+        if document == None: document = self.document
+        if document == None: return
 
         def save_png(surface):
             surface.write_to_png(path)
@@ -144,9 +145,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
             image = Image.merge('RGB', (r, g, b))
             image.save(path, quality=90)
 
-        width, height = self.document.image.size
+        width, height = document.image.size
 
-        path = self.document.path
+        path = document.path
 
         self._saving = True
 
@@ -158,10 +159,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         with cairo.ImageSurface(cairo.FORMAT_RGB24, width, height) as surface:
             context = cairo.Context(surface)
-            self.drawing_area.draw(context)
+            self._draw_document(self, context, document)
 
             # save
-            saver = switcher[self.document.extension]
+            saver = switcher[document.extension]
             if saver != None:
                 saver(surface)
             else:
@@ -169,7 +170,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         self._saving = False
 
-        self.document.dirty = False
+        document.dirty = False
 
         print("Saved to: %s" % path) # TODO info box message
 
@@ -229,9 +230,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_file_save_all")
     def on_file_save_all(self, widget):
-        #self._save()
+        for document in self.documents:
+            self._save(document)
+
         # TODO toast notification
-        print("save all")
+        print("Save all done")
 
     @Gtk.Template.Callback("on_zoom_changed")
     def on_zoom_changed(self, widget):
@@ -629,6 +632,16 @@ class ImagineWindow(Gtk.ApplicationWindow):
         layer_editor.on_update = on_update_editor
         self.layer_editor_container.add(layer_editor)
 
+    def _draw_document(self, w, cr, document):
+
+        # clipping
+        iw, ih = document.image.size
+        cr.rectangle(0, 0, iw, ih)
+        cr.clip()
+
+        # render document
+        document.draw(w, cr)
+
     def on_draw(self, w, cr):
 
         if self.document == None: return
@@ -641,14 +654,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.drawing_area.set_size_request(w, h)
             cr.scale(self.document.scale, self.document.scale)
 
-        # clipping
-        cr.rectangle(0, 0, iw, ih)
-        cr.clip()
-
-        # render document
-        self.document.draw(w, cr)
+        self._draw_document(w, cr, self.document)
 
         # tools
         if not self._saving and self.tool != None:
             self.tool.draw(self.document, w, cr, self.mouse_x, self.mouse_y)
-
