@@ -134,22 +134,41 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def _save(self):
 
+        def save_png(surface):
+            surface.write_to_png(path)
+
+        def save_jpg(surface):
+            image = Image.frombuffer(mode = 'RGBA', size = (width, height), data = surface.get_data(),)
+            b, g, r, a = image.split()
+            image = Image.merge('RGB', (r, g, b))
+            image.save(path, quality=90)
+
         width, height = self.document.image.size
 
-        path = "{path}-test.png".format(path = self.document.path)
-        print("Saving (%d, %d) to: %s" % (width, height, path))
+        path = "{path}-modified{extension}".format(path = self.document.path, extension = self.document.extension)
 
         self._saving = True
+
+        switcher = {
+            ".jpg": save_jpg,
+            ".jpeg": save_jpg,
+            ".png": save_png
+        }
 
         with cairo.ImageSurface(cairo.FORMAT_RGB24, width, height) as surface:
             context = cairo.Context(surface)
             self.drawing_area.draw(context)
-            surface.write_to_png(path)
+
+            # save
+            saver = switcher[self.document.extension]
+            if saver != None:
+                saver(surface)
+            else:
+                print("Unsupported format!") # TODO info box message
 
         self._saving = False
 
-        # TODO info box message
-        print("Saved!")
+        print("Saved to: %s" % path) # TODO info box message
 
     def _load_window_state(self):
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
