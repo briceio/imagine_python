@@ -77,6 +77,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.add("document", "r,r", lambda: self.on_rotate_right(None))
         self.accelerator.add("document", "f,h", lambda: self.on_flip_horizontal(None))
         self.accelerator.add("document", "f,v", lambda: self.on_flip_vertical(None))
+        self.accelerator.add("document", "a,p", lambda: self.on_annotate_path(None))
         self.accelerator.add("document", "a,r", lambda: self.on_annotate_rectangle(None))
         self.accelerator.add("document", "a,l", lambda: self.on_annotate_line(None))
         self.accelerator.add("document", "a,a", lambda: self.on_annotate_arrow(None))
@@ -280,6 +281,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback("on_crop")
     def on_crop(self, widget):
         self.set_active_tool(CropTool(self.document))
+
+    @Gtk.Template.Callback("on_annotate_path")
+    def on_annotate_path(self, widget):
+        self.set_active_tool(PathAnnotationTool(self.document), keep_selected=True)
 
     @Gtk.Template.Callback("on_annotate_rectangle")
     def on_annotate_rectangle(self, widget):

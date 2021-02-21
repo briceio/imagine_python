@@ -474,3 +474,39 @@ class ZoomAnnotationLayer(RectLayer):
                 cr.rectangle(target_frame_x, target_frame_y, target_width, target_height)
                 cr.stroke()
 
+class PathAnnotationLayer(Layer):
+
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=0, maximum=50)
+    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
+    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
+    dashed = GObject.Property(type=bool, default=False, nick="Dashed")
+    closed = GObject.Property(type=bool, default=False, nick="Closed")
+
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__(document, "Path")
+
+        self.points = []
+
+    def get_tool(self):
+        return "PathAnnotationTool"
+
+    def draw(self, w, cr):
+        if len(self.points) > 1:
+            cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
+
+            cr.new_path()
+            cr.move_to(self.points[0][0], self.points[0][1])
+            for x, y in self.points:
+                cr.line_to(x, y)
+
+            if self.closed:
+                cr.close_path()
+
+            cr.fill_preserve()
+
+            cr.set_source_rgba(self.stroke_color.red, self.stroke_color.green, self.stroke_color.blue, self.stroke_color.alpha)
+            if self.dashed:
+                cr.set_dash([self.width, self.width])
+            cr.set_line_width(self.width)
+
+            cr.stroke()

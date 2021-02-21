@@ -430,3 +430,42 @@ class ZoomAnnotationTool(Tool):
     def height(self):
         return abs(int(self.end_y - self.start_y))
         
+class PathAnnotationTool(Tool):
+
+    def __init__(self, document, layer=None):
+        super().__init__(document, reticule = True)
+
+        self._drawing = False
+
+        self.layer = layer
+        if layer == None:
+            self.layer = PathAnnotationLayer(document)
+            self.document.add_layer(self.layer)
+
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
+        if not self._drawing:
+            self.layer.points = []
+            self.layer.points.append((mouse_x, mouse_y))
+            self._drawing = True
+
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
+        if self._drawing:
+            self.layer.points.append((mouse_x, mouse_y))
+
+        self._drawing = False
+
+    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_move(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.layer.points.append((mouse_x, mouse_y))
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        if self._drawing:
+            self.layer.draw(w, cr)
