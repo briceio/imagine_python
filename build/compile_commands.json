@@ -1,0 +1,164 @@
+[
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson --internal msgfmthelper ../data/io.boite.imagine.desktop.in data/io.boite.imagine.desktop desktop ../data/../po",
+    "file": "../data/io.boite.imagine.desktop.in",
+    "output": "data/io.boite.imagine.desktop"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson --internal msgfmthelper ../data/io.boite.imagine.appdata.xml.in data/io.boite.imagine.appdata.xml xml ../data/../po",
+    "file": "../data/io.boite.imagine.appdata.xml.in",
+    "output": "data/io.boite.imagine.appdata.xml"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/glib-compile-resources ../src/imagine.gresource.xml --sourcedir ../src --internal --generate --target src/imagine.gresource --dependency-file src/imagine.gresource.d",
+    "file": "../src/imagine.gresource.xml",
+    "output": "src/imagine.gresource"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-imagine-pot",
+    "output": "imagine-pot"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-imagine-gmo",
+    "output": "imagine-gmo"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-imagine-update-po",
+    "output": "imagine-update-po"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson test --no-rebuild --print-errorlogs",
+    "file": "all",
+    "output": "meson-test"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-test",
+    "output": "test"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson test --benchmark --logbase benchmarklog --num-processes=1 --no-rebuild",
+    "file": "all",
+    "output": "meson-benchmark"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-benchmark",
+    "output": "benchmark"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson install --no-rebuild",
+    "file": "PHONY",
+    "output": "meson-install"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-install",
+    "output": "install"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson dist",
+    "file": "PHONY",
+    "output": "meson-dist"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-dist",
+    "output": "dist"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson --internal scanbuild /home/brice/Code/imagine /home/brice/Code/imagine/build /usr/bin/meson",
+    "file": "PHONY",
+    "output": "meson-scan-build"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-scan-build",
+    "output": "scan-build"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson --internal tags ctags /home/brice/Code/imagine",
+    "file": "PHONY",
+    "output": "meson-ctags"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-ctags",
+    "output": "ctags"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson --internal uninstall",
+    "file": "PHONY",
+    "output": "meson-uninstall"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-uninstall",
+    "output": "uninstall"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "data/io.boite.imagine.desktop",
+    "output": "all"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-clean",
+    "output": "clean"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson --internal cleantrees /home/brice/Code/imagine/build/meson-private/cleantrees.dat",
+    "file": "PHONY",
+    "output": "meson-clean-ctlist"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "",
+    "file": "meson-clean-ctlist",
+    "output": "clean-ctlist"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/ninja -t clean",
+    "file": "PHONY",
+    "output": "meson-clean"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson --internal regenerate /home/brice/Code/imagine /home/brice/Code/imagine/build --backend ninja",
+    "file": "../meson.build",
+    "output": "build.ninja"
+  },
+  {
+    "directory": "/home/brice/Code/imagine/build",
+    "command": "/usr/bin/meson --internal regenerate /home/brice/Code/imagine /home/brice/Code/imagine/build --backend ninja",
+    "file": "PHONY",
+    "output": "reconfigure"
+  }
+]

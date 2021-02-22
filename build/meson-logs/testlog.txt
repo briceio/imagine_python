@@ -1,0 +1,47 @@
+Log of Meson test suite run on 2021-02-22T20:59:53.864231
+
+Inherited environment: SSH_AUTH_SOCK='/run/user/1000/keyring/ssh' SESSION_MANAGER='local/bigpower:@/tmp/.ICE-unix/3801,unix/bigpower:/tmp/.ICE-unix/3801' GNOME_TERMINAL_SCREEN='/org/gnome/Terminal/screen/97f75da8_a16d_443d_9ea7_99fe27199992' LANG='fr_FR.UTF-8' XDG_CURRENT_DESKTOP='GNOME' COLORTERM='truecolor' WAYLAND_DISPLAY='wayland-0' PWD='/home/brice/Code/imagine/build' QT_IM_MODULE='ibus' USER='brice' DESKTOP_SESSION='gnome' XDG_MENU_PREFIX='gnome-' OLDPWD='/home/brice/Code/imagine' HOME='/home/brice' DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/1000/bus' QT_STYLE_OVERRIDE='kvantum' XDG_DATA_DIRS='/home/brice/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop' FLUTTER_HOME='/opt/flutter' VTE_VERSION='6202' XDG_SESSION_DESKTOP='gnome' GNOME_SETUP_DISPLAY=':1' MAIL='/var/spool/mail/brice' LOGNAME='brice' QT_AUTO_SCREEN_SCALE_FACTOR='1' GNOME_TERMINAL_SERVICE=':1.4619' PATH='/home/brice/.local/bin:/usr/local/bin:/usr/local/sbin:/usr/bin:/var/lib/flatpak/exports/bin:/opt/flutter/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/var/lib/snapd/snap/bin' XDG_RUNTIME_DIR='/run/user/1000' XMODIFIERS='@im=ibus' SHELL='/bin/zsh' XDG_SESSION_TYPE='wayland' USERNAME='brice' EDITOR='/usr/bin/nano' MOTD_SHOWN='pam' GDM_LANG='fr_FR.UTF-8' QT_QPA_PLATFORMTHEME='gnome' XAUTHORITY='/run/user/1000/.mutter-Xwaylandauth.MP1IZ0' SHLVL='1' XDG_SESSION_CLASS='user' TERM='xterm-256color' GDMSESSION='gnome' DISPLAY=':0' LESS_TERMCAP_mb='[01;32m' LESS_TERMCAP_md='[01;32m' LESS_TERMCAP_me='[0m' LESS_TERMCAP_se='[0m' LESS_TERMCAP_so='[01;47;34m' LESS_TERMCAP_ue='[0m' LESS_TERMCAP_us='[01;36m' LESS='-R' PKGFILE_PROMPT_INSTALL_MISSING='1' _='/usr/bin/meson' 
+
+1/3 Validate desktop file   OK             0.01s
+
+--- command ---
+19:59:53 /usr/bin/desktop-file-validate data/io.boite.imagine.desktop
+--- stdout ---
+data/io.boite.imagine.desktop: hint: value "GTK;" for key "Categories" in group "Desktop Entry" does not contain a registered main category; application might only show up in a "catch-all" section of the application menu
+-------
+
+2/3 Validate appstream file FAIL           0.02s (exit status 1)
+
+--- command ---
+19:59:53 /usr/bin/appstream-util validate data/io.boite.imagine.appdata.xml
+--- stdout ---
+data/io.boite.imagine.appdata.xml: FAILED:
+• tag-missing           : <content_rating> required [use https://odrs.gnome.org/oars]
+• style-invalid         : Not enough <screenshot> tags, minimum is 1
+• tag-missing           : <release> required
+• tag-missing           : <name> is not present
+• tag-missing           : <summary> is not present
+• tag-missing           : <description> required
+• tag-missing           : <url> is not present
+--- stderr ---
+Validation of files failed
+-------
+
+3/3 Validate schema file    OK             0.01s
+
+--- command ---
+19:59:53 /usr/bin/glib-compile-schemas --strict --dry-run /home/brice/Code/imagine/data
+-------
+
+
+Summary of Failures:
+
+2/3 Validate appstream file FAIL           0.02s (exit status 1)
+2/3 Validate appstream file FAIL           0.02s (exit status 1)
+
+Ok:                 2   
+Expected Fail:      0   
+Fail:               1   
+Unexpected Pass:    0   
+Skipped:            0   
+Timeout:            0   

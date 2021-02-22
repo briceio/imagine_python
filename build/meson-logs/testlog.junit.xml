@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites tests="3" errors="0" failures="1"><testsuite name="imagine" tests="3" errors="0" failures="1" skipped="0"><testcase name="Validate desktop file" classname="Validate desktop file"><system-out>data/io.boite.imagine.desktop: hint: value "GTK;" for key "Categories" in group "Desktop Entry" does not contain a registered main category; application might only show up in a "catch-all" section of the application menu</system-out></testcase><testcase name="Validate appstream file" classname="Validate appstream file"><failure /><system-out>data/io.boite.imagine.appdata.xml: FAILED:
+• tag-missing           : &lt;content_rating&gt; required [use https://odrs.gnome.org/oars]
+• style-invalid         : Not enough &lt;screenshot&gt; tags, minimum is 1
+• tag-missing           : &lt;release&gt; required
+• tag-missing           : &lt;name&gt; is not present
+• tag-missing           : &lt;summary&gt; is not present
+• tag-missing           : &lt;description&gt; required
+• tag-missing           : &lt;url&gt; is not present</system-out><system-err>Validation of files failed</system-err></testcase><testcase name="Validate schema file" classname="Validate schema file" /></testsuite></testsuites>
