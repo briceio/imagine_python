@@ -137,10 +137,10 @@ class RectTool(Tool):
 
         self.normalize = normalize
 
-        self.x1 = 0
-        self.y1 = 0
-        self.x2 = 0
-        self.y2 = 0
+        self.x1 = 0 if layer == None else layer.x1
+        self.y1 = 0 if layer == None else layer.y1
+        self.x2 = 0 if layer == None else layer.x2
+        self.y2 = 0 if layer == None else layer.y2
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
@@ -180,8 +180,6 @@ class RectTool(Tool):
             self.x2 = max(self.x1, self.x2)
             self.y2 = max(self.y1, self.y2)
 
-    def draw(self, doc, w, cr, mouse_x, mouse_y):
-        super().draw(doc, w, cr, mouse_x, mouse_y)
 
 class CropTool(RectTool):
 
@@ -376,7 +374,6 @@ class ImageAnnotationTool(RectTool):
             document.add_layer(layer)
 
         super().__init__(document, layer, normalize=False)
-
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)

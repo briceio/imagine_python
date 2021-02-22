@@ -537,11 +537,14 @@ class ImageAnnotationLayer(RectLayer):
     keep_aspect = GObject.Property(type=bool, default=True, nick="Keep Aspect")
     alpha = GObject.Property(type=float, default=1.0, nick="Alpha", minimum=0.0, maximum=1.0)
 
-    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
-        super().__init__(document, "Image", x1, x2, y1, y2)
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0, path=None):
+        super().__init__(document, "Image", x1, y1, x2, y2)
 
-        self.path = None
+        self.path = path
         self._image_surface = None
+
+        if self.path != None:
+            self._reload_image()
 
     def get_tool(self):
         return "ImageAnnotationTool"
@@ -595,6 +598,7 @@ class ImageAnnotationLayer(RectLayer):
             cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
             cr.stroke()
         else:
+            print(">> %d %d %d %d" % (self.x1, self.y1, self.x2, self.y2))
             source_w = self._image_surface.get_width()
             source_h = self._image_surface.get_height()
             target_w = self.x2 - self.x1

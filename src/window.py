@@ -133,7 +133,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # enable drag & drop
         self.connect("drag-data-received", self.on_drag_data_received)
+        self.drawing_area.connect("drag-data-received", self.on_drop_image)
         self.drag_dest_set(Gtk.DestDefaults.MOTION | Gtk.DestDefaults.HIGHLIGHT | Gtk.DestDefaults.DROP,
+                  [Gtk.TargetEntry.new("text/uri-list", 0, 80)], Gdk.DragAction.COPY)
+        self.drawing_area.drag_dest_set(Gtk.DestDefaults.MOTION | Gtk.DestDefaults.HIGHLIGHT | Gtk.DestDefaults.DROP,
                   [Gtk.TargetEntry.new("text/uri-list", 0, 80)], Gdk.DragAction.COPY)
 
 
@@ -515,6 +518,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
         if info == 80:
             for uri in data.get_uris():
                 self.load(unquote(urlparse(uri).path))
+
+    def on_drop_image(self, widget, drag_context, x, y, data, info, time):
+        if info == 80:
+            for uri in data.get_uris():
+                path = unquote(urlparse(uri).path)
+                layer = ImageAnnotationLayer(self.document, x1=x, y1=y, x2=x+192, y2=y+192, path=path)
+                self.document.add_layer(layer)
 
     def on_exit_app(self, widget, event):
 
