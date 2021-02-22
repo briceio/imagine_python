@@ -44,7 +44,10 @@ class LayerEditor(Gtk.ListBox):
         box.set_focus_on_click(False)
 
         label = Gtk.Label(p.nick)
-        label.set_size_request(100, -1)
+        label.set_size_request(80, 30)
+        label.set_halign(Gtk.Align.START)
+        label.set_xalign(0)
+        label.set_margin_start(5)
         box.pack_start(label, True, True, 0) # property label
 
         self.add(box)
