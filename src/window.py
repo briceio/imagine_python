@@ -123,6 +123,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.connect("key-press-event", Tool.on_key)
         self.connect("key-release-event", Tool.on_key)
         self.connect("delete-event", self.on_exit_app)
+        self.drawing_area.connect("drag-data-received", self.on_drag_data_received)
         self.drawing_area.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
         self.drawing_area.connect("scroll-event", self.on_scroll)
         self.drawing_area.connect("draw", self.on_draw)
@@ -504,6 +505,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
             # redraw
             self.redraw()
 
+    def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
+        print("snoopy: %s" % data.get_text())
+
     def on_exit_app(self, widget, event):
 
         # build up dirt documents list
@@ -703,7 +707,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.drawing_area.set_size_request(w, h)
             cr.scale(self.document.scale, self.document.scale)
 
+
+        # draw document
+        cr.save()
         self._draw_document(w, cr, self.document)
+        cr.restore()
 
         # tools
         if not self._saving and self.tool != None:

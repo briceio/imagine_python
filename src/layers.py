@@ -322,7 +322,7 @@ class LightingLayer(RectLayer):
     def draw(self, w, cr):
         super().draw(w, cr)
 
-        if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
+        if self.x2 - self.x1 <= 0 or self.y2 - self.y1 <= 0:
             return
 
         def enhance():
@@ -340,7 +340,7 @@ class LightingLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2+ self.offset_y))
+            self._image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
             enhance()
             self.updating = False
 
@@ -372,7 +372,7 @@ class BlurLayer(RectLayer):
     def draw(self, w, cr):
         super().draw(w, cr)
 
-        if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
+        if self.x2 - self.x1 <= 0 or self.y2 - self.y1 <= 0:
             return
 
         def enhance():
@@ -388,7 +388,7 @@ class BlurLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2+ self.offset_y))
+            self._image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
             enhance()
             self.updating = False
 

@@ -151,6 +151,7 @@ class Document(GObject.GObject):
 
         # layers
         for layer in reversed(self.layers):
+            cr.save()
             layer.draw(w, cr)
-
+            cr.restore()
 
