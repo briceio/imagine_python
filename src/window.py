@@ -20,7 +20,8 @@ from .resize_dialog import ResizeDialog
 from .tools import *
 from .layer_editor import LayerEditor
 from .accelerator import Accelerator
-#
+from .layers import *
+
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
@@ -290,47 +291,47 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_crop")
     def on_crop(self, widget):
-        self.set_active_tool(CropTool(self.document))
+        self.set_active_tool(CropTool(self.document), keep_selected=False)
 
     @Gtk.Template.Callback("on_annotate_path")
     def on_annotate_path(self, widget):
-        self.set_active_tool(PathAnnotationTool(self.document), keep_selected=True)
+        self.set_active_tool(PathAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_annotate_rectangle")
     def on_annotate_rectangle(self, widget):
-        self.set_active_tool(RectangleAnnotationTool(self.document), keep_selected=True)
+        self.set_active_tool(RectangleAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_annotate_ellipse")
     def on_annotate_ellipse(self, widget):
-        self.set_active_tool(EllipseAnnotationTool(self.document), keep_selected=True)
+        self.set_active_tool(EllipseAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_annotate_circle")
     def on_annotate_circle(self, widget):
-        self.set_active_tool(EllipseAnnotationTool(self.document, circle = True), keep_selected=True)
+        self.set_active_tool(EllipseAnnotationTool(self.document, circle = True))
 
     @Gtk.Template.Callback("on_annotate_line")
     def on_annotate_line(self, widget):
-        self.set_active_tool(LineAnnotationTool(self.document), keep_selected=True)
+        self.set_active_tool(LineAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_annotate_arrow")
     def on_annotate_arrow(self, widget):
-        self.set_active_tool(LineAnnotationTool(self.document, arrow=True), keep_selected=True)
+        self.set_active_tool(LineAnnotationTool(self.document, arrow=True))
 
     @Gtk.Template.Callback("on_annotate_text")
     def on_annotate_text(self, widget):
-        self.set_active_tool(TextAnnotationTool(self.document), keep_selected=True)
+        self.set_active_tool(TextAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_annotate_emoji")
     def on_annotate_emoji(self, widget):
-        self.set_active_tool(EmojiAnnotationTool(self.document), keep_selected=True)
+        self.set_active_tool(EmojiAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_annotate_zoom")
     def on_annotate_zoom(self, widget):
-        self.set_active_tool(ZoomAnnotationTool(self.document), keep_selected=True)
+        self.set_active_tool(ZoomAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_annotate_image")
     def on_annotate_image(self, widget):
-        self.set_active_tool(ImageAnnotationTool(self.document), keep_selected=True)
+        self.set_active_tool(ImageAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_rotate_left")
     def on_rotate_left(self, widget):
@@ -370,7 +371,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self._set_header_subtitle(None)
             self.document = None # no more document in the stack
 
-    def set_active_tool(self, tool, keep_selected = False):
+    def set_active_tool(self, tool, keep_selected = True):
         def apply_callback():
             # unselect if requested
             if not keep_selected:

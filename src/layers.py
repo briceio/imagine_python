@@ -37,6 +37,10 @@ class Layer(GObject.GObject):
         self.name = name
         self.connect("notify", self.updated)
 
+        # offset (if explicitly moved)
+        self.offset_x = 0
+        self.offset_y = 0
+
     def updated(self, obj, param):
         pass
 
@@ -44,7 +48,7 @@ class Layer(GObject.GObject):
         return None
 
     def draw(self, w, cr):
-        pass
+        cr.translate(self.offset_x, self.offset_y)
 
     def crop(self, x1, y1, x2, y2):
         pass
@@ -59,6 +63,7 @@ class RectLayer(Layer):
 
     def __init__(self, document, name, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__(document, name)
+
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
@@ -69,6 +74,18 @@ class RectLayer(Layer):
         self.y1 -= y1
         self.x2 -= x1
         self.y2 -= y1
+
+class PointLayer(Layer):
+
+    def __init__(self, document, name, x = 0, y = 0):
+        super().__init__(document, name)
+
+        self.x = x
+        self.y = y
+
+    def crop(self, x1, y1, x2, y2):
+        self.x -= x1
+        self.y -= y1
 
 class RectangleAnnotationLayer(RectLayer):
 
@@ -83,6 +100,8 @@ class RectangleAnnotationLayer(RectLayer):
         return "RectangleAnnotationTool"
 
     def draw(self, w, cr):
+        super().draw(w, cr)
+
         cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
         cr.set_line_width(0)
         cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
@@ -107,6 +126,7 @@ class EllipseAnnotationLayer(RectLayer):
         return "EllipseAnnotationTool"
 
     def draw(self, w, cr):
+        super().draw(w, cr)
 
         def draw():
             cr.save()
@@ -119,7 +139,7 @@ class EllipseAnnotationLayer(RectLayer):
         def draw_ellipse():
             width = self.x2 - self.x1
             height = self.y2 - self.y1
-            if width > 0 and height > 0:
+            if width != 0 and height != 0:
                 center_x = self.x1 + width / 2
                 center_y = self.y1 + height / 2
                 radius = math.sqrt(pow(width, 2) + pow(height, 2))
@@ -129,9 +149,9 @@ class EllipseAnnotationLayer(RectLayer):
                 cr.arc(0.0, 0.0, 1.0, 0.0, 2.0 * math.pi)
 
         def draw_circle():
-            width = self.x2 - self.x1
-            height = self.y2 - self.y1
-            ratio = width / height if height > 0 else 1
+            width = abs(self.x2 - self.x1)
+            height = abs(self.y2 - self.y1)
+            ratio = width / height if height != 0 else 1
             cr.arc(self.x1, self.y1, width, 0, math.pi * 2)
 
         cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
@@ -158,6 +178,8 @@ class LineAnnotationLayer(RectLayer):
         return "LineAnnotationTool"
 
     def draw(self, w, cr):
+        super().draw(w, cr)
+
         cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
         cr.set_line_width(self.width)
         cr.set_dash([])
@@ -177,7 +199,7 @@ class LineAnnotationLayer(RectLayer):
 
         cr.stroke()
 
-class TextAnnotationLayer(Layer):
+class TextAnnotationLayer(PointLayer):
 
     text = GObject.Property(type=str, default="Text", nick="Text", blurb="multiline")
     font = GObject.Property(type=Font, default=Font("Noto Sans Bold 30"), nick="Font")
@@ -186,17 +208,12 @@ class TextAnnotationLayer(Layer):
 
     def __init__(self, document, x = 0, y = 0):
         super().__init__(document, "Text")
-        self.x = x
-        self.y = y
 
     def get_tool(self):
         return "TextAnnotationTool"
 
-    def crop(self, x1, y1, x2, y2):
-        self.x -= x1
-        self.y -= y1
-
     def draw(self, w, cr):
+        super().draw(w, cr)
 
         # map GTK font description to Pango
         desc = Pango.font_description_from_string(self.font.desc)
@@ -245,24 +262,19 @@ Selector.SMALL_EMOJI_SELECTOR = Selector([
     "🏴", "🚩"
 ])
 
-class EmojiAnnotationLayer(Layer):
+class EmojiAnnotationLayer(PointLayer):
 
     size = GObject.Property(type=int, default=150, nick="Size", minimum=1, maximum=1000)
     emoji = GObject.Property(type=Selector, default=Selector.SMALL_EMOJI_SELECTOR, nick="Emoji")
 
     def __init__(self, document, x = 0, y = 0):
         super().__init__(document, "Emoji")
-        self.x = x
-        self.y = y
 
     def get_tool(self):
         return "EmojiAnnotationTool"
 
-    def crop(self, x1, y1, x2, y2):
-        self.x -= x1
-        self.y -= y1
-
     def draw(self, w, cr):
+        super().draw(w, cr)
 
         # prepare font
         desc = Pango.font_description_from_string("Noto Sans Bold")
@@ -308,6 +320,7 @@ class LightingLayer(RectLayer):
         self.enhancing = True
 
     def draw(self, w, cr):
+        super().draw(w, cr)
 
         if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
             return
@@ -327,7 +340,7 @@ class LightingLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = self.document.image.crop((self.x1, self.y1, self.x2, self.y2))
+            self._image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2+ self.offset_y))
             enhance()
             self.updating = False
 
@@ -357,6 +370,7 @@ class BlurLayer(RectLayer):
         self.enhancing = True
 
     def draw(self, w, cr):
+        super().draw(w, cr)
 
         if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
             return
@@ -374,7 +388,7 @@ class BlurLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = self.document.image.crop((self.x1, self.y1, self.x2, self.y2))
+            self._image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2+ self.offset_y))
             enhance()
             self.updating = False
 
@@ -411,7 +425,7 @@ class ZoomAnnotationLayer(RectLayer):
         if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
             return
 
-        image = self.document.image.crop((self.x1, self.y1, self.x2, self.y2))
+        image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
 
         buffer = BytesIO()
         image.save(buffer, format="PNG")
@@ -424,6 +438,7 @@ class ZoomAnnotationLayer(RectLayer):
             self.frame_y = self.y1 + ((self.y2 - self.y1) / 2)
 
     def draw(self, w, cr):
+        super().draw(w, cr)
 
         if self._image_surface != None:
 
@@ -487,16 +502,13 @@ class PathAnnotationLayer(Layer):
 
         self.points = []
 
-        self.offset_x = 0
-        self.offset_y = 0
-
     def get_tool(self):
         return "PathAnnotationTool"
 
     def draw(self, w, cr):
-        if len(self.points) > 1:
-            cr.translate(self.offset_x, self.offset_y)
+        super().draw(w, cr)
 
+        if len(self.points) > 1:
             cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
 
             cr.new_path()
@@ -571,6 +583,8 @@ class ImageAnnotationLayer(RectLayer):
             dialog.destroy()
 
     def draw(self, w, cr):
+        super().draw(w, cr)
+
         if self._image_surface == None:
             cr.set_source_rgba(1, 1, 1, 0.75)
             cr.set_line_width(DEFAULT_WIDTH)
@@ -585,7 +599,7 @@ class ImageAnnotationLayer(RectLayer):
             scale_x = 1.0
             scale_y = 1.0
 
-            if target_w > 0 and target_h > 0:
+            if target_w != 0 and target_h != 0:
                 if self.keep_aspect:
                     source_ratio = source_w / source_h
                     target_ratio = target_w / target_h
