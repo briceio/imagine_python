@@ -530,7 +530,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def on_exit_app(self, widget, event):
 
-        # build up dirt documents list
+        # build up dirty documents list
         dirty_documents = ["▸ %s\n" % document.name for document in self.documents if document.dirty]
 
         if len(dirty_documents) > 0:

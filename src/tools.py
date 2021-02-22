@@ -246,20 +246,11 @@ class TextAnnotationTool(PointTool):
 class EmojiAnnotationTool(PointTool):
 
     def __init__(self, document, layer=None):
-        super().__init__(document)
-
-        self.layer = layer
         if layer == None:
-            self.layer = EmojiAnnotationLayer(document)
-            self.document.add_layer(self.layer)
+            layer = EmojiAnnotationLayer(document)
+            document.add_layer(layer)
 
-    def draw(self, doc, w, cr, mouse_x, mouse_y):
-        super().draw(doc, w, cr, mouse_x, mouse_y)
-
-        if self._drawing:
-            self.layer.x = self.x
-            self.layer.y = self.y
-            self.layer.draw(w, cr)
+        super().__init__(document, layer)
 
 class LightingTool(RectTool):
 

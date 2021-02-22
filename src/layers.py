@@ -232,9 +232,9 @@ class TextAnnotationLayer(PointLayer):
         # center or not
         width, height = layout.get_pixel_size()
         if self.centered:
-            cr.move_to(self.x - width / 2, self.y - height / 2)
+            cr.translate(self.x - width / 2, self.y - height / 2)
         else:
-            cr.move_to(self.x, self.y)
+            cr.translate(self.x, self.y)
 
         # render
         cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
@@ -293,7 +293,7 @@ class EmojiAnnotationLayer(PointLayer):
 
         # center
         width, height = layout.get_pixel_size()
-        cr.move_to(self.x - width / 2, self.y - height / 2)
+        cr.translate(self.x - width / 2, self.y - height / 2)
 
         # render on surface to apply alpha
         cr.set_source_rgba(1, 1, 1, 1)

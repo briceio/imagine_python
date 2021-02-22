@@ -50,7 +50,7 @@ class Accelerator:
 
         if not self.enabled: return
 
-        print("Accelerator command: %s" % Gtk.accelerator_name_with_keycode(None, event.keyval, event.hardware_keycode, event.state))
+        #print("Accelerator command: %s" % Gtk.accelerator_name_with_keycode(None, event.keyval, event.hardware_keycode, event.state))
 
         if not self.action_pending:
             self.action_pending = True
