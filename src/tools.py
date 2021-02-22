@@ -74,7 +74,6 @@ class Tool:
         # reticule
         if self.reticule:
             cr.save()
-            cr.identity_matrix()
             cr.set_source_rgb(1, 1, 1)
             cr.set_dash([10, 10])
             cr.set_line_width(1)
