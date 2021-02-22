@@ -407,6 +407,9 @@ class ZoomAnnotationLayer(RectLayer):
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
     frame = GObject.Property(type=bool, default=True, nick="Frame")
     frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10)
+    shadow = GObject.Property(type=bool, default=True, nick="Shadow")
+    shadow_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(0, 0, 0, 1), nick="Shadow Color")
+    shadow_extend = GObject.Property(type=int, default=15, nick="Shadow Extend", minimum=0, maximum=100)
 
     def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__(document, "Zoom")
@@ -457,6 +460,35 @@ class ZoomAnnotationLayer(RectLayer):
             target_frame_x = self.frame_x + offset_x
             target_frame_y = self.frame_y + offset_y
 
+            if self.shadow:
+                r = self.shadow_color.red
+                g = self.shadow_color.green
+                b = self.shadow_color.blue
+
+                # bottom shadow
+                shadow_gradient = cairo.LinearGradient(0, target_frame_y + target_height, 0, target_frame_y + target_height + self.shadow_extend)
+                shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
+                shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
+                cr.rectangle(target_frame_x + self.shadow_extend, target_frame_y + target_height, target_width - self.shadow_extend, self.shadow_extend)
+                cr.set_source(shadow_gradient)
+                cr.fill()
+
+                # right shadow
+                shadow_gradient = cairo.LinearGradient(target_frame_x + target_width, 0, target_frame_x + target_width + self.shadow_extend, 0)
+                shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
+                shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
+                cr.rectangle(target_frame_x + target_width, target_frame_y + self.shadow_extend, self.shadow_extend, target_height - self.shadow_extend)
+                cr.set_source(shadow_gradient)
+                cr.fill()
+
+                # corner shadow
+                shadow_gradient = cairo.RadialGradient(target_frame_x + target_width, target_frame_y + target_height, 0, target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend)
+                shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
+                shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
+                cr.rectangle(target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend, self.shadow_extend)
+                cr.set_source(shadow_gradient)
+                cr.fill()
+
             # source frame
             if self.frame:
                 cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
@@ -482,7 +514,6 @@ class ZoomAnnotationLayer(RectLayer):
             cr.translate(self.frame_x + offset_x, self.frame_y + offset_y)
             cr.scale(self.zoom, self.zoom)
             cr.set_source_surface(self._image_surface, 0, 0)
-            # TODO drop shadow
             cr.paint()
             cr.restore()
 

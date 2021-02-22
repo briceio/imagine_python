@@ -88,17 +88,14 @@ class Document(GObject.GObject):
     def rotate(self, angle):
         self.dirty = True
         self._reload(self.image.rotate(angle, expand=True))
-        # TODO rotate layers
 
     def flip_horizontal(self):
         self.dirty = True
         self._reload(self.image.transpose(Image.FLIP_LEFT_RIGHT))
-        # TODO flip layers
 
     def flip_vertical(self):
         self.dirty = True
         self._reload(self.image.transpose(Image.FLIP_TOP_BOTTOM))
-        # TODO flip layers
 
     def add_layer(self, layer):
         self.dirty = True
