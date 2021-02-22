@@ -30,6 +30,7 @@ import cairo
 import math
 from PIL import Image
 import functools, operator
+from urllib.parse import urlparse, unquote
 
 MOUSE_SCROLL_FACTOR = 2.0
 
@@ -123,13 +124,18 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.connect("key-press-event", Tool.on_key)
         self.connect("key-release-event", Tool.on_key)
         self.connect("delete-event", self.on_exit_app)
-        self.drawing_area.connect("drag-data-received", self.on_drag_data_received)
         self.drawing_area.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
         self.drawing_area.connect("scroll-event", self.on_scroll)
         self.drawing_area.connect("draw", self.on_draw)
         self.drawing_area.connect("motion-notify-event", self.mouse_move)
         self.drawing_area.connect("button-press-event", self.mouse_down)
         self.drawing_area.connect("button-release-event", self.mouse_up)
+
+        # enable drag & drop
+        self.connect("drag-data-received", self.on_drag_data_received)
+        self.drag_dest_set(Gtk.DestDefaults.MOTION | Gtk.DestDefaults.HIGHLIGHT | Gtk.DestDefaults.DROP,
+                  [Gtk.TargetEntry.new("text/uri-list", 0, 80)], Gdk.DragAction.COPY)
+
 
         # documents binding
         self.documents_listbox.bind_model(self.documents, self._create_document_item_widget)
@@ -506,7 +512,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.redraw()
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
-        print("snoopy: %s" % data.get_text())
+        if info == 80:
+            for uri in data.get_uris():
+                self.load(unquote(urlparse(uri).path))
 
     def on_exit_app(self, widget, event):
 
