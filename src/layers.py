@@ -598,7 +598,6 @@ class ImageAnnotationLayer(RectLayer):
             cr.rectangle(self.x1, self.y1, self.x2 - self.x1, self.y2 - self.y1)
             cr.stroke()
         else:
-            print(">> %d %d %d %d" % (self.x1, self.y1, self.x2, self.y2))
             source_w = self._image_surface.get_width()
             source_h = self._image_surface.get_height()
             target_w = self.x2 - self.x1

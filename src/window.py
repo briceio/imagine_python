@@ -521,10 +521,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def on_drop_image(self, widget, drag_context, x, y, data, info, time):
         if info == 80:
+            offset = 0
             for uri in data.get_uris():
                 path = unquote(urlparse(uri).path)
-                layer = ImageAnnotationLayer(self.document, x1=x, y1=y, x2=x+192, y2=y+192, path=path)
+                layer = ImageAnnotationLayer(self.document, x1=x+offset, y1=y+offset, x2=x+offset+192, y2=y+offset+192, path=path)
                 self.document.add_layer(layer)
+                offset += 30
 
     def on_exit_app(self, widget, event):
 
