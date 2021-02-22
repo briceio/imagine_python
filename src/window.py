@@ -21,6 +21,7 @@ from .tools import *
 from .layer_editor import LayerEditor
 from .accelerator import Accelerator
 from .layers import *
+from .extensions import *
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -46,6 +47,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     # widgets
     header_bar: Gtk.HeaderBar = Gtk.Template.Child()
+    infobar: Gtk.InfoBar = Gtk.Template.Child()
+    infobar_label: Gtk.Label = Gtk.Template.Child()
+    main_paned: Gtk.Paned = Gtk.Template.Child()
     scroll_area: Gtk.ScrolledWindow = Gtk.Template.Child()
     viewport: Gtk.Viewport = Gtk.Template.Child()
     drawing_area: Gtk.DrawingArea = Gtk.Template.Child()
@@ -68,6 +72,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.mouse_x = 0
         self.mouse_y = 0
         self.selected_layer: Layer = None
+
+        # infobar
+        self.infobar.set_revealed(False)
 
         # register the accelerator
         self.accelerator = Accelerator(activation_timeout=1.0)
@@ -155,10 +162,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
             # select existing file which already opened
             self.documents_listbox.select_row(self.documents_listbox.get_row_at_index(existing[0]))
         else:
-            # load new document and select it
+            # load new document
             self.document = Document(path)
             self.documents.append(self.document)
-            self.documents_listbox.select_row(self.documents_listbox.get_row_at_index(len(self.documents) - 1))
 
     def _save(self, document=None):
         if document == None: document = self.document
@@ -194,13 +200,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
             if saver != None:
                 saver(surface)
             else:
-                print("Unsupported format!") # TODO info box message
+                self.display_message("Unsupported file format: %s" % document.extension)
 
         self._saving = False
 
         document.dirty = False
 
-        print("Saved to: %s" % path) # TODO info box message
+        self.display_message("File saved to: %s" % path)
 
     def _load_window_state(self):
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
@@ -209,6 +215,16 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def _save_window_state(self, window, event=None):
         self.user_settings.set_int("window-width", self.get_size()[0])
         self.user_settings.set_int("window-height", self.get_size()[1])
+
+    def display_message(self, message, type=Gtk.MessageType.INFO):
+        self.infobar_label.set_text(message)
+        self.infobar.set_message_type(type) # TODO CSS node with name infobar. The node may get one of the style classes .info, .warning, .error or .question, depending on the message type.
+        self.infobar.set_revealed(True)
+        self.hide_message()
+
+    @delay(3.0)
+    def hide_message(self):
+        self.infobar.set_revealed(False)
 
     @Gtk.Template.Callback("on_file_open")
     def on_file_open(self, widget):
@@ -273,8 +289,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         for document in self.documents:
             self._save(document)
 
-        # TODO toast notification
-        print("Save all done")
+        self.display_message("All modified files saved successfully.")
 
     @Gtk.Template.Callback("on_zoom_changed")
     def on_zoom_changed(self, widget):
@@ -374,14 +389,16 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.set_active_tool(BlurTool(self.document), keep_selected=True)
 
     def _switch_document(self):
-        index = self.documents_listbox.get_selected_row().get_index()
-        index = index + 1 if index < len(self.documents) - 1 else 0
-        new_row = self.documents_listbox.get_row_at_index(index)
-        if new_row != None:
-            self.documents_listbox.select_row(new_row)
-        else:
-            self._set_header_subtitle(None)
-            self.document = None # no more document in the stack
+        row = self.documents_listbox.get_selected_row()
+        if row != None:
+            index = row.get_index()
+            index = index + 1 if index < len(self.documents) - 1 else 0
+            new_row = self.documents_listbox.get_row_at_index(index)
+            if new_row != None:
+                self.documents_listbox.select_row(new_row)
+            else:
+                self._set_header_subtitle(None)
+                self.document = None # no more document in the stack
 
     def set_active_tool(self, tool, keep_selected = True):
         def apply_callback():
@@ -614,6 +631,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         return box
 
     def _on_document_mounted(self, window, document):
+
+        # remove title
         if self.document == None:
             self._set_header_subtitle(None)
             return
@@ -638,7 +657,18 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # accelerator context
         self.accelerator.set_context("document")
 
+        # select newly mounted document
+        found, position = self.documents.find(self.document)
+        if found:
+            self.documents_listbox.select_row(self.documents_listbox.get_row_at_index(position))
+
+    def _select_last_document(self):
+        self.documents_listbox.select_row(self.documents_listbox.get_row_at_index(len(self.documents) - 1))
+
     def _on_select_document(self, container, row):
+
+        # no more selection, hide the paned
+        self.main_paned.set_position(150 if row != None else 0)
 
         # cleanup
         if self.document != None:

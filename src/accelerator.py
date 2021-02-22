@@ -127,15 +127,8 @@ class Accelerator:
     def set_context(self, context):
         if self.contexts.__contains__(context):
             self._current_context = self.contexts[context]
-            print("Accelerator context set to: %s" % context)
         else:
             print("Unknown accelerator context: %s" % context)
-
-    def trigger(self, command):
-        if self.commands.__contains__(command):
-            print("ok")
-        else:
-            print("Unknown accelerator command: %s" % command)
 
     def enable(self):
         self.enabled = True
