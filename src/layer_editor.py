@@ -34,7 +34,6 @@ class LayerEditor(Gtk.ListBox):
         self.show_all()
 
     def _notify(self, p):
-        #self.layer.notify(p) TODO DEBUG > model not updated: notify problem?
         if self.on_update != None:
             self.on_update(self.layer)
 

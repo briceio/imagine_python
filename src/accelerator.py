@@ -17,6 +17,7 @@ class Action:
 
 class Accelerator:
 
+    INSTANCIATED = False
     ACTIVATION_TIMEOUT = 1.0
 
     def __init__(self, activation_timeout=1.0):
@@ -30,7 +31,10 @@ class Accelerator:
 
         print("Acceleration activation timeout: %f" % self.activation_timeout)
 
-        # TODO check singleton
+        # check singleton
+        if Accelerator.INSTANCIATED:
+            print("There is already an Accelerator in the app!")
+        Accelerator.INSTANCIATED = True
 
         # init
         self.action_pending = False

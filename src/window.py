@@ -218,7 +218,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def display_message(self, message, type=Gtk.MessageType.INFO):
         self.infobar_label.set_text(message)
-        self.infobar.set_message_type(type) # TODO CSS node with name infobar. The node may get one of the style classes .info, .warning, .error or .question, depending on the message type.
+        self.infobar.set_message_type(type)
         self.infobar.set_revealed(True)
         self.hide_message()
 
@@ -279,10 +279,26 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_file_close")
     def on_file_close(self, widget):
-        # TODO check dirty
-        index = self.documents_listbox.get_selected_row().get_index()
-        self._switch_document()
-        self.documents.remove(index)
+        row = self.documents_listbox.get_selected_row()
+        if row != None:
+            index = row.get_index()
+            document = self.documents[index]
+
+            # check dirty
+            if document.dirty:
+                dialog = Gtk.MessageDialog(parent=self, type=Gtk.MessageType.WARNING, buttons=Gtk.ButtonsType.YES_NO)
+                dialog.set_title("Closing %s" % document.name)
+                dialog.format_secondary_markup("This image has been modified!\n\nDo you want to save it before?")
+
+                response = dialog.run()
+
+                dialog.destroy()
+
+                if response == Gtk.ResponseType.YES:
+                    self._save(document)
+
+            self._switch_document()
+            self.documents.remove(index)
 
     @Gtk.Template.Callback("on_file_save_all")
     def on_file_save_all(self, widget):

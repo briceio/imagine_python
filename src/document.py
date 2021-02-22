@@ -77,7 +77,6 @@ class Document(GObject.GObject):
     def resize(self, width, height):
         self.dirty = True
         self._reload(self.image.resize((width, height), resample=Image.BILINEAR))
-        # TODO resize the layers
 
     def crop(self, x1, y1, x2, y2):
         self.dirty = True
