@@ -419,33 +419,56 @@ class PathAnnotationTool(Tool):
         super().__init__(document, reticule = True)
 
         self._drawing = False
+        self._moving = False
+
+        self._start_move_offset_x = 0
+        self._start_move_offset_y = 0
 
         self.layer = layer
         if layer == None:
             self.layer = PathAnnotationLayer(document)
             self.document.add_layer(self.layer)
 
+    def cancel(self):
+        super().cancel()
+        self._drawing = False
+        self._moving = False
+
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if not self._drawing:
+        if not self._drawing and mouse_button == 1:
+            self.layer.offset_x = 0
+            self.layer.offset_y = 0
             self.layer.points = []
             self.layer.points.append((mouse_x, mouse_y))
             self._drawing = True
 
+        if not self._moving and mouse_button == 3:
+            self._start_move_offset_x = mouse_x
+            self._start_move_offset_y = mouse_y
+            self._moving = True
+
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if self._drawing:
-            self.layer.points.append((mouse_x, mouse_y))
+        if mouse_button == 1:
+            if self._drawing:
+                self.layer.points.append((mouse_x, mouse_y))
+            self._drawing = False
 
-        self._drawing = False
+        if self._moving and mouse_button == 3:
+            self._moving = False
 
     def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
         super().mouse_move(doc, w, cr, mouse_x, mouse_y)
 
         if self._drawing:
             self.layer.points.append((mouse_x, mouse_y))
+
+        if self._moving:
+            self.layer.offset_x = mouse_x - self._start_move_offset_x
+            self.layer.offset_y = mouse_y - self._start_move_offset_y
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)

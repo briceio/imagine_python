@@ -487,11 +487,16 @@ class PathAnnotationLayer(Layer):
 
         self.points = []
 
+        self.offset_x = 0
+        self.offset_y = 0
+
     def get_tool(self):
         return "PathAnnotationTool"
 
     def draw(self, w, cr):
         if len(self.points) > 1:
+            cr.translate(self.offset_x, self.offset_y)
+
             cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
 
             cr.new_path()
