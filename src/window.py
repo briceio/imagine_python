@@ -58,6 +58,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
     documents_listbox: Gtk.ListBox = Gtk.Template.Child()
     layer_editor_container: Gtk.Box = Gtk.Template.Child()
     button_save: Gtk.Button = Gtk.Template.Child()
+    menu_advanced_save: Gtk.MenuButton = Gtk.Template.Child()
+    zoom_spinbutton: Gtk.AboutDialog = Gtk.Template.Child()
+    zoom_spinbutton_label: Gtk.Label = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -117,10 +120,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # document notify
         self.connect("notify::document", self._on_document_mounted)
 
-        # TODO DEBUG document
-        self.load("/home/brice/Données/Temp/pic.jpg")
-        self.load("/home/brice/Données/Temp/pic2.jpg")
-
         # zoom
         self.zoom_spinbutton.set_range(0.1, 10.0)
         self.zoom_spinbutton.set_increments(0.1, 1.0)
@@ -154,6 +153,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # binding
         self.button_save.bind_property("sensitive", self, "document")
 
+        # initialization
+        self._on_document_mounted(self, self.document)
+
     def load(self, path):
         # check if the file is already opened
         existing = [i for i, doc in enumerate(self.documents) if doc.path == path]
@@ -163,8 +165,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.documents_listbox.select_row(self.documents_listbox.get_row_at_index(existing[0]))
         else:
             # load new document
-            self.document = Document(path)
-            self.documents.append(self.document)
+            document = Document(path)
+            self.documents.append(document)
+
+            # trigger bindings
+            self.document = document
 
     def _save(self, document=None):
         if document == None: document = self.document
@@ -648,10 +653,26 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def _on_document_mounted(self, window, document):
 
-        # remove title
+        # no document
         if self.document == None:
+            # remove title
             self._set_header_subtitle(None)
+
+            # hide the UI
+            self.main_paned.hide()
+            self.button_save.hide()
+            self.menu_advanced_save.hide()
+            self.zoom_spinbutton.hide()
+            self.zoom_spinbutton_label.hide()
+
             return
+
+        # ensure UI visibility
+        self.main_paned.show()
+        self.button_save.show()
+        self.menu_advanced_save.show()
+        self.zoom_spinbutton.show()
+        self.zoom_spinbutton_label.show()
 
         # document title
         self._set_header_subtitle(self.document.path)
