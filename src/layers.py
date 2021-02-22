@@ -421,6 +421,9 @@ class ZoomAnnotationLayer(RectLayer):
     def updated(self, obj, param):
         self.update()
 
+    def clear(self):
+        self._image_surface = None
+
     def update(self):
         if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
             return

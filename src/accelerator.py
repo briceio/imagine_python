@@ -84,8 +84,6 @@ class Accelerator:
 
     def _process_buffer(self, timeout=False):
 
-        print("Processing buffer: %s" % self.buffer)
-
         # merge global & current active contexts
         # to be replaced with A | B in Python 3.9+ (A |= B)
         contexts = self.global_context.copy()

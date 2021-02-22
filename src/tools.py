@@ -2,6 +2,11 @@ from .layers import *
 
 class Tool:
 
+    # keys modifiers
+    KEY_CONTROL = False
+    KEY_SHIFT = False
+    KEY_ALT = False
+
     def __init__(self, document, layer=None, reticule=False, callback=None):
         self.document = document
         self.apply_callback = callback
@@ -19,6 +24,13 @@ class Tool:
         self._start_move_offset_y = 0
         self.offset_x = 0
         self.offset_y = 0
+
+
+    # static key handler to process custom keys
+    def on_key(widget, event):
+        Tool.KEY_CONTROL = (event.keyval == Gdk.KEY_Control_L or event.keyval == Gdk.KEY_Control_R) and event.type == Gdk.EventType.KEY_PRESS
+        Tool.KEY_SHIFT = (event.keyval == Gdk.KEY_Shift_L or event.keyval == Gdk.KEY_Shift_R) and event.type == Gdk.EventType.KEY_PRESS
+        Tool.KEY_ALT = (event.keyval == Gdk.KEY_Alt_L or event.keyval == Gdk.KEY_Alt_R) and event.type == Gdk.EventType.KEY_PRESS
 
     def apply(self):
         if self.apply_callback != None:
@@ -294,14 +306,22 @@ class ZoomAnnotationTool(RectTool):
 
         super().__init__(document, layer, normalize=True)
 
-    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
-        super().mouse_move(doc, w, cr, mouse_x, mouse_y)
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if self.moving:
-            self.layer.update()
-            #self.layer.frame_position_forced = True
-            #self.layer.frame_x = mouse_x
-            #self.layer.frame_y = mouse_y
+        if mouse_button == 1:
+            self.layer.clear()
+
+    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
+        if self.moving and Tool.KEY_CONTROL:
+            self.layer.frame_position_forced = True
+            self.layer.frame_x = mouse_x
+            self.layer.frame_y = mouse_y
+        else:
+           super().mouse_move(doc, w, cr, mouse_x, mouse_y)
+
+           if self.moving:
+               self.layer.update()
 
     def apply(self):
         super().apply()

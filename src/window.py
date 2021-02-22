@@ -120,6 +120,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # events
         self.connect("key-press-event", self.on_key_press)
+        self.connect("key-press-event", Tool.on_key)
+        self.connect("key-release-event", Tool.on_key)
         self.connect("delete-event", self.on_exit_app)
         self.drawing_area.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
         self.drawing_area.connect("scroll-event", self.on_scroll)
