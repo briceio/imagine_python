@@ -87,6 +87,7 @@ class LayerEditor(Gtk.ListBox):
             entry = Gtk.FileChooserButton()
             entry.set_title(p.nick)
             entry.connect("file-set", on_change_file_entry)
+            self.layer.connect("notify::path", lambda w, p: entry.set_filename(self.layer.get_property(p.name)))
             box.pack_start(entry, True, True, 0)
         else:
             entry = Gtk.Entry()
