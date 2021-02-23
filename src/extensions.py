@@ -2,8 +2,9 @@ import threading
 from gi.repository import GLib
 from time import sleep
 import cairo
+from PIL import Image
 
-__all__ = ['delay', 'threaded', 'cario_image_from_pil']
+__all__ = ['delay', 'threaded', 'cario_image_from_pil', 'pil_from_cairo_surface']
 
 def delay(delay, main_thread=True):
     def wrapper(f):
@@ -34,6 +35,11 @@ def threaded():
             thread.start()
         return run
     return wrapper
+
+def pil_from_cairo_surface(surface, format='RGB'):
+    image = Image.frombuffer(mode = 'RGBA', size = (surface.get_width(), surface.get_height()), data = surface.get_data(),)
+    b, g, r, a = image.split()
+    return Image.merge('RGBA', (r, g, b, a)) if format=='RGBA' else Image.merge('RGB', (r, g, b))
 
 def cario_image_from_pil(im, alpha=1.0, format=cairo.FORMAT_ARGB32):
     """

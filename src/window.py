@@ -156,6 +156,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # initialization
         self._on_document_mounted(self, self.document)
 
+        # TODO DEBUG
+        self.load("/home/brice/Données/Temp/pic.jpg")
+        self.load("/home/brice/Données/Temp/pic2.jpg")
+
+
     def load(self, path):
         # check if the file is already opened
         existing = [i for i, doc in enumerate(self.documents) if doc.path == path]
@@ -179,9 +184,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
             surface.write_to_png(path)
 
         def save_jpg(surface):
-            image = Image.frombuffer(mode = 'RGBA', size = (width, height), data = surface.get_data(),)
-            b, g, r, a = image.split()
-            image = Image.merge('RGB', (r, g, b))
+            image = pil_from_cairo_surface(surface)
             image.save(path, quality=90)
 
         width, height = document.image.size
@@ -793,7 +796,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
             h = self.document.scale * ih
             self.drawing_area.set_size_request(w, h)
             cr.scale(self.document.scale, self.document.scale)
-
 
         # draw document
         cr.save()

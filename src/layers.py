@@ -337,7 +337,7 @@ class LightingLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
+            self._image = self.document.get_previous_render().crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
             enhance()
             self.updating = False
 
@@ -381,7 +381,7 @@ class BlurLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
+            self._image = self.document.get_previous_render().crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
             enhance()
             self.updating = False
 
@@ -424,7 +424,7 @@ class ZoomAnnotationLayer(RectLayer):
         if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
             return
 
-        image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
+        image = self.document.get_previous_render().crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
         self._image_surface = cario_image_from_pil(image)
 
         if not self.frame_position_forced:

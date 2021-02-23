@@ -34,6 +34,7 @@ class Document(GObject.GObject):
         self.name = os.path.basename(path)
         self.extension = os.path.splitext(path)[1]
         self.image: Image = None
+        self._previous_layer_render: Image = None
         self.thumbnail: GdkPixbuf = None
         self.imageSurface: cairo.ImageSurface = None
         self.layers = Gio.ListStore()
@@ -136,15 +137,38 @@ class Document(GObject.GObject):
         for i, l in enumerate(self.layers):
             l.position = i
 
+    def get_previous_render(self):
+        return self._previous_layer_render if self._previous_layer_render != None else self.image
+
     def draw(self, w, cr):
 
-        # image itself
+        # starting point is the image itself
+        previous_back_layer = self.imageSurface
+        self._previous_layer_render = pil_from_cairo_surface(self.imageSurface)
         cr.set_source_surface(self.imageSurface, 0, 0)
         cr.paint()
 
         # layers
         for layer in reversed(self.layers):
-            cr.save()
-            layer.draw(w, cr)
-            cr.restore()
+
+            # create intermediary surface
+            layer_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.imageSurface.get_width(), self.imageSurface.get_height())
+            layer_context = cairo.Context(layer_surface)
+
+            # render previous layer
+            layer_context.set_source_surface(previous_back_layer, 0, 0)
+            layer_context.paint()
+
+            # render layer
+            layer_context.save()
+            layer.draw(w, layer_context)
+            layer_context.restore()
+
+            # save intermediary render for the next layers
+            previous_back_layer = layer_surface
+            self._previous_layer_render = pil_from_cairo_surface(layer_surface)
+
+            # render the layer
+            cr.set_source_surface(layer_surface, 0, 0)
+            cr.paint()
 
