@@ -106,7 +106,13 @@ class LayerEditor(Gtk.ListBox):
         box = self._build_property_editor(p)
         entry = Gtk.SpinButton()
         entry.set_range(p.minimum, p.maximum)
-        entry.set_increments(1, 5)
+
+        if p.blurb != "":
+            steps = p.blurb.split(";")
+            entry.set_increments(int(steps[0]), int(steps[1]))
+        else:
+            entry.set_increments(1, 5)
+
         entry.set_value(self.layer.get_property(p.name))
         entry.connect("changed", on_change)
         entry.connect("value-changed", on_change)
@@ -155,6 +161,7 @@ class LayerEditor(Gtk.ListBox):
 
     def _build_font_editor(self, p):
         font = self.layer.get_property(p.name)
+        no_size = p.blurb == "nosize"
 
         def on_change(entry):
             self.layer.set_property(p.name, Font(entry.get_font_name()))
@@ -162,8 +169,8 @@ class LayerEditor(Gtk.ListBox):
 
         box = self._build_property_editor(p)
         entry = Gtk.FontButton()
-        entry.set_use_size(True)
-        entry.set_show_size(True)
+        entry.set_use_size(not no_size)
+        entry.set_show_size(not no_size)
         entry.set_show_style(True)
         entry.set_font_name(font.desc)
         entry.connect("font-set", on_change)

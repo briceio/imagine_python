@@ -203,7 +203,8 @@ class LineAnnotationLayer(RectLayer):
 class TextAnnotationLayer(PointLayer):
 
     text = GObject.Property(type=str, default="Text", nick="Text", blurb="multiline")
-    font = GObject.Property(type=Font, default=Font("Noto Sans Bold 30"), nick="Font")
+    size = GObject.Property(type=int, default=50, nick="Size", minimum=1, maximum=1000, blurb="10;100")
+    font = GObject.Property(type=Font, default=Font("Noto Sans Bold"), nick="Font", blurb="nosize")
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
     centered = GObject.Property(type=bool, default=True, nick="Center")
 
@@ -218,6 +219,7 @@ class TextAnnotationLayer(PointLayer):
 
         # map GTK font description to Pango
         desc = Pango.font_description_from_string(self.font.desc)
+        desc.set_size(self.size * Pango.SCALE)
 
         # layout options
         layout = PangoCairo.create_layout(cr)
