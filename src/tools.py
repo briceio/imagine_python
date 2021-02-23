@@ -289,12 +289,6 @@ class ZoomAnnotationTool(RectTool):
 
         super().__init__(document, layer)
 
-    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
-        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
-
-        if mouse_button == 1:
-            self.layer.clear()
-
     def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
         if self.moving and Tool.KEY_CONTROL:
             self.layer.frame_position_forced = True
@@ -302,30 +296,6 @@ class ZoomAnnotationTool(RectTool):
             self.layer.frame_y = mouse_y
         else:
            super().mouse_move(doc, w, cr, mouse_x, mouse_y)
-
-           if self.moving:
-               self.layer.update()
-
-    def apply(self):
-        super().apply()
-
-        self.layer.update()
-
-    def draw(self, doc, w, cr, mouse_x, mouse_y):
-        super().draw(doc, w, cr, mouse_x, mouse_y)
-
-        if self.drawing:
-            width = doc.imageSurface.get_width()
-            height = doc.imageSurface.get_height()
-
-            cr.set_source_rgba(0, 0, 0, 0.5)
-            cr.set_line_width(0)
-            cr.set_dash([])
-            cr.rectangle(0, 0, width, self.y1)
-            cr.rectangle(0, 0, self.x1, height)
-            cr.rectangle(mouse_x, 0, mouse_x, height)
-            cr.rectangle(0, mouse_y, width, mouse_y)
-            cr.fill()
         
 class PathAnnotationTool(Tool):
 

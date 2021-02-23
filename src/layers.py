@@ -410,7 +410,6 @@ class ZoomAnnotationLayer(RectLayer):
 
     def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         super().__init__(document, "Zoom")
-        self._image_surface = None
         self.frame_x = 0
         self.frame_y = 0
         self.frame_position_forced = False
@@ -418,102 +417,96 @@ class ZoomAnnotationLayer(RectLayer):
     def get_tool(self):
         return "ZoomAnnotationTool"
 
-    def updated(self, obj, param):
-        self.update()
-
-    def clear(self):
-        self._image_surface = None
-
-    def update(self):
-        if self.x2 - self.x1 == 0 or self.y2 - self.y1 == 0:
-            return
-
-        image = self.document.get_previous_render().crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
-        self._image_surface = cario_image_from_pil(image)
-
-        if not self.frame_position_forced:
-            self.frame_x = self.x1 + ((self.x2 - self.x1) / 2)
-            self.frame_y = self.y1 + ((self.y2 - self.y1) / 2)
-
     def draw(self, w, cr):
         super().draw(w, cr)
 
-        if self._image_surface != None:
+        # normalize
+        x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
 
-            # computation
-            source_x = self.x1
-            source_y = self.y1
-            source_width = self.x2 - self.x1
-            source_height = self.y2 - self.y1
-            target_width = (self.x2 - self.x1) * self.zoom
-            target_height = (self.y2 - self.y1) * self.zoom
-            offset_x = self.AUTO_FRAME_OFFSET[0] if not self.frame_position_forced else -target_width / 2
-            offset_y = self.AUTO_FRAME_OFFSET[1] if not self.frame_position_forced else -target_height / 2
-            target_frame_x = self.frame_x + offset_x
-            target_frame_y = self.frame_y + offset_y
+        if x2 - x1 <= 0 or y2 - y1 <= 0:
+            return
 
-            if self.shadow:
-                r = self.shadow_color.red
-                g = self.shadow_color.green
-                b = self.shadow_color.blue
+        image = self.document.get_previous_render().crop((x1 + self.offset_x, y1 + self.offset_y, x2 + self.offset_x, y2 + self.offset_y))
+        self._image_surface = cario_image_from_pil(image)
 
-                # bottom shadow
-                shadow_gradient = cairo.LinearGradient(0, target_frame_y + target_height, 0, target_frame_y + target_height + self.shadow_extend)
-                shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
-                shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
-                cr.rectangle(target_frame_x + self.shadow_extend, target_frame_y + target_height, target_width - self.shadow_extend, self.shadow_extend)
-                cr.set_source(shadow_gradient)
-                cr.fill()
+        if not self.frame_position_forced:
+            self.frame_x = x1 + ((x2 - x1) / 2)
+            self.frame_y = y1 + ((y2 - y1) / 2)
 
-                # right shadow
-                shadow_gradient = cairo.LinearGradient(target_frame_x + target_width, 0, target_frame_x + target_width + self.shadow_extend, 0)
-                shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
-                shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
-                cr.rectangle(target_frame_x + target_width, target_frame_y + self.shadow_extend, self.shadow_extend, target_height - self.shadow_extend)
-                cr.set_source(shadow_gradient)
-                cr.fill()
+        # computation
+        source_x = x1
+        source_y = y1
+        source_width = x2 - x1
+        source_height = y2 - y1
+        target_width = (x2 - x1) * self.zoom
+        target_height = (y2 - y1) * self.zoom
+        offset_x = self.AUTO_FRAME_OFFSET[0] if not self.frame_position_forced else -target_width / 2
+        offset_y = self.AUTO_FRAME_OFFSET[1] if not self.frame_position_forced else -target_height / 2
+        target_frame_x = self.frame_x + offset_x
+        target_frame_y = self.frame_y + offset_y
 
-                # corner shadow
-                shadow_gradient = cairo.RadialGradient(target_frame_x + target_width, target_frame_y + target_height, 0, target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend)
-                shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
-                shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
-                cr.rectangle(target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend, self.shadow_extend)
-                cr.set_source(shadow_gradient)
-                cr.fill()
+        if self.shadow:
+            r = self.shadow_color.red
+            g = self.shadow_color.green
+            b = self.shadow_color.blue
 
-            # source frame
-            if self.frame:
-                cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
-                cr.set_line_width(self.frame_width)
-                cr.set_dash([])
-                cr.rectangle(source_x, source_y, source_width, source_height)
-                cr.stroke()
+            # bottom shadow
+            shadow_gradient = cairo.LinearGradient(0, target_frame_y + target_height, 0, target_frame_y + target_height + self.shadow_extend)
+            shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
+            shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
+            cr.rectangle(target_frame_x + self.shadow_extend, target_frame_y + target_height, target_width - self.shadow_extend, self.shadow_extend)
+            cr.set_source(shadow_gradient)
+            cr.fill()
 
-                # source to target frame effect
-                cr.set_dash([self.frame_width * 2, self.frame_width * 2])
-                cr.move_to(source_x, source_y)
-                cr.line_to(target_frame_x, target_frame_y)
-                cr.move_to(source_x + source_width, source_y)
-                cr.line_to(target_frame_x + target_width, target_frame_y)
-                cr.move_to(source_x + source_width, source_y + source_height)
-                cr.line_to(target_frame_x + target_width, target_frame_y + target_height)
-                cr.move_to(source_x, source_y + source_height)
-                cr.line_to(target_frame_x, target_frame_y + target_height)
-                cr.stroke()
+            # right shadow
+            shadow_gradient = cairo.LinearGradient(target_frame_x + target_width, 0, target_frame_x + target_width + self.shadow_extend, 0)
+            shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
+            shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
+            cr.rectangle(target_frame_x + target_width, target_frame_y + self.shadow_extend, self.shadow_extend, target_height - self.shadow_extend)
+            cr.set_source(shadow_gradient)
+            cr.fill()
 
-            # zoomed image
-            cr.save()
-            cr.translate(self.frame_x + offset_x, self.frame_y + offset_y)
-            cr.scale(self.zoom, self.zoom)
-            cr.set_source_surface(self._image_surface, 0, 0)
-            cr.paint()
-            cr.restore()
+            # corner shadow
+            shadow_gradient = cairo.RadialGradient(target_frame_x + target_width, target_frame_y + target_height, 0, target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend)
+            shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
+            shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
+            cr.rectangle(target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend, self.shadow_extend)
+            cr.set_source(shadow_gradient)
+            cr.fill()
 
-            # target frame
-            if self.frame:
-                cr.set_dash([])
-                cr.rectangle(target_frame_x, target_frame_y, target_width, target_height)
-                cr.stroke()
+        # source frame
+        if self.frame:
+            cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
+            cr.set_line_width(self.frame_width)
+            cr.set_dash([])
+            cr.rectangle(source_x, source_y, source_width, source_height)
+            cr.stroke()
+
+            # source to target frame effect
+            cr.set_dash([self.frame_width * 2, self.frame_width * 2])
+            cr.move_to(source_x, source_y)
+            cr.line_to(target_frame_x, target_frame_y)
+            cr.move_to(source_x + source_width, source_y)
+            cr.line_to(target_frame_x + target_width, target_frame_y)
+            cr.move_to(source_x + source_width, source_y + source_height)
+            cr.line_to(target_frame_x + target_width, target_frame_y + target_height)
+            cr.move_to(source_x, source_y + source_height)
+            cr.line_to(target_frame_x, target_frame_y + target_height)
+            cr.stroke()
+
+        # zoomed image
+        cr.save()
+        cr.translate(self.frame_x + offset_x, self.frame_y + offset_y)
+        cr.scale(self.zoom, self.zoom)
+        cr.set_source_surface(self._image_surface, 0, 0)
+        cr.paint()
+        cr.restore()
+
+        # target frame
+        if self.frame:
+            cr.set_dash([])
+            cr.rectangle(target_frame_x, target_frame_y, target_width, target_height)
+            cr.stroke()
 
 class PathAnnotationLayer(Layer):
 

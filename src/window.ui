@@ -70,6 +70,88 @@
       </packing>
     </child>
   </object>
+  <object class="GtkPopover" id="popover_zoom">
+    <property name="can-focus">False</property>
+    <child>
+      <!-- n-columns=2 n-rows=4 -->
+      <object class="GtkGrid">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <object class="GtkSpinButton" id="zoom_spinbutton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="text" translatable="yes">0,0</property>
+            <property name="progress-fraction">0.10</property>
+            <property name="progress-pulse-step">0.5</property>
+            <property name="input-purpose">number</property>
+            <property name="digits">1</property>
+            <property name="snap-to-ticks">True</property>
+            <property name="numeric">True</property>
+            <signal name="value-changed" handler="on_zoom_changed" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="zoom_spinbutton_label">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-left">50</property>
+            <property name="margin-right">10</property>
+            <property name="margin-start">50</property>
+            <property name="margin-end">10</property>
+            <property name="label" translatable="yes">Zoom</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton">
+            <property name="label" translatable="yes">100%</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_zoom_100" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton">
+            <property name="label" translatable="yes">Best fit</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_zoom_best_fit" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">3</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <template class="ImagineWindow" parent="GtkApplicationWindow">
     <property name="can-focus">False</property>
     <property name="default-width">800</property>
@@ -671,35 +753,26 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="zoom_spinbutton_label">
+              <object class="GtkMenuButton" id="menu_advanced_zoom">
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="margin-start">50</property>
-                <property name="margin-end">10</property>
-                <property name="label" translatable="yes">Zoom</property>
+                <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
+                <property name="receives-default">True</property>
+                <property name="margin-start">5</property>
+                <property name="draw-indicator">True</property>
+                <property name="popover">popover_zoom</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">video-display</property>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSpinButton" id="zoom_spinbutton">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="progress-fraction">0.10</property>
-                <property name="progress-pulse-step">0.5</property>
-                <property name="input-purpose">number</property>
-                <property name="digits">1</property>
-                <property name="snap-to-ticks">True</property>
-                <property name="numeric">True</property>
-                <signal name="value-changed" handler="on_zoom_changed" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">4</property>
               </packing>
             </child>
           </object>

@@ -59,6 +59,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     layer_editor_container: Gtk.Box = Gtk.Template.Child()
     button_save: Gtk.Button = Gtk.Template.Child()
     menu_advanced_save: Gtk.MenuButton = Gtk.Template.Child()
+    menu_advanced_zoom: Gtk.MenuButton = Gtk.Template.Child()
     zoom_spinbutton_label: Gtk.Label = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
@@ -104,6 +105,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.add("document", "a,i", lambda: self.on_annotate_image(None))
         self.accelerator.add("document", "e,l", lambda: self.on_enhance_lighting(None))
         self.accelerator.add("document", "e,b", lambda: self.on_enhance_blur(None))
+        self.accelerator.add("document", "z,z", lambda: self.on_zoom_100(None))
+        self.accelerator.add("document", "z,a", lambda: self.on_zoom_best_fit(None))
         self.connect("key-press-event", self.accelerator.key_handler)
         self.scroll_area.connect("enter-notify-event", lambda w, e: self.accelerator.enable())
         self.scroll_area.connect("leave-notify-event", lambda w, e: self.accelerator.disable())
@@ -412,6 +415,30 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_enhance_blur(self, widget):
         self.set_active_tool(BlurTool(self.document), keep_selected=True)
 
+    @Gtk.Template.Callback("on_zoom_100")
+    def on_zoom_100(self, _):
+        self.document.scale = 100
+
+    @Gtk.Template.Callback("on_zoom_best_fit")
+    def on_zoom_best_fit(self, _):
+        self.document.scale = self._get_best_fit_document_scale(self.document)
+
+    def _get_best_fit_document_scale(self, document):
+        source_w, source_h = document.image.size
+        target_w, target_h = self.scroll_area.get_allocated_width(), self.scroll_area.get_allocated_height()
+
+        source_ratio = source_w / source_h
+        target_ratio = target_w / target_h
+
+        if source_ratio >= target_ratio:
+            scale_x = target_w / source_w
+            scale_y = scale_x
+        else:
+            scale_y = target_h / source_h
+            scale_x = scale_y
+
+        return min(scale_x, scale_y) * 100
+
     def _switch_document(self):
         row = self.documents_listbox.get_selected_row()
         if row != None:
@@ -665,8 +692,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.main_paned.hide()
             self.button_save.hide()
             self.menu_advanced_save.hide()
-            self.zoom_spinbutton.hide()
-            self.zoom_spinbutton_label.hide()
+            self.menu_advanced_zoom.hide()
 
             return
 
@@ -674,8 +700,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.main_paned.show()
         self.button_save.show()
         self.menu_advanced_save.show()
-        self.zoom_spinbutton.show()
-        self.zoom_spinbutton_label.show()
+        self.menu_advanced_zoom.show()
 
         # document title
         self._set_header_subtitle(self.document.path)
