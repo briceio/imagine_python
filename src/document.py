@@ -4,6 +4,7 @@ from io import BytesIO
 from gi.repository import Gtk, Gio, GObject, GdkPixbuf, GLib
 import enum
 import os
+from .extensions import *
 
 from .layers import Layer
 
@@ -63,11 +64,7 @@ class Document(GObject.GObject):
             self.on_updated_thumbnail(self)
 
         # create cairo surface
-        buffer = BytesIO()
-        self.image.save(buffer, format="PNG")
-        buffer.seek(0)
-
-        self.imageSurface = cairo.ImageSurface.create_from_png(buffer)
+        self.imageSurface = cario_image_from_pil(self.image)
 
     def rename(self, path):
         self.path = path

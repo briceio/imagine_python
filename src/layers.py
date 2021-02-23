@@ -6,6 +6,7 @@ import math
 gi.require_version('PangoCairo', '1.0')
 from gi.repository import Gtk, Gdk, Gio, GObject, Pango, PangoCairo
 import emojis
+from .extensions import *
 
 # common default tool widths
 DEFAULT_WIDTH = 5
@@ -331,11 +332,7 @@ class LightingLayer(RectLayer):
             image = ImageEnhance.Sharpness(image).enhance(self.sharpness)
             image = ImageEnhance.Color(image).enhance(self.color)
 
-            buffer = BytesIO()
-            image.save(buffer, format="PNG")
-            buffer.seek(0)
-
-            self._image_surface = cairo.ImageSurface.create_from_png(buffer)
+            self._image_surface = cario_image_from_pil(image)
 
             self.enhancing = False
 
@@ -379,11 +376,7 @@ class BlurLayer(RectLayer):
             image = self._image.filter(ImageFilter.BoxBlur(self.box))
             image = image.filter(ImageFilter.GaussianBlur(self.gaussian))
 
-            buffer = BytesIO()
-            image.save(buffer, format="PNG")
-            buffer.seek(0)
-
-            self._image_surface = cairo.ImageSurface.create_from_png(buffer)
+            self._image_surface = cario_image_from_pil(image)
 
             self.enhancing = False
 
@@ -432,12 +425,7 @@ class ZoomAnnotationLayer(RectLayer):
             return
 
         image = self.document.image.crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
-
-        buffer = BytesIO()
-        image.save(buffer, format="PNG")
-        buffer.seek(0)
-
-        self._image_surface = cairo.ImageSurface.create_from_png(buffer)
+        self._image_surface = cario_image_from_pil(image)
 
         if not self.frame_position_forced:
             self.frame_x = self.x1 + ((self.x2 - self.x1) / 2)
@@ -588,11 +576,7 @@ class ImageAnnotationLayer(RectLayer):
 
     def _reload_image(self):
         if self.path != None:
-            buffer = BytesIO()
-            Image.open(self.path).save(buffer, format="PNG")
-            buffer.seek(0)
-
-            self._image_surface = cairo.ImageSurface.create_from_png(buffer)
+            self._image_surface = cario_image_from_pil(Image.open(self.path))
         else:
             self._image = None
 
