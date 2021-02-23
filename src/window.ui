@@ -2,6 +2,64 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.24"/>
+  <object class="GtkPopoverMenu" id="popover_menu">
+    <property name="width-request">200</property>
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-top">5</property>
+        <property name="margin-bottom">5</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkModelButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="text" translatable="yes">Settings...</property>
+            <signal name="clicked" handler="on_settings" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkModelButton">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="text" translatable="yes">About</property>
+            <signal name="clicked" handler="on_about" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="submenu">main</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+  </object>
   <object class="GtkPopoverMenu" id="popover_save">
     <property name="width-request">200</property>
     <property name="can-focus">False</property>
@@ -71,12 +129,17 @@
     </child>
   </object>
   <object class="GtkPopover" id="popover_zoom">
+    <property name="width-request">200</property>
     <property name="can-focus">False</property>
     <child>
       <!-- n-columns=2 n-rows=4 -->
       <object class="GtkGrid">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="margin-start">5</property>
+        <property name="margin-end">5</property>
+        <property name="margin-top">5</property>
+        <property name="margin-bottom">5</property>
         <child>
           <object class="GtkSpinButton" id="zoom_spinbutton">
             <property name="visible">True</property>
@@ -114,6 +177,8 @@
           <object class="GtkSeparator">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
           </object>
           <packing>
             <property name="left-attach">0</property>
@@ -123,10 +188,11 @@
         </child>
         <child>
           <object class="GtkModelButton">
-            <property name="label" translatable="yes">100%</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="text" translatable="yes">100%</property>
+            <property name="centered">True</property>
             <signal name="clicked" handler="on_zoom_100" swapped="no"/>
           </object>
           <packing>
@@ -137,10 +203,11 @@
         </child>
         <child>
           <object class="GtkModelButton">
-            <property name="label" translatable="yes">Best fit</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
+            <property name="text" translatable="yes">Best fit</property>
+            <property name="centered">True</property>
             <signal name="clicked" handler="on_zoom_best_fit" swapped="no"/>
           </object>
           <packing>
@@ -369,6 +436,9 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -379,6 +449,9 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_ellipse" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -389,6 +462,9 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">3</property>
+                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -399,6 +475,9 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_line" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">4</property>
+                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -409,6 +488,9 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">5</property>
+                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -419,6 +501,9 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_text" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">6</property>
+                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -429,6 +514,9 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_emoji" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">7</property>
+                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -439,6 +527,9 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_zoom" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">8</property>
+                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -449,8 +540,11 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_image" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">9</property>
+                          </packing>
                         </child>
-                         <child>
+                        <child>
                           <object class="GtkToolButton">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
@@ -459,6 +553,9 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_clone" swapped="no"/>
                           </object>
+                          <packing>
+                            <property name="position">10</property>
+                          </packing>
                         </child>
                       </object>
                       <packing>
@@ -666,7 +763,7 @@
       <object class="GtkHeaderBar" id="header_bar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title">Imagine</property>
+        <property name="title" translatable="yes">Imagine</property>
         <property name="show-close-button">True</property>
         <child>
           <object class="GtkBox">
@@ -748,7 +845,7 @@
                   <object class="GtkImage">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="icon-name">video-display</property>
+                    <property name="icon-name">cm_search</property>
                   </object>
                 </child>
               </object>
@@ -756,6 +853,28 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkMenuButton">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
+                <property name="receives-default">True</property>
+                <property name="draw-indicator">True</property>
+                <property name="popover">popover_menu</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="icon-name">open-menu-symbolic</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>

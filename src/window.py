@@ -32,6 +32,7 @@ import math
 from PIL import Image
 import functools, operator
 from urllib.parse import urlparse, unquote
+import os
 
 MOUSE_SCROLL_FACTOR = 2.0
 
@@ -431,6 +432,26 @@ class ImagineWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback("on_zoom_best_fit")
     def on_zoom_best_fit(self, _):
         self.document.scale = self._get_best_fit_document_scale(self.document)
+
+    @Gtk.Template.Callback("on_settings")
+    def on_settings(self, widget):
+        os.system("dconf-editor /apps/imagine &")
+
+    @Gtk.Template.Callback("on_about")
+    def on_about(self, widget):
+        dialog = Gtk.AboutDialog(copyright="Brice MARTIN (brice@boite.io)",
+                                 authors=["Brice MARTIN (brice@boite.io)"],
+                                 license_type=Gtk.License.GPL_3_0,
+                                 program_name="Imagine",
+                                 version="1.0",
+                                 website="https://boite.io",
+                                 website_label="Boite",
+                                 comments="A small yet powerful image annotation tool.")
+        # TODO logo=[pixbuf]
+        # TODO automate version injection
+        dialog.set_transient_for(self)
+        dialog.run()
+        dialog.destroy()
 
     def _get_best_fit_document_scale(self, document):
         source_w, source_h = document.image.size
