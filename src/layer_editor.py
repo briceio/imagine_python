@@ -75,16 +75,20 @@ class LayerEditor(Gtk.ListBox):
         box = self._build_property_editor(p)
 
         if p.blurb == "multiline":
+            scroll = Gtk.ScrolledWindow()
+            scroll.set_hexpand(True)
+            scroll.set_vexpand(True)
+
             entry = Gtk.TextView()
             entry.get_buffer().set_text(self.layer.get_property(p.name))
-            entry.set_wrap_mode(Gtk.WrapMode.CHAR)
             entry.set_editable(True)
             entry.set_focus_on_click(True)
-            box.set_size_request(-1, 100)
+            box.set_size_request(-1, 75)
             entry.get_buffer().connect("changed", on_change_textview)
-            box.pack_start(entry, True, True, 0)
+            entry.connect("button-press-event", block_event) # hack bug mouse click when textview in box
+            scroll.add(entry);
 
-            entry.connect("button-press-event", block_event) # bug mouse click when textview in box
+            box.pack_start(scroll, True, True, 0)
         elif p.blurb == "file":
             entry = Gtk.FileChooserButton()
             entry.set_title(p.nick)

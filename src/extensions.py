@@ -42,11 +42,6 @@ def pil_from_cairo_surface(surface, format='RGB'):
     return Image.merge('RGBA', (r, g, b, a)) if format=='RGBA' else Image.merge('RGB', (r, g, b))
 
 def cario_image_from_pil(im, alpha=1.0, format=cairo.FORMAT_ARGB32):
-    """
-    :param im: Pillow Image
-    :param alpha: 0..1 alpha to add to non-alpha images
-    :param format: Pixel format for output surface
-    """
     assert format in (cairo.FORMAT_RGB24, cairo.FORMAT_ARGB32), "Unsupported pixel format: %s" % format
     if 'A' not in im.getbands():
         im.putalpha(int(alpha * 256.))

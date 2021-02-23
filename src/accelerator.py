@@ -116,7 +116,7 @@ class Accelerator:
 
     def _execute_action(self, command, action: Action, timeout):
         if (not action.wait_timeout or (action.wait_timeout and timeout)) and callable(action.action):
-            print("Acceleration action triggered: %s" % command)
+            #print("Acceleration action triggered: %s" % command)
             self.action_pending = False
             self.buffer = []
             GLib.idle_add(lambda: action.action())
