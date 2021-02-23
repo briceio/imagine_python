@@ -132,10 +132,8 @@ class PointTool(Tool):
 
 class RectTool(Tool):
 
-    def __init__(self, document, layer=None, normalize=True):
-        super().__init__(document, layer, reticule = True)
-
-        self.normalize = normalize
+    def __init__(self, document, layer=None):
+        super().__init__(document, layer, reticule=True)
 
         self.x1 = 0 if layer == None else layer.x1
         self.y1 = 0 if layer == None else layer.y1
@@ -155,7 +153,6 @@ class RectTool(Tool):
         if mouse_button == 1:
             self.x2 = mouse_x
             self.y2 = mouse_y
-            self._normalize()
             self.apply()
 
     def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
@@ -164,7 +161,6 @@ class RectTool(Tool):
         if self.drawing:
             self.x2 = mouse_x
             self.y2 = mouse_y
-            self._normalize()
 
             # propagate to layer (which should inherit RectLayer)
             if self.layer != None:
@@ -172,14 +168,6 @@ class RectTool(Tool):
                 self.layer.y1 = self.y1
                 self.layer.x2 = self.x2
                 self.layer.y2 = self.y2
-
-    def _normalize(self):
-        if self.normalize:
-            self.x1 = min(self.x1, self.x2)
-            self.y1 = min(self.y1, self.y2)
-            self.x2 = max(self.x1, self.x2)
-            self.y2 = max(self.y1, self.y2)
-
 
 class CropTool(RectTool):
 
@@ -189,22 +177,32 @@ class CropTool(RectTool):
     def apply(self):
         super().apply()
 
-        self.document.crop(self.x1, self.y1, self.x2, self.y2)
+        x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
+
+        if x2 - x1 <= 0 or y2 - y1 <= 0:
+            return
+
+        self.document.crop(x1, y1, x2, y2)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
         if self.drawing:
+            x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
+
+            if x2 - x1 <= 0 or y2 - y1 <= 0:
+                return
+
             width = doc.imageSurface.get_width()
             height = doc.imageSurface.get_height()
 
             cr.set_source_rgba(0, 0, 0, 0.5)
             cr.set_line_width(0)
             cr.set_dash([])
-            cr.rectangle(0, 0, width, self.y1)
-            cr.rectangle(0, 0, self.x1, height)
-            cr.rectangle(mouse_x, 0, mouse_x, height)
-            cr.rectangle(0, mouse_y, width, mouse_y)
+            cr.rectangle(0, 0, width, y1)
+            cr.rectangle(0, 0, x1, height)
+            cr.rectangle(x2, 0, width - x2, height)
+            cr.rectangle(0, y2, width, height - y2)
             cr.fill()
 
 class RectangleAnnotationTool(RectTool):
@@ -214,7 +212,7 @@ class RectangleAnnotationTool(RectTool):
             layer = RectangleAnnotationLayer(document)
             document.add_layer(layer)
 
-        super().__init__(document, layer, normalize=False)
+        super().__init__(document, layer)
 
 class EllipseAnnotationTool(RectTool):
 
@@ -223,7 +221,7 @@ class EllipseAnnotationTool(RectTool):
             layer = EllipseAnnotationLayer(document, circle=circle)
             document.add_layer(layer)
 
-        super().__init__(document, layer, normalize=False)
+        super().__init__(document, layer)
 
 class LineAnnotationTool(RectTool):
 
@@ -232,7 +230,7 @@ class LineAnnotationTool(RectTool):
             layer = LineAnnotationLayer(document, arrow=arrow)
             document.add_layer(layer)
 
-        super().__init__(document, layer, normalize=False)
+        super().__init__(document, layer)
 
 class TextAnnotationTool(PointTool):
 
@@ -289,7 +287,7 @@ class ZoomAnnotationTool(RectTool):
             layer = ZoomAnnotationLayer(document)
             document.add_layer(layer)
 
-        super().__init__(document, layer, normalize=True)
+        super().__init__(document, layer)
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
@@ -364,7 +362,7 @@ class ImageAnnotationTool(RectTool):
             layer = ImageAnnotationLayer(document)
             document.add_layer(layer)
 
-        super().__init__(document, layer, normalize=False)
+        super().__init__(document, layer)
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)

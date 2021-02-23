@@ -4,7 +4,7 @@ from time import sleep
 import cairo
 from PIL import Image
 
-__all__ = ['delay', 'threaded', 'cario_image_from_pil', 'pil_from_cairo_surface']
+__all__ = ['delay', 'threaded', 'cario_image_from_pil', 'pil_from_cairo_surface', 'normalize_rect']
 
 def delay(delay, main_thread=True):
     def wrapper(f):
@@ -53,3 +53,8 @@ def cario_image_from_pil(im, alpha=1.0, format=cairo.FORMAT_ARGB32):
     arr = bytearray(im.tobytes('raw', 'BGRa'))
     surface = cairo.ImageSurface.create_for_data(arr, format, im.width, im.height)
     return surface
+
+
+def normalize_rect(x1, y1, x2, y2):
+    return min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
+

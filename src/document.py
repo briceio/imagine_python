@@ -168,7 +168,7 @@ class Document(GObject.GObject):
             previous_back_layer = layer_surface
             self._previous_layer_render = pil_from_cairo_surface(layer_surface)
 
-            # render the layer
+            # render the layer on top of the other ones
             cr.set_source_surface(layer_surface, 0, 0)
             cr.paint()
 

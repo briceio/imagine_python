@@ -323,7 +323,9 @@ class LightingLayer(RectLayer):
     def draw(self, w, cr):
         super().draw(w, cr)
 
-        if self.x2 - self.x1 <= 0 or self.y2 - self.y1 <= 0:
+        x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
+
+        if x2 - x1 <= 0 or y2 - y1 <= 0:
             return
 
         def enhance():
@@ -337,7 +339,7 @@ class LightingLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = self.document.get_previous_render().crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
+            self._image = self.document.get_previous_render().crop((x1 + self.offset_x, y1 + self.offset_y, x2 + self.offset_x, y2 + self.offset_y))
             enhance()
             self.updating = False
 
@@ -345,7 +347,7 @@ class LightingLayer(RectLayer):
             enhance()
 
         # draw it
-        cr.set_source_surface(self._image_surface, self.x1, self.y1)
+        cr.set_source_surface(self._image_surface, x1, y1)
         cr.paint()
 
 class BlurLayer(RectLayer):
@@ -369,7 +371,9 @@ class BlurLayer(RectLayer):
     def draw(self, w, cr):
         super().draw(w, cr)
 
-        if self.x2 - self.x1 <= 0 or self.y2 - self.y1 <= 0:
+        x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
+
+        if x2 - x1 <= 0 or y2 - y1 <= 0:
             return
 
         def enhance():
@@ -381,7 +385,7 @@ class BlurLayer(RectLayer):
             self.enhancing = False
 
         if self._image == None or self.updating:
-            self._image = self.document.get_previous_render().crop((self.x1 + self.offset_x, self.y1 + self.offset_y, self.x2 + self.offset_x, self.y2 + self.offset_y))
+            self._image = self.document.get_previous_render().crop((x1 + self.offset_x, y1 + self.offset_y, x2 + self.offset_x, y2 + self.offset_y))
             enhance()
             self.updating = False
 
@@ -389,7 +393,7 @@ class BlurLayer(RectLayer):
             enhance()
 
         # draw it
-        cr.set_source_surface(self._image_surface, self.x1, self.y1)
+        cr.set_source_surface(self._image_surface, x1, y1)
         cr.paint()
 
 class ZoomAnnotationLayer(RectLayer):
