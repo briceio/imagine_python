@@ -84,7 +84,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.disable()
         self.accelerator.add(None, "Tab", lambda: self._switch_document())
         self.accelerator.add("document", "<Primary>w", lambda: self.on_file_close(None))
-        self.accelerator.add("document", "r", lambda: self.on_resize(None))
+        self.accelerator.add("document", "r", lambda: self.on_resize(None), wait_timeout=True)
         self.accelerator.add("document", "<Primary>s", lambda: self.on_file_save(None))
         self.accelerator.add("document", "s,a", lambda: self.on_file_save_all(None))
         self.accelerator.add("document", "s,s", lambda: self.on_file_save_as(None))

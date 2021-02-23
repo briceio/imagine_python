@@ -21,3 +21,15 @@ def delay(delay, main_thread=True):
         return run
     return wrapper
 
+def threaded():
+    def wrapper(f):
+        def run(*args, **kwargs):
+            def t(data):
+                f, args, kwargs = data
+                f(*args, **kwargs)
+
+            data = f, args, kwargs
+            thread = threading.Thread(target=t, args=(data,))
+            thread.start()
+        return run
+    return wrapper
