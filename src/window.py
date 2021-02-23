@@ -99,6 +99,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.add("document", "a,a", lambda: self.on_annotate_arrow(None))
         self.accelerator.add("document", "a,e", lambda: self.on_annotate_ellipse(None))
         self.accelerator.add("document", "a,c", lambda: self.on_annotate_circle(None))
+        self.accelerator.add("document", "a,d", lambda: self.on_annotate_clone(None))
         self.accelerator.add("document", "a,t", lambda: self.on_annotate_text(None))
         self.accelerator.add("document", "a,j", lambda: self.on_annotate_emoji(None))
         self.accelerator.add("document", "a,z", lambda: self.on_annotate_zoom(None))
@@ -386,6 +387,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
     @Gtk.Template.Callback("on_annotate_image")
     def on_annotate_image(self, widget):
         self.set_active_tool(ImageAnnotationTool(self.document))
+
+    @Gtk.Template.Callback("on_annotate_clone")
+    def on_annotate_clone(self, widget):
+        self.set_active_tool(CloneAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_rotate_left")
     def on_rotate_left(self, widget):

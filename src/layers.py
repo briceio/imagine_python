@@ -402,7 +402,7 @@ class ZoomAnnotationLayer(RectLayer):
 
     AUTO_FRAME_OFFSET = (-20, -20)
 
-    zoom = GObject.Property(type=float, default=2, nick="Zoom", minimum=1.0, maximum=10.0)
+    zoom = GObject.Property(type=float, default=2, nick="Zoom", minimum=0.1, maximum=10.0)
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
     frame = GObject.Property(type=bool, default=True, nick="Frame")
     frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10)
@@ -640,4 +640,104 @@ class ImageAnnotationLayer(RectLayer):
                 cr.set_source_surface(self._image_surface, 0, 0)
                 cr.paint_with_alpha(self.alpha)
                 cr.restore()
+
+class CloneAnnotationLayer(RectLayer):
+
+    zoom = GObject.Property(type=float, default=1, nick="Zoom", minimum=0.1, maximum=10.0)
+    frame = GObject.Property(type=bool, default=True, nick="Frame")
+    frame_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Frame Color")
+    frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10)
+    frame_dashed = GObject.Property(type=bool, default=False, nick="Dashed")
+    shadow = GObject.Property(type=bool, default=True, nick="Shadow")
+    shadow_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(0, 0, 0, 1), nick="Shadow Color")
+    shadow_extend = GObject.Property(type=int, default=15, nick="Shadow Extend", minimum=0, maximum=100)
+
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+        super().__init__(document, "Copy")
+
+        self.snap_x1 = 0
+        self.snap_y1 = 0
+        self.snap_x2 = 0
+        self.snap_y2 = 0
+
+        self._image_surface = None
+
+    def get_tool(self):
+        return "CloneAnnotationTool"
+
+    def clear(self):
+        self._image_surface = None
+
+    def snap(self):
+        x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
+        image = self.document.get_previous_render().crop((x1 + self.offset_x, y1 + self.offset_y, x2 + self.offset_x, y2 + self.offset_y))
+        self._image_surface = cario_image_from_pil(image)
+
+    def draw(self, w, cr):
+        super().draw(w, cr)
+
+        x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
+
+        if x2 - x1 <= 0 or y2 - y1 <= 0:
+            return
+
+        # copy
+        if self._image_surface != None:
+            image_surface = self._image_surface
+        else:
+            image = self.document.get_previous_render().crop((x1 + self.offset_x, y1 + self.offset_y, x2 + self.offset_x, y2 + self.offset_y))
+            image_surface = cario_image_from_pil(image)
+
+        # computation
+        target_frame_x = x1
+        target_frame_y = y1
+        target_width = (x2 - x1) * self.zoom
+        target_height = (y2 - y1) * self.zoom
+
+        # image
+        cr.save()
+        cr.translate(x1, y1)
+        cr.scale(self.zoom, self.zoom)
+        cr.set_source_surface(image_surface, 0, 0)
+        cr.paint()
+        cr.restore()
+
+        # shadow
+        if self.shadow:
+            r = self.shadow_color.red
+            g = self.shadow_color.green
+            b = self.shadow_color.blue
+
+            # bottom shadow
+            shadow_gradient = cairo.LinearGradient(0, target_frame_y + target_height, 0, target_frame_y + target_height + self.shadow_extend)
+            shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
+            shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
+            cr.rectangle(target_frame_x + self.shadow_extend, target_frame_y + target_height, target_width - self.shadow_extend, self.shadow_extend)
+            cr.set_source(shadow_gradient)
+            cr.fill()
+
+            # right shadow
+            shadow_gradient = cairo.LinearGradient(target_frame_x + target_width, 0, target_frame_x + target_width + self.shadow_extend, 0)
+            shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
+            shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
+            cr.rectangle(target_frame_x + target_width, target_frame_y + self.shadow_extend, self.shadow_extend, target_height - self.shadow_extend)
+            cr.set_source(shadow_gradient)
+            cr.fill()
+
+            # corner shadow
+            shadow_gradient = cairo.RadialGradient(target_frame_x + target_width, target_frame_y + target_height, 0, target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend)
+            shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
+            shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
+            cr.rectangle(target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend, self.shadow_extend)
+            cr.set_source(shadow_gradient)
+            cr.fill()
+
+        # frame
+        if self.frame:
+            cr.set_source_rgba(self.frame_color.red, self.frame_color.green, self.frame_color.blue, self.frame_color.alpha)
+            cr.set_line_width(self.frame_width)
+            cr.set_dash([] if not self.frame_dashed else [self.frame_width, self.frame_width])
+            cr.rectangle(x1, y1, target_width, target_height)
+            cr.stroke()
+
 

@@ -84,7 +84,7 @@ class Tool:
 
         # reticule
         if self.reticule:
-            cr.set_source_rgb(1, 1, 1)
+            cr.set_source_rgba(1, 1, 1, 0.7)
             cr.set_dash([10, 10])
             cr.set_line_width(1)
 
@@ -132,13 +132,15 @@ class PointTool(Tool):
 
 class RectTool(Tool):
 
-    def __init__(self, document, layer=None):
+    def __init__(self, document, layer=None, draw_rect=False):
         super().__init__(document, layer, reticule=True)
 
         self.x1 = 0 if layer == None else layer.x1
         self.y1 = 0 if layer == None else layer.y1
         self.x2 = 0 if layer == None else layer.x2
         self.y2 = 0 if layer == None else layer.y2
+
+        self.draw_rect = draw_rect
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
@@ -169,25 +171,10 @@ class RectTool(Tool):
                 self.layer.x2 = self.x2
                 self.layer.y2 = self.y2
 
-class CropTool(RectTool):
-
-    def __init__(self, document):
-        super().__init__(document)
-
-    def apply(self):
-        super().apply()
-
-        x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
-
-        if x2 - x1 <= 0 or y2 - y1 <= 0:
-            return
-
-        self.document.crop(x1, y1, x2, y2)
-
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
-        if self.drawing:
+        if self.draw_rect and self.drawing:
             x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
 
             if x2 - x1 <= 0 or y2 - y1 <= 0:
@@ -204,6 +191,21 @@ class CropTool(RectTool):
             cr.rectangle(x2, 0, width - x2, height)
             cr.rectangle(0, y2, width, height - y2)
             cr.fill()
+
+class CropTool(RectTool):
+
+    def __init__(self, document):
+        super().__init__(document, draw_rect=True)
+
+    def apply(self):
+        super().apply()
+
+        x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
+
+        if x2 - x1 <= 0 or y2 - y1 <= 0:
+            return
+
+        self.document.crop(x1, y1, x2, y2)
 
 class RectangleAnnotationTool(RectTool):
 
@@ -338,4 +340,28 @@ class ImageAnnotationTool(RectTool):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
         # ask for the image if needed
-        self.layer.ask_for_image_if_needed()
+        if mouse_button == 1:
+            self.layer.ask_for_image_if_needed()
+
+class CloneAnnotationTool(RectTool):
+
+    def __init__(self, document, layer=None):
+        if layer == None:
+            layer = CloneAnnotationLayer(document)
+            document.add_layer(layer)
+
+        super().__init__(document, layer)
+
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
+        # clear the buffer to avoid copying itself
+        if mouse_button == 1:
+            self.layer.clear()
+
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
+        # update the copy
+        if mouse_button == 1:
+            self.layer.snap()

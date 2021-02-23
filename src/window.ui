@@ -369,9 +369,6 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
                           </object>
-                          <packing>
-                            <property name="position">1</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -382,9 +379,6 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_ellipse" swapped="no"/>
                           </object>
-                          <packing>
-                            <property name="position">2</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -395,9 +389,6 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
                           </object>
-                          <packing>
-                            <property name="position">3</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -408,9 +399,6 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_line" swapped="no"/>
                           </object>
-                          <packing>
-                            <property name="position">4</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -421,9 +409,6 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
                           </object>
-                          <packing>
-                            <property name="position">5</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -434,9 +419,6 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_text" swapped="no"/>
                           </object>
-                          <packing>
-                            <property name="position">6</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -447,9 +429,6 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_emoji" swapped="no"/>
                           </object>
-                          <packing>
-                            <property name="position">7</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -460,9 +439,6 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_zoom" swapped="no"/>
                           </object>
-                          <packing>
-                            <property name="position">8</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkToolButton">
@@ -473,9 +449,16 @@
                             <property name="icon-name">edit-select-all</property>
                             <signal name="clicked" handler="on_annotate_image" swapped="no"/>
                           </object>
-                          <packing>
-                            <property name="position">9</property>
-                          </packing>
+                        </child>
+                         <child>
+                          <object class="GtkToolButton">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Clone</property>
+                            <property name="use-underline">True</property>
+                            <property name="icon-name">edit-select-all</property>
+                            <signal name="clicked" handler="on_annotate_clone" swapped="no"/>
+                          </object>
                         </child>
                       </object>
                       <packing>
