@@ -643,6 +643,7 @@ class ImageAnnotationLayer(RectLayer):
 
 class CloneAnnotationLayer(RectLayer):
 
+    live = GObject.Property(type=bool, default=False, nick="Live")
     zoom = GObject.Property(type=float, default=1, nick="Zoom", minimum=0.1, maximum=10.0)
     frame = GObject.Property(type=bool, default=True, nick="Frame")
     frame_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Frame Color")
@@ -652,26 +653,42 @@ class CloneAnnotationLayer(RectLayer):
     shadow_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(0, 0, 0, 1), nick="Shadow Color")
     shadow_extend = GObject.Property(type=int, default=15, nick="Shadow Extend", minimum=0, maximum=100)
 
-    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0, live=None):
         super().__init__(document, "Copy")
 
-        self.snap_x1 = 0
-        self.snap_y1 = 0
-        self.snap_x2 = 0
-        self.snap_y2 = 0
+        if live != None:
+            self.live = live
+
+        self._snapped = False
+
+        self._snap_x1 = 0
+        self._snap_y1 = 0
+        self._snap_x2 = 0
+        self._snap_y2 = 0
 
         self._image_surface = None
+
+        self.connect("notify::live", lambda w, e: self.snap())
 
     def get_tool(self):
         return "CloneAnnotationTool"
 
     def clear(self):
         self._image_surface = None
+        self._snapped = False
 
     def snap(self):
         x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
-        image = self.document.get_previous_render().crop((x1 + self.offset_x, y1 + self.offset_y, x2 + self.offset_x, y2 + self.offset_y))
-        self._image_surface = cario_image_from_pil(image)
+
+        if self.live:
+            self._snap_x1 = x1
+            self._snap_y1 = y1
+            self._snap_x2 = x2
+            self._snap_y2 = y2
+            self._snapped = True
+        else:
+            image = self.document.get_previous_render().crop((x1 + self.offset_x, y1 + self.offset_y, x2 + self.offset_x, y2 + self.offset_y))
+            self._image_surface = cario_image_from_pil(image)
 
     def draw(self, w, cr):
         super().draw(w, cr)
@@ -682,11 +699,19 @@ class CloneAnnotationLayer(RectLayer):
             return
 
         # copy
-        if self._image_surface != None:
-            image_surface = self._image_surface
-        else:
-            image = self.document.get_previous_render().crop((x1 + self.offset_x, y1 + self.offset_y, x2 + self.offset_x, y2 + self.offset_y))
+        image_surface = None
+        if self.live and self._snapped:
+            if self._snap_x2 - self._snap_x1 <= 0 or self._snap_y2 - self._snap_y1 <= 0:
+                return
+
+            image = self.document.get_previous_render().crop((self._snap_x1, self._snap_y1, self._snap_x2, self._snap_y2))
             image_surface = cario_image_from_pil(image)
+        else:
+            if self._image_surface != None:
+                image_surface = self._image_surface
+            else:
+                image = self.document.get_previous_render().crop((x1, y1, x2, y2))
+                image_surface = cario_image_from_pil(image)
 
         # computation
         target_frame_x = x1
