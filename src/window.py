@@ -59,7 +59,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
     layer_editor_container: Gtk.Box = Gtk.Template.Child()
     button_save: Gtk.Button = Gtk.Template.Child()
     menu_advanced_save: Gtk.MenuButton = Gtk.Template.Child()
-    zoom_spinbutton: Gtk.AboutDialog = Gtk.Template.Child()
     zoom_spinbutton_label: Gtk.Label = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
@@ -121,9 +120,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.connect("notify::document", self._on_document_mounted)
 
         # zoom
-        self.zoom_spinbutton.set_range(0.1, 10.0)
-        self.zoom_spinbutton.set_increments(0.1, 1.0)
-        self.zoom_spinbutton.set_value(1.0)
+        self.zoom_spinbutton.set_range(10, 1000)
+        self.zoom_spinbutton.set_increments(10, 100)
+        self.zoom_spinbutton.set_digits(0)
+        self.zoom_spinbutton.set_value(100)
 
         # events
         self.connect("key-press-event", self.on_key_press)
@@ -456,8 +456,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self._browsing_prev_y = event.y
         else:
             # tooling
-            self.mouse_x = event.x / self.document.scale
-            self.mouse_y = event.y / self.document.scale
+            self.mouse_x = event.x / (self.document.scale / 100)
+            self.mouse_y = event.y / (self.document.scale / 100)
 
             if self.tool != None:
                 self.tool.mouse_move(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
@@ -467,8 +467,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def mouse_down(self, w, event):
         if self.document == None: return
 
-        self.mouse_x = event.x / self.document.scale
-        self.mouse_y = event.y / self.document.scale
+        self.mouse_x = event.x / (self.document.scale / 100)
+        self.mouse_y = event.y / (self.document.scale / 100)
 
         if not self._browsing and event.button == 2:
             self._browsing_prev_x = event.x
@@ -483,8 +483,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def mouse_up(self, w, event):
         if self.document == None: return
 
-        self.mouse_x = event.x / self.document.scale
-        self.mouse_y = event.y / self.document.scale
+        self.mouse_x = event.x / (self.document.scale / 100)
+        self.mouse_y = event.y / (self.document.scale / 100)
 
         if self._browsing and event.button == 2:
             self._browsing = False
@@ -517,9 +517,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         if event.state & accel_mask == Gdk.ModifierType.CONTROL_MASK:
             direction = event.get_scroll_deltas()[2]
             if direction < 0:
-                self.document.scale = min(10.0, self.document.scale + 0.5)
+                self.document.scale = min(self.zoom_spinbutton.get_range()[1], self.document.scale + 25)
             else:
-                self.document.scale = max(0.1, self.document.scale - 0.5)
+                self.document.scale = max(self.zoom_spinbutton.get_range()[0], self.document.scale - 25)
 
             # center zoom on mouse TODO bug not perfect
             rect, _ = self.scroll_area.get_allocated_size()
@@ -792,10 +792,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # scaling
         iw, ih = self.document.image.size
         if not self._saving:
-            w = self.document.scale * iw
-            h = self.document.scale * ih
+            w = (self.document.scale / 100) * iw
+            h = (self.document.scale / 100) * ih
             self.drawing_area.set_size_request(w, h)
-            cr.scale(self.document.scale, self.document.scale)
+            cr.scale(self.document.scale / 100, self.document.scale / 100)
 
         # draw document
         cr.save()

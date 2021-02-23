@@ -20,7 +20,7 @@ class Document(GObject.GObject):
     on_updated_thumbnail = None
 
     # scale
-    scale = GObject.Property(type=float, default=1.0)
+    scale = GObject.Property(type=int, default=100)
 
     # name
     name = GObject.Property(type=str)
