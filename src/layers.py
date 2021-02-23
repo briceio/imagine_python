@@ -203,6 +203,7 @@ class LineAnnotationLayer(RectLayer):
 class TextAnnotationLayer(PointLayer):
 
     text = GObject.Property(type=str, default="Text", nick="Text", blurb="multiline")
+    text_markup = GObject.Property(type=bool, default=True, nick="Text as Markup")
     size = GObject.Property(type=int, default=50, nick="Size", minimum=1, maximum=1000, blurb="10;100")
     font = GObject.Property(type=Font, default=Font("Noto Sans Bold"), nick="Font", blurb="nosize")
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
@@ -226,8 +227,11 @@ class TextAnnotationLayer(PointLayer):
         layout = PangoCairo.create_layout(cr)
         layout.set_font_description(desc)
         layout.set_alignment(Pango.Alignment.CENTER if self.centered else Pango.Alignment.LEFT)
-        layout.set_markup(self.text, -1)
         layout.set_line_spacing(self.line_spacing)
+        if self.text_markup:
+            layout.set_markup(self.text, -1)
+        else:
+            layout.set_text(self.text, -1)
 
         # font options
         fo = cairo.FontOptions()
