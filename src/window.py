@@ -108,6 +108,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.add("document", "e,b", lambda: self.on_enhance_blur(None))
         self.accelerator.add("document", "z,z", lambda: self.on_zoom_100(None))
         self.accelerator.add("document", "z,a", lambda: self.on_zoom_best_fit(None))
+        self.accelerator.add("document", "Up", lambda: self.document.move_layer(self.selected_layer, -1))
+        self.accelerator.add("document", "Down", lambda: self.document.move_layer(self.selected_layer, 1))
+        self.accelerator.add("document", "Page_Up", lambda: self._switch_document(-1))
+        self.accelerator.add("document", "Page_Down", lambda: self._switch_document(1))
         self.connect("key-press-event", self.accelerator.key_handler)
         self.scroll_area.connect("enter-notify-event", lambda w, e: self.accelerator.enable())
         self.scroll_area.connect("leave-notify-event", lambda w, e: self.accelerator.disable())
@@ -444,17 +448,17 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         return min(scale_x, scale_y) * 100
 
-    def _switch_document(self):
+    def _switch_document(self, offset=1):
         row = self.documents_listbox.get_selected_row()
         if row != None:
             index = row.get_index()
-            index = index + 1 if index < len(self.documents) - 1 else 0
+            index = (index + offset) % len(self.documents)
             new_row = self.documents_listbox.get_row_at_index(index)
             if new_row != None:
                 self.documents_listbox.select_row(new_row)
             else:
                 self._set_header_subtitle(None)
-                self.document = None # no more document in the stack
+                self.document = None # no more document in the stacky
 
     def set_active_tool(self, tool, keep_selected = True):
         def apply_callback():

@@ -120,10 +120,12 @@ class Document(GObject.GObject):
             self.on_updated_layers_list(LayerAction.DELETE, layer)
 
     def move_layer(self, layer, offset):
+        if layer == None or offset == 0: return
+
         self.dirty = True
 
         index = self.index_of_layer(layer)
-        new_index = index + offset
+        new_index = (index + offset) % len(self.layers)
 
         self.layers.remove(index)
         self.layers.insert(new_index, layer)
