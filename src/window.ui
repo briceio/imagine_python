@@ -336,7 +336,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Resize</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">insert-image</property>
+                            <property name="icon-name">image-resize-symbolic</property>
                             <signal name="clicked" handler="on_resize" swapped="no"/>
                             <accelerator key="r" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                           </object>
@@ -347,7 +347,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Crop</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-cut</property>
+                            <property name="icon-name">image-crop</property>
                             <signal name="clicked" handler="on_crop" swapped="no"/>
                             <accelerator key="c" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
                           </object>
@@ -423,7 +423,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Path</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">path-mode-spiro</property>
                             <signal name="clicked" handler="on_annotate_path" swapped="no"/>
                           </object>
                         </child>
@@ -433,7 +433,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Rectangle</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">rectangle-shape</property>
                             <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
                           </object>
                           <packing>
@@ -446,7 +446,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Ellipse</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">ellipse-shape</property>
                             <signal name="clicked" handler="on_annotate_ellipse" swapped="no"/>
                           </object>
                           <packing>
@@ -459,7 +459,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Circle</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">ellipse-shape</property>
                             <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
                           </object>
                           <packing>
@@ -472,7 +472,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Line</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">lines-connector</property>
                             <signal name="clicked" handler="on_annotate_line" swapped="no"/>
                           </object>
                           <packing>
@@ -485,7 +485,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Arrow</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">arrow</property>
                             <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
                           </object>
                           <packing>
@@ -498,7 +498,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Text</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">text-frame-link</property>
                             <signal name="clicked" handler="on_annotate_text" swapped="no"/>
                           </object>
                           <packing>
@@ -511,7 +511,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Emoji</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">emoji-body-symbolic</property>
                             <signal name="clicked" handler="on_annotate_emoji" swapped="no"/>
                           </object>
                           <packing>
@@ -524,7 +524,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Zoom</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">zoom-best-fit</property>
                             <signal name="clicked" handler="on_annotate_zoom" swapped="no"/>
                           </object>
                           <packing>
@@ -537,7 +537,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Image</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">image-invert-symbolic</property>
                             <signal name="clicked" handler="on_annotate_image" swapped="no"/>
                           </object>
                           <packing>
@@ -550,7 +550,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Clone</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">edit-select-all</property>
+                            <property name="icon-name">gtk-copy</property>
                             <signal name="clicked" handler="on_annotate_clone" swapped="no"/>
                           </object>
                           <packing>
@@ -583,7 +583,7 @@
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Blur</property>
                             <property name="use-underline">True</property>
-                            <property name="icon-name">image-missing</property>
+                            <property name="icon-name">blurimage</property>
                             <signal name="clicked" handler="on_enhance_blur" swapped="no"/>
                           </object>
                           <packing>

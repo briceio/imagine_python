@@ -82,6 +82,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator = Accelerator(activation_timeout=1.0)
         self.accelerator.disable()
         self.accelerator.add(None, "Tab", lambda: self._switch_document())
+        self.accelerator.add("document", "Delete", lambda: self.delete_current_layer(None))
+        self.accelerator.add("document", "BackSpace", lambda: self.delete_current_layer(None))
+        self.accelerator.add("document", "Escape", lambda: self.unselect_tool(None))
         self.accelerator.add("document", "<Primary>w", lambda: self.on_file_close(None))
         self.accelerator.add("document", "r", lambda: self.on_resize(None), wait_timeout=True)
         self.accelerator.add("document", "<Primary>s", lambda: self.on_file_save(None))
@@ -133,7 +136,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_value(100)
 
         # events
-        self.connect("key-press-event", self.on_key_press)
         self.connect("key-press-event", Tool.on_key)
         self.connect("key-release-event", Tool.on_key)
         self.connect("delete-event", self.on_exit_app)
@@ -596,19 +598,18 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         return False
 
-    def on_key_press(self, widget, event):
-        accel_mask = Gtk.accelerator_get_default_mod_mask()
-        if event.keyval == Gdk.KEY_Escape:
-            if self.tool != None:
-                # cancel tool
-                self.tool = None
-                # redraw
-                self.redraw()
-        elif (event.keyval == Gdk.KEY_Delete or event.keyval == Gdk.KEY_BackSpace) and event.state & accel_mask == Gdk.ModifierType.CONTROL_MASK:
-            # remove current layer
-            self.document.delete_layer(self.selected_layer)
+    def unselect_tool(self, _):
+        if self.tool != None:
+            # cancel tool
+            self.tool = None
             # redraw
             self.redraw()
+
+    def delete_current_layer(self, _):
+        # remove current layer
+        self.document.delete_layer(self.selected_layer)
+        # redraw
+        self.redraw()
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
         if info == 80:
