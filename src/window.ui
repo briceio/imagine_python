@@ -763,26 +763,103 @@
       <object class="GtkHeaderBar" id="header_bar">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="title" translatable="yes">Imagine</property>
+        <property name="spacing">0</property>
         <property name="show-close-button">True</property>
-        <child>
+        <child type="title">
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="hexpand">True</property>
             <child>
-              <object class="GtkButton">
-                <property name="label">gtk-open</property>
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="margin-end">5</property>
-                <property name="use-stock">True</property>
-                <property name="always-show-image">True</property>
-                <signal name="clicked" handler="on_file_open" swapped="no"/>
-                <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                <style>
-                  <class name="suggested-action"/>
-                </style>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkButton">
+                    <property name="label">gtk-open</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="margin-end">5</property>
+                    <property name="use-stock">True</property>
+                    <property name="always-show-image">True</property>
+                    <signal name="clicked" handler="on_file_open" swapped="no"/>
+                    <accelerator key="o" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                    <style>
+                      <class name="suggested-action"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="button_save">
+                    <property name="label">gtk-save</property>
+                    <property name="name">button_save</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="use-stock">True</property>
+                    <property name="always-show-image">True</property>
+                    <signal name="clicked" handler="on_file_save" swapped="no"/>
+                    <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
+                    <style>
+                      <class name="destructive-action"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkMenuButton" id="menu_advanced_save">
+                    <property name="name">button_save_as</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="receives-default">True</property>
+                    <property name="popover">popover_save</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <style>
+                      <class name="destructive-action"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkMenuButton" id="menu_advanced_zoom">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="receives-default">True</property>
+                    <property name="margin-start">5</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="popover">popover_zoom</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="icon-name">cm_search</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -791,90 +868,81 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button_save">
-                <property name="label">gtk-save</property>
-                <property name="name">button_save</property>
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-                <property name="use-stock">True</property>
-                <property name="always-show-image">True</property>
-                <signal name="clicked" handler="on_file_save" swapped="no"/>
-                <accelerator key="s" signal="clicked" modifiers="GDK_CONTROL_MASK"/>
-                <style>
-                  <class name="destructive-action"/>
-                </style>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="label_title">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-top">2</property>
+                    <property name="margin-bottom">2</property>
+                    <property name="label" translatable="yes">Imagine</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label_subtitle">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Subtitle</property>
+                    <attributes>
+                      <attribute name="weight" value="book"/>
+                      <attribute name="foreground" value="#9a9a99999696"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
             <child>
-              <object class="GtkMenuButton" id="menu_advanced_save">
-                <property name="name">button_save_as</property>
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="focus-on-click">False</property>
-                <property name="receives-default">True</property>
-                <property name="popover">popover_save</property>
+                <property name="can-focus">False</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkMenuButton">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="focus-on-click">False</property>
+                    <property name="receives-default">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="popover">popover_menu</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="icon-name">open-menu-symbolic</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
                 </child>
-                <style>
-                  <class name="destructive-action"/>
-                </style>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkMenuButton" id="menu_advanced_zoom">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="focus-on-click">False</property>
-                <property name="receives-default">True</property>
-                <property name="margin-start">5</property>
-                <property name="draw-indicator">True</property>
-                <property name="popover">popover_zoom</property>
-                <child>
-                  <object class="GtkImage">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="icon-name">cm_search</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkMenuButton">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="focus-on-click">False</property>
-                <property name="receives-default">True</property>
-                <property name="draw-indicator">True</property>
-                <property name="popover">popover_menu</property>
-                <child>
-                  <object class="GtkImage">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="icon-name">open-menu-symbolic</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">4</property>
               </packing>
             </child>
           </object>

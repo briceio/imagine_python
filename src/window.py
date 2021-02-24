@@ -47,6 +47,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     document = GObject.Property(type=Document)
 
     # widgets
+    label_subtitle: Gtk.Label = Gtk.Template.Child()
     header_bar: Gtk.HeaderBar = Gtk.Template.Child()
     infobar: Gtk.InfoBar = Gtk.Template.Child()
     infobar_label: Gtk.Label = Gtk.Template.Child()
@@ -164,6 +165,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # initialization
         self._on_document_mounted(self, self.document)
+
+        # hide subtitle
+        self._set_header_subtitle(None)
 
         # TODO DEBUG
         self.load("/home/brice/Données/Temp/pic.jpg")
@@ -494,7 +498,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.drawing_area.queue_draw()
 
     def _set_header_subtitle(self, subtitle):
-        self.header_bar.set_subtitle(subtitle)
+        if subtitle != None:
+            self.label_subtitle.set_text(subtitle)
+            self.label_subtitle.show()
+        else:
+            self.label_subtitle.hide()
 
     def mouse_move(self, w, event):
         if self.document == None: return
