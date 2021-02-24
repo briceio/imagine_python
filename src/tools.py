@@ -26,7 +26,7 @@ class Anchor:
         self.linked_anchors[anchor] = None
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
-        if mouse_button == 1 and self._within(mouse_x, mouse_y, 10):
+        if mouse_button == 1 and self.within(mouse_x, mouse_y, 10):
             self._grabbed = True
             self.set(mouse_x, mouse_y)
 
@@ -49,7 +49,7 @@ class Anchor:
                 anchor.x = self.x + offset_x
                 anchor.y = self.y + offset_y
 
-    def _within(self, x, y, precision=0):
+    def within(self, x, y, precision=0):
         if self.visible and self.valid():
             distance = math.sqrt((x - self.x)**2 + (y - self.y)**2)
             return distance <= (self.radius + precision)
@@ -387,26 +387,49 @@ class PathAnnotationTool(Tool):
             layer = PathAnnotationLayer(document)
             document.add_layer(layer)
 
-        super().__init__(document, layer, reticule = True)
+        super().__init__(document, layer)
+
+        self.anchor = self._add_anchor() if layer.dirty else layer.anchor
+
+        self._moving = False
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if mouse_button == 1:
+        if mouse_button == 1 and not self.anchor.within(mouse_x, mouse_y, 10):
+            self._moving = True
+            self.layer.dirty = True
+            self.anchor.set(mouse_x, mouse_y)
             self.layer.points = []
-            self.layer.points.append((mouse_x, mouse_y))
+            self.layer.points.append((mouse_x - self.anchor.x, mouse_y - self.anchor.y))
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if mouse_button == 1:
-            self.layer.points.append((mouse_x, mouse_y))
+        if mouse_button == 1 and self._moving:
+            self._moving = False
+            self.layer.points.append((mouse_x - self.anchor.x, mouse_y - self.anchor.y))
+            self.layer.dirty = False
 
     def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
         super().mouse_move(doc, w, cr, mouse_x, mouse_y)
 
-        if self.drawing:
-            self.layer.points.append((mouse_x, mouse_y))
+        if self._moving and self.layer.dirty:
+            self.layer.points.append((mouse_x - self.anchor.x, mouse_y - self.anchor.y))
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        self._sync_layer()
+
+    def valid(self):
+        return self.anchor != None and self.anchor.valid()
+
+    def _sync_layer(self):
+        # propagate to layer (which should inherit PointLayer)
+        if self.layer != None:
+            self.layer.anchor = self.anchor
+
 
 class ImageAnnotationTool(RectTool):
 

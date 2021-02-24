@@ -51,6 +51,9 @@ class Layer(GObject.GObject):
     def crop(self, x1, y1, x2, y2):
         pass
 
+    def valid(self):
+        return True
+
     def is_first_layer(self):
         return self.position == 0
 
@@ -521,24 +524,28 @@ class PathAnnotationLayer(Layer):
     dashed = GObject.Property(type=bool, default=False, nick="Dashed")
     closed = GObject.Property(type=bool, default=False, nick="Closed")
 
-    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
+    def __init__(self, document):
         super().__init__(document, "Path")
 
         self.points = []
+        self.anchor = None
 
     def get_tool(self):
         return "PathAnnotationTool"
 
+    def valid(self):
+        return super().valid() and self.anchor != None and self.anchor.valid()
+
     def draw(self, w, cr):
         super().draw(w, cr)
 
-        if len(self.points) > 1:
+        if self.valid() and len(self.points) >= 1:
             cr.set_source_rgba(self.fill_color.red, self.fill_color.green, self.fill_color.blue, self.fill_color.alpha)
 
             cr.new_path()
-            cr.move_to(self.points[0][0], self.points[0][1])
+            cr.move_to(self.anchor.x, self.anchor.y)
             for x, y in self.points:
-                cr.line_to(x, y)
+                cr.line_to(self.anchor.x + x, self.anchor.y + y)
 
             if self.closed:
                 cr.close_path()
