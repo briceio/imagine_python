@@ -3,7 +3,12 @@ import copy
 
 class Anchor:
 
-    def __init__(self, x=None, y=None, radius=10):
+    ANCHOR_COLOR = (1, 1, 1, 1)
+    ANCHOR_WIDTH = 2
+    ANCHOR_RADIUS = 7
+    ANCHOR_OPERATOR = cairo.OPERATOR_DIFFERENCE
+
+    def __init__(self, x=None, y=None):
         self.set(x, y)
 
         # visible flag
@@ -11,8 +16,6 @@ class Anchor:
 
         # linked anchors
         self.linked_anchors = {}
-
-        self.radius = radius
 
         self._grabbed = False
 
@@ -57,7 +60,7 @@ class Anchor:
     def within(self, x, y, precision=0):
         if self.visible and self.valid():
             distance = math.sqrt((x - self.x)**2 + (y - self.y)**2)
-            return distance <= (self.radius + precision)
+            return distance <= (Anchor.ANCHOR_RADIUS + precision)
         return False
 
     def draw(self, doc, w, cr):
@@ -65,16 +68,14 @@ class Anchor:
             cr.save()
 
             scale = 1 / (doc.scale / 100)
-            radius = self.radius * scale
+            radius = Anchor.ANCHOR_RADIUS * scale
 
-            cr.set_source_rgba(0, 0, 0, 0.7)
+            cr.set_source_rgba(Anchor.ANCHOR_COLOR[0], Anchor.ANCHOR_COLOR[1], Anchor.ANCHOR_COLOR[2], Anchor.ANCHOR_COLOR[3])
+            cr.set_operator(Anchor.ANCHOR_OPERATOR);
+            cr.set_line_width(Anchor.ANCHOR_WIDTH * scale)
             cr.arc(self.x, self.y, radius, 0, math.pi * 2)
-            cr.fill_preserve()
+            cr.fill()
 
-            cr.set_source_rgba(1, 1, 1, 0.7)
-            cr.set_line_width(3)
-            cr.set_dash([])
-            cr.stroke()
             cr.restore()
 
 class Tool:
@@ -202,18 +203,26 @@ class PointTool(Tool):
 
 class RectTool(Tool):
 
-    def __init__(self, document, layer=None, draw_rect=False, draw_anchors=True):
+    RECT_TYPE_NONE = 0
+    RECT_TYPE_CLASSIC = 1
+    RECT_TYPE_CONTRAST = 1
+
+    def __init__(self, document, layer=None, rect=RECT_TYPE_NONE, persistent_rect=False, draw_anchors=True):
         super().__init__(document, layer, reticule=True, draw_anchors=draw_anchors)
 
         # anchors
-        if layer.dirty:
+        if layer is None:
+            self.anchor1 = None
+            self.anchor2 = None
+        elif layer.dirty:
             self.anchor1 = super()._add_anchor()
             self.anchor2 = super()._add_anchor()
         else:
             self.anchor1 = super()._add_anchor(layer.anchor1.x, layer.anchor1.y)
             self.anchor2 = super()._add_anchor(layer.anchor2.x, layer.anchor2.y)
 
-        self.draw_rect = draw_rect
+        self.rect = rect
+        self.persistent_rect = persistent_rect
 
         # initialization
         self._init = False
@@ -276,27 +285,37 @@ class RectTool(Tool):
         return False
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
-        super().draw(doc, w, cr, mouse_x, mouse_y)
-
         self._sync_layer()
 
-        if self.draw_rect and not self.layer.dirty and self.valid():
-            x1, y1, x2, y2 = normalize_rect(self.anchor1.x, self.anchor1.y, self.anchor2.x, self.anchor2.y)
+        # rect
+        if self.rect != RectTool.RECT_TYPE_NONE and (self.persistent_rect or not self.layer.dirty) and self.valid():
+            x1, y1, x2, y2, ok = normalize_rect(self.anchor1.x, self.anchor1.y, self.anchor2.x, self.anchor2.y)
 
-            if x2 - x1 <= 0 or y2 - y1 <= 0:
-                return
+            if ok:
+                width = doc.imageSurface.get_width()
+                height = doc.imageSurface.get_height()
 
-            width = doc.imageSurface.get_width()
-            height = doc.imageSurface.get_height()
+                if self.rect == RectTool.RECT_TYPE_CLASSIC:
+                    scale = 1 / (doc.scale / 100)
 
-            cr.set_source_rgba(0, 0, 0, 0.5)
-            cr.set_line_width(0)
-            cr.set_dash([])
-            cr.rectangle(0, 0, width, y1)
-            cr.rectangle(0, 0, x1, height)
-            cr.rectangle(x2, 0, width - x2, height)
-            cr.rectangle(0, y2, width, height - y2)
-            cr.fill()
+                    cr.set_source_rgba(Anchor.ANCHOR_COLOR[0], Anchor.ANCHOR_COLOR[1], Anchor.ANCHOR_COLOR[2], Anchor.ANCHOR_COLOR[3])
+                    cr.set_operator(Anchor.ANCHOR_OPERATOR);
+                    cr.set_line_width(Anchor.ANCHOR_WIDTH * scale)
+
+                    cr.set_dash([Anchor.ANCHOR_WIDTH * scale * 5, Anchor.ANCHOR_WIDTH * scale * 5])
+                    cr.rectangle(x1, y1, x2 - x1, y2 - y1)
+                    cr.stroke()
+                elif self.rect == RectTool.RECT_TYPE_CONTRAST:
+                    cr.set_source_rgba(0, 0, 0, 0.5)
+                    cr.set_line_width(0)
+                    cr.set_dash([])
+                    cr.rectangle(0, 0, width, y1)
+                    cr.rectangle(0, 0, x1, height)
+                    cr.rectangle(x2, 0, width - x2, height)
+                    cr.rectangle(0, y2, width, height - y2)
+                    cr.fill()
+
+        super().draw(doc, w, cr, mouse_x, mouse_y)
 
     def _sync_layer(self):
         # propagate to layer (which should inherit RectLayer)
@@ -309,7 +328,7 @@ class CropTool(RectTool):
     # TODO use layer to allow modifying cropping
 
     def __init__(self, document):
-        super().__init__(document, draw_rect=True, draw_anchors=False)
+        super().__init__(document, rect=RectTool.RECT_TYPE_CONTRAST, draw_anchors=False)
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
@@ -344,6 +363,13 @@ class CircleAnnotationTool(RectTool):
         # link both anchors
         self.anchor1.link(self.anchor2)
 
+    def between_anchors(self, x, y):
+        if self.valid() and not self.on_anchors(x, y):
+            radius = math.sqrt((self.anchor2.x - self.anchor1.x)**2 + (self.anchor2.y - self.anchor1.y)**2)
+            distance = math.sqrt((self.anchor1.x - x)**2 + (self.anchor1.y - y)**2)
+            return distance <= radius
+        return False
+
 class EllipseAnnotationTool(RectTool):
 
     def __init__(self, document, layer=None):
@@ -351,7 +377,7 @@ class EllipseAnnotationTool(RectTool):
             layer = EllipseAnnotationLayer(document)
             document.add_layer(layer)
 
-        super().__init__(document, layer)
+        super().__init__(document, layer, rect=RectTool.RECT_TYPE_CLASSIC, persistent_rect=True)
 
 class LineAnnotationTool(RectTool):
 

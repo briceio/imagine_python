@@ -799,6 +799,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # udpate the layer properties editor
         self._build_layer_editor(layer)
 
+        # redraw
+        self.redraw()
+
     def _on_updated_layers_list(self, action, layer):
 
         # refresh layers list
