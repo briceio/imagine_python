@@ -376,7 +376,7 @@ class ZoomAnnotationTool(RectTool):
     def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
         super().mouse_move(doc, w, cr, mouse_x, mouse_y)
 
-        if self._init and self.valid():
+        if self.layer.dirty and self.valid():
             self.anchor3.set(self.anchor2.x + 0.5 * (self.anchor2.x - self.anchor1.x), self.anchor2.y + 0.5 * (self.anchor2.y - self.anchor1.y))
             self.layer.anchor3 = self.anchor3
         
