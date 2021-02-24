@@ -682,6 +682,9 @@ class CloneAnnotationLayer(RectLayer):
     def get_tool(self):
         return "CloneAnnotationTool"
 
+    def clear(self):
+        self._image_surface = None
+
     def clone(self):
 
         x1, y1, x2, y2, ok = normalize_rect(self.anchor1.x, self.anchor1.y, self.anchor2.x, self.anchor2.y)

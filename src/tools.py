@@ -1,4 +1,5 @@
 from .layers import *
+import copy
 
 class Anchor:
 
@@ -18,6 +19,10 @@ class Anchor:
     def set(self, x, y):
         self.x = x
         self.y = y
+
+    def add(self, x, y):
+        self.x += x
+        self.y += y
 
     def valid(self):
         return self.x != None and self.y != None
@@ -210,33 +215,65 @@ class RectTool(Tool):
 
         self.draw_rect = draw_rect
 
-        # initial position
-        self._moving = False
+        # initialization
+        self._init = False
+
+        # move between anchors
+        self._moving = None
+        self._moving_anchor1 = None
+        self._moving_anchor1 = None
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
         # first anchor position
-        if mouse_button == 1 and self.layer.dirty:
-            self._moving = True
-            self.anchor1.set(mouse_x, mouse_y)
+        if mouse_button == 1:
+            if self.layer.dirty:
+                self._init = True
+                self.anchor1.set(mouse_x, mouse_y)
+            elif self.between_anchors(mouse_x, mouse_y):
+                self._moving = (mouse_x, mouse_y)
+                self._moving_anchor1 = copy.deepcopy(self.anchor1)
+                self._moving_anchor2 = copy.deepcopy(self.anchor2)
+            elif not self.on_anchors(mouse_x, mouse_y):
+                self._init = True
+                self.layer.dirty = True
+                self.anchor1.set(mouse_x, mouse_y)
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if mouse_button == 1 and self._moving:
-            self.layer.dirty = False
-            self._moving = False
-            self.anchor2.set(mouse_x, mouse_y)
+        if mouse_button == 1:
+            if self._init:
+                self.layer.dirty = False
+                self._init = False
+                self.anchor2.set(mouse_x, mouse_y)
+            elif self._moving != None:
+                self._moving = None
 
     def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
         super().mouse_move(doc, w, cr, mouse_x, mouse_y)
 
-        if self._moving:
+        if self._init:
             self.anchor2.set(mouse_x, mouse_y)
+        elif self._moving != None:
+            delta_x = mouse_x - self._moving[0]
+            delta_y = mouse_y - self._moving[1]
+            self.anchor1.set(self._moving_anchor1.x + delta_x, self._moving_anchor1.y + delta_y)
+            self.anchor2.set(self._moving_anchor2.x + delta_x, self._moving_anchor2.y + delta_y)
 
     def valid(self):
         return self.anchor1 != None and self.anchor2 != None and self.anchor1.valid() and self.anchor2.valid()
+
+    def on_anchors(self, x, y):
+        return self.anchor1.within(x, y, 10) or self.anchor2.within(x, y, 10)
+
+    def between_anchors(self, x, y):
+        if self.valid():
+            x1, y1, x2, y2, ok = normalize_rect(self.anchor1.x, self.anchor1.y, self.anchor2.x, self.anchor2.y)
+            if ok:
+                return not self.on_anchors(x, y) and x >= x1 and x <= x2 and y >= y1 and y <= y2
+        return False
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
@@ -379,6 +416,9 @@ class ZoomAnnotationTool(RectTool):
         if self.layer.dirty and self.valid():
             self.anchor3.set(self.anchor2.x + 0.5 * (self.anchor2.x - self.anchor1.x), self.anchor2.y + 0.5 * (self.anchor2.y - self.anchor1.y))
             self.layer.anchor3 = self.anchor3
+
+    def on_anchors(self, x, y):
+        return super().on_anchors(x, y) or self.anchor3.within(x, y, 10)
         
 class PathAnnotationTool(Tool):
 
@@ -456,14 +496,20 @@ class CloneAnnotationTool(RectTool):
 
         super().__init__(document, layer)
 
-        self.cloned = False
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        if not self.between_anchors(mouse_x, mouse_y):
+            self.layer.clear()
+
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        dirty = self.layer.dirty
+
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
         # update the snap
-        if mouse_button == 1 and not self.cloned:
-            self.cloned = True
+        if mouse_button == 1 and dirty:
+            self.layer.dirty = False
 
             # clone
             self.layer.clone()
@@ -471,5 +517,4 @@ class CloneAnnotationTool(RectTool):
             # link anchors and hide second anchor
             self.anchor2.visible = False
             self.anchor1.link(self.anchor2)
-
 
