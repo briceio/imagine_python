@@ -827,9 +827,6 @@
                     <child>
                       <placeholder/>
                     </child>
-                    <style>
-                      <class name="destructive-action"/>
-                    </style>
                   </object>
                   <packing>
                     <property name="expand">False</property>

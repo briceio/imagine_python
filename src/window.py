@@ -734,6 +734,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
             return
 
+        # bind UI
+        self.document.bind_property("dirty", self.button_save, "sensitive")
+        self.button_save.set_sensitive(self.document.dirty)
+
         # ensure UI visibility
         self.main_paned.show()
         self.button_save.show()
