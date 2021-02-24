@@ -32,18 +32,16 @@ class Layer(GObject.GObject):
     name = GObject.Property(type=str, nick="Name")
     position = GObject.Property(type=int, default=-1)
 
-    def __init__(self, document, name):
+    def __init__(self, document, name, tool):
         GObject.GObject.__init__(self)
         self.document = document
+        self.tool = tool
         self.name = name
         self.dirty = True
         self.connect("notify", self.updated)
 
     def updated(self, obj, param):
         pass
-
-    def get_tool(self):
-        return None
 
     def draw(self, w, cr):
         pass
@@ -62,8 +60,8 @@ class Layer(GObject.GObject):
 
 class RectLayer(Layer):
 
-    def __init__(self, document, name):
-        super().__init__(document, name)
+    def __init__(self, document, name, tool):
+        super().__init__(document, name, tool)
 
         self.anchor1 = None
         self.anchor2 = None
@@ -79,8 +77,8 @@ class RectLayer(Layer):
 
 class PointLayer(Layer):
 
-    def __init__(self, document, name):
-        super().__init__(document, name)
+    def __init__(self, document, name, tool):
+        super().__init__(document, name, tool)
 
         self.anchor = None
 
@@ -97,11 +95,8 @@ class RectangleAnnotationLayer(RectLayer):
     stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
 
-    def __init__(self, document):
-        super().__init__(document, "Rectangle")
-
-    def get_tool(self):
-        return "RectangleAnnotationTool"
+    def __init__(self, document, tool):
+        super().__init__(document, "Rectangle", tool)
 
     def draw(self, w, cr):
         super().draw(w, cr)
@@ -123,11 +118,8 @@ class CircleAnnotationLayer(RectLayer):
     stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
 
-    def __init__(self, document):
-        super().__init__(document, "Circle")
-
-    def get_tool(self):
-        return "CircleAnnotationTool"
+    def __init__(self, document, tool):
+        super().__init__(document, "Circle", tool)
 
     def draw(self, w, cr):
         super().draw(w, cr)
@@ -157,11 +149,8 @@ class EllipseAnnotationLayer(RectLayer):
     stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
     fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
 
-    def __init__(self, document):
-        super().__init__(document, "Ellipse")
-
-    def get_tool(self):
-        return "EllipseAnnotationTool"
+    def __init__(self, document, tool):
+        super().__init__(document, "Ellipse", tool)
 
     def draw(self, w, cr):
         super().draw(w, cr)
@@ -200,12 +189,9 @@ class LineAnnotationLayer(RectLayer):
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
     arrow = GObject.Property(type=bool, default=False, nick="Arrow")
 
-    def __init__(self, document, arrow = False):
-        super().__init__(document, "Arrow" if arrow else "Line")
+    def __init__(self, document, tool, arrow = False):
+        super().__init__(document, "Arrow" if arrow else "Line", tool)
         self.arrow = arrow
-
-    def get_tool(self):
-        return "LineAnnotationTool"
 
     def draw(self, w, cr):
         super().draw(w, cr)
@@ -241,11 +227,8 @@ class TextAnnotationLayer(PointLayer):
     centered = GObject.Property(type=bool, default=True, nick="Center")
     line_spacing = GObject.Property(type=float, default=1.0, nick="Line Spacing", minimum=0.01, maximum=2.0, blurb="0.01;0.1")
 
-    def __init__(self, document):
-        super().__init__(document, "Text")
-
-    def get_tool(self):
-        return "TextAnnotationTool"
+    def __init__(self, document, tool):
+        super().__init__(document, "Text", tool)
 
     def draw(self, w, cr):
         super().draw(w, cr)
@@ -309,11 +292,8 @@ class EmojiAnnotationLayer(PointLayer):
     size = GObject.Property(type=int, default=150, nick="Size", minimum=1, maximum=1000)
     emoji = GObject.Property(type=Selector, default=Selector.SMALL_EMOJI_SELECTOR, nick="Emoji")
 
-    def __init__(self, document):
-        super().__init__(document, "Emoji")
-
-    def get_tool(self):
-        return "EmojiAnnotationTool"
+    def __init__(self, document, tool):
+        super().__init__(document, "Emoji", tool)
 
     def draw(self, w, cr):
         super().draw(w, cr)
@@ -350,11 +330,8 @@ class LightingLayer(RectLayer):
     sharpness = GObject.Property(type=float, default=1.0, nick="Sharpness", minimum=0.0, maximum=10.0)
     color = GObject.Property(type=float, default=1.0, nick="Color", minimum=0.0, maximum=10.0)
 
-    def __init__(self, document):
-        super().__init__(document, "Lighting")
-
-    def get_tool(self):
-        return "LightingTool"
+    def __init__(self, document, tool):
+        super().__init__(document, "Lighting", tool)
 
     def draw(self, w, cr):
         super().draw(w, cr)
@@ -382,11 +359,8 @@ class BlurLayer(RectLayer):
     box = GObject.Property(type=float, default=0.0, nick="Box Blur", minimum=0.0, maximum=10.0)
     gaussian = GObject.Property(type=float, default=10.0, nick="Gaussian Blur", minimum=0.0, maximum=10.0)
 
-    def __init__(self, document):
-        super().__init__(document, "Blur")
-
-    def get_tool(self):
-        return "BlurTool"
+    def __init__(self, document, tool):
+        super().__init__(document, "Blur", tool)
 
     def draw(self, w, cr):
         super().draw(w, cr)
@@ -418,13 +392,10 @@ class ZoomAnnotationLayer(RectLayer):
     shadow_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(0, 0, 0, 1), nick="Shadow Color")
     shadow_extend = GObject.Property(type=int, default=15, nick="Shadow Extend", minimum=0, maximum=100)
 
-    def __init__(self, document):
-        super().__init__(document, "Zoom")
+    def __init__(self, document, tool):
+        super().__init__(document, "Zoom", tool)
 
         self.anchor3 = None
-
-    def get_tool(self):
-        return "ZoomAnnotationTool"
 
     def valid(self):
         return super().valid() and self.anchor3 != None and self.anchor3.valid()
@@ -524,8 +495,8 @@ class PathAnnotationLayer(Layer):
     dashed = GObject.Property(type=bool, default=False, nick="Dashed")
     closed = GObject.Property(type=bool, default=False, nick="Closed")
 
-    def __init__(self, document):
-        super().__init__(document, "Path")
+    def __init__(self, document, tool):
+        super().__init__(document, "Path", tool)
 
         self.points = []
         self.anchor = None
@@ -565,8 +536,8 @@ class ImageAnnotationLayer(RectLayer):
     keep_aspect = GObject.Property(type=bool, default=True, nick="Keep Aspect")
     alpha = GObject.Property(type=float, default=1.0, nick="Alpha", minimum=0.0, maximum=1.0)
 
-    def __init__(self, document, path=None):
-        super().__init__(document, "Image")
+    def __init__(self, document, tool, path=None):
+        super().__init__(document, "Image", tool)
 
         self.path = path
         self._image_surface = None
@@ -666,8 +637,8 @@ class CloneAnnotationLayer(RectLayer):
     shadow_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(0, 0, 0, 1), nick="Shadow Color")
     shadow_extend = GObject.Property(type=int, default=15, nick="Shadow Extend", minimum=0, maximum=100)
 
-    def __init__(self, document, x1 = 0, y1 = 0, x2 = 0, y2 = 0, live=None):
-        super().__init__(document, "Clone")
+    def __init__(self, document, tool, live=None):
+        super().__init__(document, "Clone", tool)
 
         if live != None:
             self.live = live

@@ -155,11 +155,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
                   [Gtk.TargetEntry.new("text/uri-list", 0, 80)], Gdk.DragAction.COPY)
 
 
-        # documents binding
+        # binding
         self.documents_listbox.bind_model(self.documents, self._create_document_item_widget)
         self.documents_listbox.connect("row-selected", self._on_select_document)
-
-        # binding
+        self.layers_listbox.connect("row-selected", self._on_select_layer)
         self.button_save.bind_property("sensitive", self, "document")
 
         # initialization
@@ -534,7 +533,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self._browsing = True
             self._remember_scroll_offset()
         elif self.tool != None:
-            self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
+            handled = self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
+
+            if not handled:
+                # try to select another tool
+                hits = [layer.position for layer in self.document.layers if layer.tool.hit_test(event.x, event.y)]
+                if len(hits) >= 1:
+                    self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(hits[0]))
 
         self.redraw()
 
@@ -746,7 +751,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_value(self.document.scale)
 
         self.layers_listbox.bind_model(self.document.layers, self._create_layer_item_widget)
-        self.layers_listbox.connect("row-selected", self._on_select_layer)
 
         self._offset_scroll_area(self.document.scroll_offset_x, self.document.scroll_offset_y, absolute=True)
 
@@ -789,9 +793,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # build & select the default tool (if any)
         layer = self.document.layers[row.get_index()]
-        tool_name = layer.get_tool()
-        if tool_name != None:
-            self.tool = globals()[tool_name](self.document, layer)
+        self.tool = layer.tool
 
         # keep track of selected layer
         self.selected_layer = layer
