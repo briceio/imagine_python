@@ -23,10 +23,7 @@ from .accelerator import Accelerator
 from .layers import *
 from .extensions import *
 
-from gi.repository import Gtk
-from gi.repository import Gdk
-from gi.repository import Gio
-from gi.repository import GdkPixbuf
+from gi.repository import Gtk, Gdk, Gio, GLib, GdkPixbuf
 import cairo
 import math
 from PIL import Image
@@ -355,7 +352,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_crop")
     def on_crop(self, widget):
-        self.set_active_tool(CropTool(self.document), keep_selected=False)
+        self.set_active_tool(CropTool(self.document))
 
     @Gtk.Template.Callback("on_annotate_path")
     def on_annotate_path(self, widget):
@@ -371,7 +368,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_annotate_circle")
     def on_annotate_circle(self, widget):
-        self.set_active_tool(EllipseAnnotationTool(self.document, circle = True))
+        self.set_active_tool(CircleAnnotationTool(self.document))
 
     @Gtk.Template.Callback("on_annotate_line")
     def on_annotate_line(self, widget):
@@ -423,11 +420,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_enhance_lighting")
     def on_enhance_lighting(self, widget):
-        self.set_active_tool(LightingTool(self.document), keep_selected=True)
+        self.set_active_tool(LightingTool(self.document))
 
     @Gtk.Template.Callback("on_enhance_blur")
     def on_enhance_blur(self, widget):
-        self.set_active_tool(BlurTool(self.document), keep_selected=True)
+        self.set_active_tool(BlurTool(self.document))
 
     @Gtk.Template.Callback("on_zoom_100")
     def on_zoom_100(self, _):
@@ -485,14 +482,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 self._set_header_subtitle(None)
                 self.document = None # no more document in the stacky
 
-    def set_active_tool(self, tool, keep_selected = True):
-        def apply_callback():
-            # unselect if requested
-            if not keep_selected:
-                self.tool = None
-
+    def set_active_tool(self, tool):
         self.tool = tool
-        self.tool.apply_callback = apply_callback
 
     def redraw(self):
         self.drawing_area.queue_draw()
@@ -610,7 +601,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         if event.keyval == Gdk.KEY_Escape:
             if self.tool != None:
                 # cancel tool
-                self.tool.cancel()
                 self.tool = None
                 # redraw
                 self.redraw()
@@ -735,8 +725,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
             return
 
         # bind UI
-        self.document.bind_property("dirty", self.button_save, "sensitive")
-        self.button_save.set_sensitive(self.document.dirty)
+        self.document.bind_property("dirty", self.button_save, "sensitive", GObject.BindingFlags.SYNC_CREATE)
 
         # ensure UI visibility
         self.main_paned.show()
@@ -791,7 +780,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # deselect tool
         if self.tool != None:
-            self.tool.cancel()
             self.tool = None
 
         # cleanup layer editor

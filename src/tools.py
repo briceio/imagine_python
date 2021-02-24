@@ -1,5 +1,77 @@
 from .layers import *
 
+class Anchor:
+
+    def __init__(self, x=None, y=None, radius=10):
+        self.set(x, y)
+
+        # visible flag
+        self.visible = True
+
+        # linked anchors
+        self.linked_anchors = {}
+
+        self.radius = radius
+
+        self._grabbed = False
+
+    def set(self, x, y):
+        self.x = x
+        self.y = y
+
+    def valid(self):
+        return self.x != None and self.y != None
+
+    def link(self, anchor):
+        self.linked_anchors[anchor] = None
+
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        if mouse_button == 1 and self._within(mouse_x, mouse_y, 10):
+            self._grabbed = True
+            self.set(mouse_x, mouse_y)
+
+            # linked anchors
+            for anchor in self.linked_anchors:
+                self.linked_anchors[anchor] = (anchor.x - self.x, anchor.y - self.y)
+
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        if mouse_button == 1 and self._grabbed:
+            self._grabbed = False
+            self.set(mouse_x, mouse_y)
+
+    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
+        if self._grabbed:
+            self.set(mouse_x, mouse_y)
+
+            # linked anchors
+            for anchor in self.linked_anchors:
+                offset_x, offset_y = self.linked_anchors[anchor]
+                anchor.x = self.x + offset_x
+                anchor.y = self.y + offset_y
+
+    def _within(self, x, y, precision=0):
+        if self.visible and self.valid():
+            distance = math.sqrt((x - self.x)**2 + (y - self.y)**2)
+            return distance <= (self.radius + precision)
+        return False
+
+    def draw(self, doc, w, cr):
+        if self.visible and self.valid():
+            cr.save()
+
+            scale = 1 / (doc.scale / 100)
+            radius = self.radius * scale
+
+            cr.set_source_rgba(0, 0, 0, 0.7)
+            cr.arc(self.x, self.y, radius, 0, math.pi * 2)
+            cr.fill_preserve()
+
+            cr.set_source_rgba(1, 1, 1, 0.7)
+            cr.set_line_width(3)
+            cr.set_dash([])
+            cr.stroke()
+            cr.restore()
+
 class Tool:
 
     # keys modifiers
@@ -7,25 +79,16 @@ class Tool:
     KEY_SHIFT = False
     KEY_ALT = False
 
-    def __init__(self, document, layer=None, reticule=False, callback=None):
+    def __init__(self, document, layer=None, reticule=False, draw_anchors=True):
         self.document = document
-        self.apply_callback = callback
         self.reticule = reticule
+        self.draw_anchors = draw_anchors
 
         # layer reference
         self.layer = layer
 
-        # drawing
-        self.drawing = False
-
-        # moving
-        self.moving = False
-        self._start_move_offset_x = 0
-        self._start_move_offset_y = 0
-        self.offset_x = 0
-        self.offset_y = 0
-        self.cumulated_offset_x = 0 if layer is None else layer.offset_x
-        self.cumulated_offset_y = 0 if layer is None else layer.offset_y
+        # anchors
+        self.anchors = []
 
     # static key handler to process custom keys
     def on_key(widget, event):
@@ -33,54 +96,36 @@ class Tool:
         Tool.KEY_SHIFT = (event.keyval == Gdk.KEY_Shift_L or event.keyval == Gdk.KEY_Shift_R) and event.type == Gdk.EventType.KEY_PRESS
         Tool.KEY_ALT = (event.keyval == Gdk.KEY_Alt_L or event.keyval == Gdk.KEY_Alt_R) and event.type == Gdk.EventType.KEY_PRESS
 
-    def apply(self):
-        if self.apply_callback != None:
-            self.apply_callback()
+    def _add_anchor(self, x=None, y=None):
+        anchor = Anchor(x, y)
+        self.anchors.append(anchor)
+        return anchor
 
-    def cancel(self):
-        self.drawing = False
-        self.moving = False
+    def _remove_anchor(self, anchor):
+        self.anchors.remove(anchor)
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
 
-        if not self.drawing and mouse_button == 1:
-            self.cumulated_offset_x = 0
-            self.cumulated_offset_y = 0
-            self._update_offset(0, 0)
-            self.drawing = True
-
-        if not self.moving and mouse_button == 3:
-            self.cumulated_offset_x += self.offset_x
-            self.cumulated_offset_y += self.offset_y
-            self.offset_x = 0
-            self.offset_y = 0
-
-            self._start_move_offset_x = mouse_x
-            self._start_move_offset_y = mouse_y
-
-            self.moving = True
+        # anchors
+        for anchor in self.anchors:
+            anchor.mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
-        if mouse_button == 1:
-            self.drawing = False
 
-        if mouse_button == 3:
-            self.moving = False
+        # anchors
+        for anchor in self.anchors:
+            anchor.mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
     def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
-        if self.moving:
-            self._update_offset(mouse_x - self._start_move_offset_x, mouse_y - self._start_move_offset_y)
 
-    def _update_offset(self, offset_x, offset_y):
-        self.offset_x = offset_x
-        self.offset_y = offset_y
+        # anchors
+        for anchor in self.anchors:
+            anchor.mouse_move(doc, w, cr, mouse_x, mouse_y)
+
+    def valid(self):
+        return True
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
-
-        # offset
-        if self.layer != None:
-            self.layer.offset_x = self.cumulated_offset_x + self.offset_x
-            self.layer.offset_y = self.cumulated_offset_y + self.offset_y
 
         # reticule
         if self.reticule:
@@ -96,86 +141,110 @@ class Tool:
 
             cr.stroke()
 
+        # anchors
+        if self.draw_anchors:
+            for anchor in self.anchors:
+                anchor.draw(doc, w, cr)
+
 class PointTool(Tool):
 
-    def __init__(self, document, layer):
-        super().__init__(document, layer, reticule = True)
-        self.x = 0
-        self.y = 0
+    def __init__(self, document, layer, draw_anchors=True):
+        super().__init__(document, layer, reticule=True, draw_anchors=draw_anchors)
+
+        # anchor
+        if layer.dirty:
+            self.anchor = super()._add_anchor()
+        else:
+            self.anchor = super()._add_anchor(layer.anchor.x, layer.anchor.y)
+
+        # initial position
+        self._moving = False
 
     def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if mouse_button == 1:
-            self.x = mouse_x
-            self.y = mouse_y
+        # first anchor position
+        if mouse_button == 1 and self.layer.dirty:
+            self._moving = True
+            self.anchor.set(mouse_x, mouse_y)
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        if mouse_button == 1:
-            self.x = mouse_x
-            self.y = mouse_y
-            self.apply()
-
-    def draw(self, doc, w, cr, mouse_x, mouse_y):
-        super().draw(doc, w, cr, mouse_x, mouse_y)
-
-        if self.drawing:
-            self.x = mouse_x
-            self.y = mouse_y
-
-            # propagate to layer (which should inherit PointLayer)
-            if self.layer != None:
-                self.layer.x = self.x
-                self.layer.y = self.y
-
-class RectTool(Tool):
-
-    def __init__(self, document, layer=None, draw_rect=False):
-        super().__init__(document, layer, reticule=True)
-
-        self.x1 = 0 if layer == None else layer.x1
-        self.y1 = 0 if layer == None else layer.y1
-        self.x2 = 0 if layer == None else layer.x2
-        self.y2 = 0 if layer == None else layer.y2
-
-        self.draw_rect = draw_rect
-
-    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
-        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
-
-        if mouse_button == 1:
-            self.x1 = mouse_x
-            self.y1 = mouse_y
-
-    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
-        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
-
-        if mouse_button == 1:
-            self.x2 = mouse_x
-            self.y2 = mouse_y
-            self.apply()
+        if mouse_button == 1 and self._moving:
+            self.layer.dirty = False
+            self._moving = False
+            self.anchor.set(mouse_x, mouse_y)
 
     def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
         super().mouse_move(doc, w, cr, mouse_x, mouse_y)
 
-        if self.drawing:
-            self.x2 = mouse_x
-            self.y2 = mouse_y
-
-            # propagate to layer (which should inherit RectLayer)
-            if self.layer != None:
-                self.layer.x1 = self.x1
-                self.layer.y1 = self.y1
-                self.layer.x2 = self.x2
-                self.layer.y2 = self.y2
+        if self._moving:
+            self.anchor.set(mouse_x, mouse_y)
 
     def draw(self, doc, w, cr, mouse_x, mouse_y):
         super().draw(doc, w, cr, mouse_x, mouse_y)
 
-        if self.draw_rect and self.drawing:
-            x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
+        self._sync_layer()
+
+    def valid(self):
+        return self.anchor1 != None and self.anchor1.valid()
+
+    def _sync_layer(self):
+        # propagate to layer (which should inherit PointLayer)
+        if self.layer != None:
+            self.layer.anchor = self.anchor
+
+class RectTool(Tool):
+
+    def __init__(self, document, layer=None, draw_rect=False, draw_anchors=True):
+        super().__init__(document, layer, reticule=True, draw_anchors=draw_anchors)
+
+        # anchors
+        if layer.dirty:
+            self.anchor1 = super()._add_anchor()
+            self.anchor2 = super()._add_anchor()
+        else:
+            self.anchor1 = super()._add_anchor(layer.anchor1.x, layer.anchor1.y)
+            self.anchor2 = super()._add_anchor(layer.anchor2.x, layer.anchor2.y)
+
+        self.draw_rect = draw_rect
+
+        # initial position
+        self._moving = False
+
+    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
+        # first anchor position
+        if mouse_button == 1 and self.layer.dirty:
+            self._moving = True
+            self.anchor1.set(mouse_x, mouse_y)
+
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
+
+        if mouse_button == 1 and self._moving:
+            self.layer.dirty = False
+            self._moving = False
+            self.anchor2.set(mouse_x, mouse_y)
+
+    def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
+        super().mouse_move(doc, w, cr, mouse_x, mouse_y)
+
+        if self._moving:
+            self.anchor2.set(mouse_x, mouse_y)
+
+    def valid(self):
+        return self.anchor1 != None and self.anchor2 != None and self.anchor1.valid() and self.anchor2.valid()
+
+    def draw(self, doc, w, cr, mouse_x, mouse_y):
+        super().draw(doc, w, cr, mouse_x, mouse_y)
+
+        self._sync_layer()
+
+        if self.draw_rect and not self.layer.dirty and self.valid():
+            x1, y1, x2, y2 = normalize_rect(self.anchor1.x, self.anchor1.y, self.anchor2.x, self.anchor2.y)
 
             if x2 - x1 <= 0 or y2 - y1 <= 0:
                 return
@@ -192,20 +261,29 @@ class RectTool(Tool):
             cr.rectangle(0, y2, width, height - y2)
             cr.fill()
 
+    def _sync_layer(self):
+        # propagate to layer (which should inherit RectLayer)
+        if self.layer != None:
+            self.layer.anchor1 = self.anchor1
+            self.layer.anchor2 = self.anchor2
+
 class CropTool(RectTool):
 
+    # TODO use layer to allow modifying cropping
+
     def __init__(self, document):
-        super().__init__(document, draw_rect=True)
+        super().__init__(document, draw_rect=True, draw_anchors=False)
 
-    def apply(self):
-        super().apply()
+    def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
+        super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        x1, y1, x2, y2 = normalize_rect(self.x1, self.y1, self.x2, self.y2)
+        if mouse_button == 1 and self.valid():
+            x1, y1, x2, y2 = normalize_rect(self.anchor1.x, self.anchor1.y, self.anchor2.x, self.anchor2.y)
 
-        if x2 - x1 <= 0 or y2 - y1 <= 0:
-            return
+            if x2 - x1 <= 0 or y2 - y1 <= 0:
+                return
 
-        self.document.crop(x1, y1, x2, y2)
+            self.document.crop(x1, y1, x2, y2)
 
 class RectangleAnnotationTool(RectTool):
 
@@ -216,11 +294,24 @@ class RectangleAnnotationTool(RectTool):
 
         super().__init__(document, layer)
 
+
+class CircleAnnotationTool(RectTool):
+
+    def __init__(self, document, layer=None):
+        if layer == None:
+            layer = CircleAnnotationLayer(document)
+            document.add_layer(layer)
+
+        super().__init__(document, layer)
+
+        # link both anchors
+        self.anchor1.link(self.anchor2)
+
 class EllipseAnnotationTool(RectTool):
 
-    def __init__(self, document, layer=None, circle=False):
+    def __init__(self, document, layer=None):
         if layer == None:
-            layer = EllipseAnnotationLayer(document, circle=circle)
+            layer = EllipseAnnotationLayer(document)
             document.add_layer(layer)
 
         super().__init__(document, layer)
@@ -261,12 +352,6 @@ class LightingTool(RectTool):
 
         super().__init__(document, layer)
 
-    def draw(self, doc, w, cr, mouse_x, mouse_y):
-        super().draw(doc, w, cr, mouse_x, mouse_y)
-
-        if self.drawing or self.moving:
-            self.layer.updating = True
-
 class BlurTool(RectTool):
 
     def __init__(self, document, layer=None):
@@ -275,12 +360,6 @@ class BlurTool(RectTool):
             document.add_layer(layer)
 
         super().__init__(document, layer)
-
-    def draw(self, doc, w, cr, mouse_x, mouse_y):
-        super().draw(doc, w, cr, mouse_x, mouse_y)
-
-        if self.drawing or self.moving:
-            self.layer.updating = True
 
 class ZoomAnnotationTool(RectTool):
 
@@ -291,13 +370,15 @@ class ZoomAnnotationTool(RectTool):
 
         super().__init__(document, layer)
 
+        # add zoom frame anchor
+        self.anchor3 = self._add_anchor()
+
     def mouse_move(self, doc, w, cr, mouse_x, mouse_y):
-        if self.moving and Tool.KEY_CONTROL:
-            self.layer.frame_position_forced = True
-            self.layer.frame_x = mouse_x
-            self.layer.frame_y = mouse_y
-        else:
-           super().mouse_move(doc, w, cr, mouse_x, mouse_y)
+        super().mouse_move(doc, w, cr, mouse_x, mouse_y)
+
+        if self._init and self.valid():
+            self.anchor3.set(self.anchor2.x + 0.5 * (self.anchor2.x - self.anchor1.x), self.anchor2.y + 0.5 * (self.anchor2.y - self.anchor1.y))
+            self.layer.anchor3 = self.anchor3
         
 class PathAnnotationTool(Tool):
 
@@ -352,16 +433,20 @@ class CloneAnnotationTool(RectTool):
 
         super().__init__(document, layer)
 
-    def mouse_down(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
-        super().mouse_down(doc, w, cr, mouse_x, mouse_y, mouse_button)
-
-        # clear the buffer to avoid copying itself
-        if mouse_button == 1:
-            self.layer.clear()
+        self.cloned = False
 
     def mouse_up(self, doc, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(doc, w, cr, mouse_x, mouse_y, mouse_button)
 
-        # update the copy
-        if mouse_button == 1:
-            self.layer.snap()
+        # update the snap
+        if mouse_button == 1 and not self.cloned:
+            self.cloned = True
+
+            # clone
+            self.layer.clone()
+
+            # link anchors and hide second anchor
+            self.anchor2.visible = False
+            self.anchor1.link(self.anchor2)
+
+
