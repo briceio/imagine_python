@@ -739,7 +739,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # deselect tool
         if self.tool != None:
-            self.tool.cancel()
             self.tool = None
 
         self.document.on_updated_layers_list = self._on_updated_layers_list

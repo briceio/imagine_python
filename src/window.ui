@@ -320,280 +320,287 @@
                 <property name="position">150</property>
                 <property name="position-set">True</property>
                 <child>
-                  <object class="GtkToolPalette">
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="orientation">vertical</property>
-                    <property name="toolbar-style">both-horiz</property>
+                    <property name="can-focus">True</property>
+                    <property name="shadow-type">in</property>
                     <child>
-                      <object class="GtkToolItemGroup">
+                      <object class="GtkToolPalette">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Transform</property>
+                        <property name="orientation">vertical</property>
+                        <property name="toolbar-style">both-horiz</property>
                         <child>
-                          <object class="GtkToolButton">
+                          <object class="GtkToolItemGroup">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Resize</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">image-resize-symbolic</property>
-                            <signal name="clicked" handler="on_resize" swapped="no"/>
-                            <accelerator key="r" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Crop</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">image-crop</property>
-                            <signal name="clicked" handler="on_crop" swapped="no"/>
-                            <accelerator key="c" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
+                            <property name="label" translatable="yes">Transform</property>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Resize</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">image-resize-symbolic</property>
+                                <signal name="clicked" handler="on_resize" swapped="no"/>
+                                <accelerator key="r" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Crop</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">image-crop</property>
+                                <signal name="clicked" handler="on_crop" swapped="no"/>
+                                <accelerator key="c" signal="clicked" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK"/>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Rotate Left</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">object-rotate-left</property>
+                                <signal name="clicked" handler="on_rotate_left" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Rotate Right</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">object-rotate-right</property>
+                                <signal name="clicked" handler="on_rotate_right" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Flip Horizontal</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">object-flip-horizontal</property>
+                                <signal name="clicked" handler="on_flip_horizontal" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">4</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Flip Vertical</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">object-flip-vertical</property>
+                                <signal name="clicked" handler="on_flip_vertical" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">5</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
-                            <property name="position">1</property>
+                            <property name="expand">False</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkToolButton">
+                          <object class="GtkToolItemGroup">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Rotate Left</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">object-rotate-left</property>
-                            <signal name="clicked" handler="on_rotate_left" swapped="no"/>
+                            <property name="label" translatable="yes">Annotations</property>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Path</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">path-mode-spiro</property>
+                                <signal name="clicked" handler="on_annotate_path" swapped="no"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Rectangle</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">rectangle-shape</property>
+                                <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Ellipse</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">ellipse-shape</property>
+                                <signal name="clicked" handler="on_annotate_ellipse" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Circle</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">ellipse-shape</property>
+                                <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">3</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Line</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">lines-connector</property>
+                                <signal name="clicked" handler="on_annotate_line" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">4</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Arrow</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">arrow</property>
+                                <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">5</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Text</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">text-frame-link</property>
+                                <signal name="clicked" handler="on_annotate_text" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">6</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Emoji</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">emoji-body-symbolic</property>
+                                <signal name="clicked" handler="on_annotate_emoji" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">7</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Zoom</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">zoom-best-fit</property>
+                                <signal name="clicked" handler="on_annotate_zoom" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">8</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Image</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">image-invert-symbolic</property>
+                                <signal name="clicked" handler="on_annotate_image" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">9</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Clone</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">gtk-copy</property>
+                                <signal name="clicked" handler="on_annotate_clone" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">10</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
-                            <property name="position">2</property>
+                            <property name="expand">False</property>
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkToolButton">
+                          <object class="GtkToolItemGroup">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Rotate Right</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">object-rotate-right</property>
-                            <signal name="clicked" handler="on_rotate_right" swapped="no"/>
+                            <property name="label" translatable="yes">Enhance</property>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Lighting</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">insert-object</property>
+                                <signal name="clicked" handler="on_enhance_lighting" swapped="no"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Blur</property>
+                                <property name="use-underline">True</property>
+                                <property name="icon-name">blurimage</property>
+                                <signal name="clicked" handler="on_enhance_blur" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
-                            <property name="position">3</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Flip Horizontal</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">object-flip-horizontal</property>
-                            <signal name="clicked" handler="on_flip_horizontal" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">4</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Flip Vertical</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">object-flip-vertical</property>
-                            <signal name="clicked" handler="on_flip_vertical" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">5</property>
+                            <property name="expand">False</property>
                           </packing>
                         </child>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToolItemGroup">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Annotations</property>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Path</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">path-mode-spiro</property>
-                            <signal name="clicked" handler="on_annotate_path" swapped="no"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Rectangle</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">rectangle-shape</property>
-                            <signal name="clicked" handler="on_annotate_rectangle" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Ellipse</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">ellipse-shape</property>
-                            <signal name="clicked" handler="on_annotate_ellipse" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Circle</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">ellipse-shape</property>
-                            <signal name="clicked" handler="on_annotate_circle" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">3</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Line</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">lines-connector</property>
-                            <signal name="clicked" handler="on_annotate_line" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">4</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Arrow</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">arrow</property>
-                            <signal name="clicked" handler="on_annotate_arrow" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">5</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Text</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">text-frame-link</property>
-                            <signal name="clicked" handler="on_annotate_text" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">6</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Emoji</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">emoji-body-symbolic</property>
-                            <signal name="clicked" handler="on_annotate_emoji" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">7</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Zoom</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">zoom-best-fit</property>
-                            <signal name="clicked" handler="on_annotate_zoom" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">8</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Image</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">image-invert-symbolic</property>
-                            <signal name="clicked" handler="on_annotate_image" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">9</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Clone</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">gtk-copy</property>
-                            <signal name="clicked" handler="on_annotate_clone" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">10</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToolItemGroup">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">Enhance</property>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Lighting</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">insert-object</property>
-                            <signal name="clicked" handler="on_enhance_lighting" swapped="no"/>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkToolButton">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Blur</property>
-                            <property name="use-underline">True</property>
-                            <property name="icon-name">blurimage</property>
-                            <signal name="clicked" handler="on_enhance_blur" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                      </packing>
                     </child>
                   </object>
                   <packing>

@@ -6,7 +6,7 @@ class Anchor:
     ANCHOR_COLOR = (1, 1, 1, 1)
     ANCHOR_WIDTH = 2
     ANCHOR_RADIUS = 7
-    ANCHOR_OPERATOR = cairo.OPERATOR_DIFFERENCE
+    ANCHOR_OPERATOR = cairo.OPERATOR_OVER
 
     def __init__(self, x=None, y=None):
         self.set(x, y)
