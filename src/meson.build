@@ -35,7 +35,6 @@ imagine_sources = [
   'window.py',
   'layer_editor.py',
   'resize_dialog.py',
-  'tools.py',
 ]
 
 install_data(imagine_sources, install_dir: moduledir)

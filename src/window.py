@@ -17,7 +17,6 @@
 
 from .document import Document
 from .resize_dialog import ResizeDialog
-from .tools import *
 from .layer_editor import LayerEditor
 from .accelerator import Accelerator
 from .layers import *
@@ -64,13 +63,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # current tool
+
         self._browsing = False
         self._browsing_prev_x = 0
         self._browsing_prev_y = 0
         self._skip_browse_signal = False
         self._saving = False
-        self.tool: Tool = None
         self.mouse_x = 0
         self.mouse_y = 0
         self.selected_layer: Layer = None
@@ -84,7 +82,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.add(None, "Tab", lambda: self._switch_document())
         self.accelerator.add("document", "Delete", lambda: self.delete_current_layer(None))
         self.accelerator.add("document", "BackSpace", lambda: self.delete_current_layer(None))
-        self.accelerator.add("document", "Escape", lambda: self.unselect_tool(None))
+        self.accelerator.add("document", "Escape", lambda: self.unselect_layer(None))
         self.accelerator.add("document", "<Primary>w", lambda: self.on_file_close(None))
         self.accelerator.add("document", "r", lambda: self.on_resize(None), wait_timeout=True)
         self.accelerator.add("document", "<Primary>s", lambda: self.on_file_save(None))
@@ -136,8 +134,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.zoom_spinbutton.set_value(100)
 
         # events
-        self.connect("key-press-event", Tool.on_key)
-        self.connect("key-release-event", Tool.on_key)
+        self.connect("key-press-event", Layer.on_key)
+        self.connect("key-release-event", Layer.on_key)
         self.connect("delete-event", self.on_exit_app)
         self.drawing_area.set_events(Gdk.EventMask.ALL_EVENTS_MASK)
         self.drawing_area.connect("scroll-event", self.on_scroll)
@@ -212,7 +210,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         with cairo.ImageSurface(cairo.FORMAT_RGB24, width, height) as surface:
             context = cairo.Context(surface)
-            self._draw_document(self, context, document)
+            self._draw_document(self, context, document, helpers=False)
 
             # save
             saver = switcher[document.extension]
@@ -353,51 +351,51 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_crop")
     def on_crop(self, widget):
-        self.set_active_tool(CropTool(self.document))
+        self.create_layer(CropLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_path")
     def on_annotate_path(self, widget):
-        self.set_active_tool(PathAnnotationTool(self.document))
+        self.create_layer(PathAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_rectangle")
     def on_annotate_rectangle(self, widget):
-        self.set_active_tool(RectangleAnnotationTool(self.document))
+        self.create_layer(RectangleAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_ellipse")
     def on_annotate_ellipse(self, widget):
-        self.set_active_tool(EllipseAnnotationTool(self.document))
+        self.create_layer(EllipseAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_circle")
     def on_annotate_circle(self, widget):
-        self.set_active_tool(CircleAnnotationTool(self.document))
+        self.create_layer(CircleAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_line")
     def on_annotate_line(self, widget):
-        self.set_active_tool(LineAnnotationTool(self.document))
+        self.create_layer(LineAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_arrow")
     def on_annotate_arrow(self, widget):
-        self.set_active_tool(LineAnnotationTool(self.document, arrow=True))
+        self.create_layer(LineAnnotationLayer(self.document, arrow=True))
 
     @Gtk.Template.Callback("on_annotate_text")
     def on_annotate_text(self, widget):
-        self.set_active_tool(TextAnnotationTool(self.document))
+        self.create_layer(TextAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_emoji")
     def on_annotate_emoji(self, widget):
-        self.set_active_tool(EmojiAnnotationTool(self.document))
+        self.create_layer(EmojiAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_zoom")
     def on_annotate_zoom(self, widget):
-        self.set_active_tool(ZoomAnnotationTool(self.document))
+        self.create_layer(ZoomAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_image")
     def on_annotate_image(self, widget):
-        self.set_active_tool(ImageAnnotationTool(self.document))
+        self.create_layer(ImageAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_annotate_clone")
     def on_annotate_clone(self, widget):
-        self.set_active_tool(CloneAnnotationTool(self.document))
+        self.create_layer(CloneAnnotationLayer(self.document))
 
     @Gtk.Template.Callback("on_rotate_left")
     def on_rotate_left(self, widget):
@@ -421,11 +419,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_enhance_lighting")
     def on_enhance_lighting(self, widget):
-        self.set_active_tool(LightingTool(self.document))
+        self.create_layer(LightingLayer(self.document))
 
     @Gtk.Template.Callback("on_enhance_blur")
     def on_enhance_blur(self, widget):
-        self.set_active_tool(BlurTool(self.document))
+        self.create_layer(BlurLayer(self.document))
 
     @Gtk.Template.Callback("on_zoom_100")
     def on_zoom_100(self, _):
@@ -483,8 +481,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
                 self._set_header_subtitle(None)
                 self.document = None # no more document in the stacky
 
-    def set_active_tool(self, tool):
-        self.tool = tool
+    def create_layer(self, layer):
+        self.document.add_layer(layer)
 
     def redraw(self):
         self.drawing_area.queue_draw()
@@ -516,8 +514,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.mouse_x = event.x / (self.document.scale / 100)
             self.mouse_y = event.y / (self.document.scale / 100)
 
-            if self.tool != None:
-                self.tool.mouse_move(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
+            if self.selected_layer != None:
+                self.selected_layer.mouse_move(self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y)
 
             self.redraw()
 
@@ -532,12 +530,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self._browsing_prev_y = event.y
             self._browsing = True
             self._remember_scroll_offset()
-        elif self.tool != None:
-            handled = self.tool.mouse_down(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
+        elif self.selected_layer != None:
+            handled = self.selected_layer.mouse_down(self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
 
             if not handled:
                 # try to select another tool
-                hits = [layer.position for layer in self.document.layers if layer.tool.hit_test(event.x, event.y)]
+                hits = [layer.position for layer in self.document.layers if layer.hit_test(event.x, event.y)]
                 if len(hits) >= 1:
                     self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(hits[0]))
 
@@ -551,8 +549,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         if self._browsing and event.button == 2:
             self._browsing = False
-        elif self.tool != None:
-            self.tool.mouse_up(self.document, self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
+        elif self.selected_layer != None:
+            self.selected_layer.mouse_up(self.drawing_area, self.document.imageSurface, self.mouse_x, self.mouse_y, event.button)
 
         self.redraw()
 
@@ -603,10 +601,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         return False
 
-    def unselect_tool(self, _):
-        if self.tool != None:
-            # cancel tool
-            self.tool = None
+    def unselect_layer(self, _):
+        if self.selected_layer != None:
+            # cancel operations on layer
+            self.selected_layer = None
             # redraw
             self.redraw()
 
@@ -742,9 +740,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # document title
         self._set_header_subtitle(self.document.path)
 
-        # deselect tool
-        if self.tool != None:
-            self.tool = None
+        # deselect layer
+        if self.selected_layer != None:
+            self.selected_layer = None
 
         self.document.on_updated_layers_list = self._on_updated_layers_list
         self.document.bind_property("scale", self.zoom_spinbutton, "value")
@@ -782,24 +780,24 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def _on_select_layer(self, container, row):
 
-        # deselect tool
-        if self.tool != None:
-            self.tool = None
+        # deselect layer
+        if self.selected_layer != None:
+            self.selected_layer = None
 
         # cleanup layer editor
         if row == None:
             self._cleanup_layer_editor()
             return
 
-        # build & select the default tool (if any)
-        layer = self.document.layers[row.get_index()]
-        self.tool = layer.tool
+        # get the selected layer
+        self.selected_layer = self.document.layers[row.get_index()]
 
-        # keep track of selected layer
-        self.selected_layer = layer
+        # update the active flags
+        for layer in self.document.layers:
+            layer.active = layer == self.selected_layer
 
         # udpate the layer properties editor
-        self._build_layer_editor(layer)
+        self._build_layer_editor(self.selected_layer)
 
         # redraw
         self.redraw()
@@ -832,7 +830,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         layer_editor.on_update = on_update_editor
         self.layer_editor_container.add(layer_editor)
 
-    def _draw_document(self, w, cr, document):
+    def _draw_document(self, w, cr, document, helpers=True):
 
         # clipping
         iw, ih = document.image.size
@@ -840,7 +838,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         cr.clip()
 
         # render document
-        document.draw(w, cr)
+        document.draw(w, cr, self.mouse_x, self.mouse_y, helpers=helpers)
 
     def on_draw(self, w, cr):
 
@@ -862,6 +860,3 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self._draw_document(w, cr, self.document)
         cr.restore()
 
-        # tools
-        if not self._saving and self.tool != None:
-            self.tool.draw(self.document, w, cr, self.mouse_x, self.mouse_y)

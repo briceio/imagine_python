@@ -142,7 +142,7 @@ class Document(GObject.GObject):
     def get_previous_render(self):
         return self._previous_layer_render if self._previous_layer_render != None else self.image
 
-    def draw(self, w, cr):
+    def draw(self, w, cr, mouse_x, mouse_y, helpers=False):
 
         # starting point is the image itself
         previous_back_layer = self.imageSurface
@@ -163,12 +163,16 @@ class Document(GObject.GObject):
 
             # render layer
             layer_context.save()
-            layer.draw(w, layer_context)
-            layer_context.restore()
+            layer.draw(w, layer_context, mouse_x, mouse_y)
 
             # save intermediary render for the next layers
             previous_back_layer = layer_surface
             self._previous_layer_render = pil_from_cairo_surface(layer_surface)
+
+            # render the layer helpers
+            if helpers:
+                layer.draw_helpers(w, layer_context, mouse_x, mouse_y)
+            layer_context.restore()
 
             # render the layer on top of the other ones
             cr.set_source_surface(layer_surface, 0, 0)
