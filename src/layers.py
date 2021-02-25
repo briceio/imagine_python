@@ -111,7 +111,14 @@ class Selector(GObject.GObject):
         self.index = index
 
     def value(self):
-        return self.options[self.index]
+        return self.get_value_at(self.index)
+
+    def get_value_at(self, index):
+        return self.options[index]
+
+    def set_value(self, index):
+        self.index = index
+        return self
 
 class Layer(GObject.GObject):
 

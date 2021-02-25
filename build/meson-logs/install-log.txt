@@ -9,9 +9,10 @@
 /usr/local/share/imagine/imagine/main.py
 /usr/local/share/imagine/imagine/accelerator.py
 /usr/local/share/imagine/imagine/extensions.py
+/usr/local/share/imagine/imagine/history.py
+/usr/local/share/imagine/imagine/gtk_extensions.py
 /usr/local/share/imagine/imagine/layers.py
 /usr/local/share/imagine/imagine/document.py
 /usr/local/share/imagine/imagine/window.py
 /usr/local/share/imagine/imagine/layer_editor.py
 /usr/local/share/imagine/imagine/resize_dialog.py
-/usr/local/share/imagine/imagine/tools.py

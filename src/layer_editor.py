@@ -266,15 +266,24 @@ class LayerEditor(Gtk.ListBox):
     def _build_selector(self, p, blurbs):
         box = self._build_property_editor(p)
         selector = self.layer.get_property(p.name)
+        capture_layer_name = self.layer.name
 
-        def on_change(entry):
-            selector.index = int(entry.get_active())
-            self._notify(p.name)
+        def on_change(entry, before):
+            after = int(entry.get_active())
+            after_value = selector.get_value_at(after)
+
+            self.layer.document.history.snapshot(
+                    "Update layer: %s.%s = %s" % (capture_layer_name, p.nick, after_value),
+                    lambda: self.layer.set_property(p.name, selector.set_value(before)))
+
+            selector.index = after
+            self.layer.notify(p.name)
 
         combo = Gtk.ComboBoxText()
         for i, option in enumerate(selector.options):
             combo.append(str(i), option)
         combo.set_active(selector.index)
-        combo.connect("changed", on_change)
+
+        combo.connect("changed", on_change, selector.index)
 
         box.pack_start(combo, True, True, 0)
