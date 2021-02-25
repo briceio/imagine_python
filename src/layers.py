@@ -396,7 +396,6 @@ class PointLayer(Layer):
         if self._moving:
             self.anchor.set(mouse_x, mouse_y)
 
-
     def valid(self):
         return self.anchor != None and self.anchor.valid()
 

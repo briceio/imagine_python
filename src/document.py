@@ -164,12 +164,14 @@ class Document(GObject.GObject):
             # render layer
             layer_context.save()
             layer.draw(w, layer_context, mouse_x, mouse_y)
+            layer_context.restore()
 
             # save intermediary render for the next layers
             previous_back_layer = layer_surface
             self._previous_layer_render = pil_from_cairo_surface(layer_surface)
 
             # render the layer helpers
+            layer_context.save()
             if helpers:
                 layer.draw_helpers(w, layer_context, mouse_x, mouse_y)
             layer_context.restore()
