@@ -173,10 +173,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
         # hide subtitle
         self._set_header_subtitle(None)
 
+        # init
+        self._on_document_mounted(self, self.document)
+
         # TODO DEBUG
-        self.load("/home/brice/Données/Temp/pic.jpg")
-        self.load("/home/brice/Données/Temp/pic2.jpg")
-        #self._on_document_mounted(self, self.document)
+        #self.load("/home/brice/Données/Temp/pic.jpg")
+        #self.load("/home/brice/Données/Temp/pic2.jpg")
 
 
     def load(self, path):
@@ -219,7 +221,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         with cairo.ImageSurface(cairo.FORMAT_RGB24, width, height) as surface:
             context = cairo.Context(surface)
-            self._draw_document(self, context, document, helpers=False)
+            self.document.draw(self, context, self.mouse_x, self.mouse_y, helpers=False)
 
             # save
             saver = switcher[document.extension]
@@ -880,16 +882,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         layer.connect("notify", lambda _, __: self.redraw())
         self.layer_editor_container.add(layer_editor)
 
-    def _draw_document(self, w, cr, document, helpers=True):
-
-        # clipping
-        iw, ih = document.image.size
-        cr.rectangle(0, 0, iw, ih)
-        cr.clip()
-
-        # render document
-        document.draw(w, cr, self.mouse_x, self.mouse_y, helpers=helpers)
-
     def on_draw(self, w, cr):
 
         # nothing to draw?
@@ -907,6 +899,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # draw document
         cr.save()
-        self._draw_document(w, cr, self.document)
+        self.document.draw(w, cr, self.mouse_x, self.mouse_y, helpers=True)
         cr.restore()
 

@@ -753,7 +753,7 @@ class ZoomAnnotationLayer(RectLayer):
         super().mouse_move(w, cr, mouse_x, mouse_y)
 
         if self.dirty and super().valid():
-            self.anchor3.set(self.anchor2.x + 0.5 * (self.anchor2.x - self.anchor1.x), self.anchor2.y + 0.5 * (self.anchor2.y - self.anchor1.y))
+            self.anchor3.set(self.anchor2.x + 0.1 * (self.anchor2.x - self.anchor1.x), self.anchor2.y + 0.1 * (self.anchor2.y - self.anchor1.y))
             self.anchor3 = self.anchor3
 
     def draw(self, w, cr, mouse_x, mouse_y):
@@ -1013,7 +1013,7 @@ class ImageAnnotationLayer(RectLayer):
 class CloneAnnotationLayer(RectLayer):
 
     live = GObject.Property(type=bool, default=False, nick="Live", blurb="order=2")
-    zoom = GObject.Property(type=float, default=1, nick="Zoom", minimum=0.1, maximum=10.0, blurb="order=3")
+    keep_aspect = GObject.Property(type=bool, default=True, nick="Keep Aspect", blurb="order=3")
     frame = GObject.Property(type=bool, default=True, nick="Frame", blurb="order=4")
     frame_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Frame Color", blurb="order=5")
     frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10, blurb="order=6")
@@ -1064,14 +1064,10 @@ class CloneAnnotationLayer(RectLayer):
 
         # update the snap
         if mouse_button == 1 and dirty:
-            self.dirty = False
-
             # clone
             self.clone()
 
-            # link anchors and hide second anchor
-            self.anchor2.visible = False
-            self.anchor1.link(self.anchor2)
+            self.dirty = False
 
     def draw(self, w, cr, mouse_x, mouse_y):
         super().draw(w, cr, mouse_x, mouse_y)
@@ -1099,15 +1095,39 @@ class CloneAnnotationLayer(RectLayer):
                 if image_surface != None:
 
                     # computation
+                    source_width = image_surface.get_width()
+                    source_height = image_surface.get_height()
                     target_frame_x = x1
                     target_frame_y = y1
-                    target_width = image_surface.get_width() * self.zoom
-                    target_height = image_surface.get_height() * self.zoom
+                    target_width = self.anchor2.x - self.anchor1.x
+                    target_height = self.anchor2.y - self.anchor1.y
+
+                    # scale
+                    scale_x = 1.0
+                    scale_y = 1.0
+
+                    if target_width != 0 and target_height != 0:
+                        if self.keep_aspect:
+                            source_ratio = source_width / source_height
+                            target_ratio = target_width / target_height
+
+                            if source_ratio >= target_ratio:
+                                scale_x = target_width / source_width
+                                scale_y = scale_x
+                            else:
+                                scale_y = target_height / source_height
+                                scale_x = scale_y
+                        else:
+                            scale_x = target_width / source_width
+                            scale_y = target_height / source_height
+
+                    frame_width = source_width * scale_x
+                    frame_height = source_height * scale_y
 
                     # image
                     cr.save()
                     cr.translate(x1, y1)
-                    cr.scale(self.zoom, self.zoom)
+                    cr.scale(scale_x, scale_y)
                     cr.set_source_surface(image_surface, 0, 0)
                     cr.paint()
                     cr.restore()
@@ -1119,26 +1139,26 @@ class CloneAnnotationLayer(RectLayer):
                         b = self.shadow_color.blue
 
                         # bottom shadow
-                        shadow_gradient = cairo.LinearGradient(0, target_frame_y + target_height, 0, target_frame_y + target_height + self.shadow_extend)
+                        shadow_gradient = cairo.LinearGradient(0, target_frame_y + frame_height, 0, target_frame_y + frame_height + self.shadow_extend)
                         shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
                         shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
-                        cr.rectangle(target_frame_x + self.shadow_extend, target_frame_y + target_height, target_width - self.shadow_extend, self.shadow_extend)
+                        cr.rectangle(target_frame_x + self.shadow_extend, target_frame_y + frame_height, frame_width - self.shadow_extend, self.shadow_extend)
                         cr.set_source(shadow_gradient)
                         cr.fill()
 
                         # right shadow
-                        shadow_gradient = cairo.LinearGradient(target_frame_x + target_width, 0, target_frame_x + target_width + self.shadow_extend, 0)
+                        shadow_gradient = cairo.LinearGradient(target_frame_x + frame_width, 0, target_frame_x + frame_width + self.shadow_extend, 0)
                         shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
                         shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
-                        cr.rectangle(target_frame_x + target_width, target_frame_y + self.shadow_extend, self.shadow_extend, target_height - self.shadow_extend)
+                        cr.rectangle(target_frame_x + frame_width, target_frame_y + self.shadow_extend, self.shadow_extend, frame_height - self.shadow_extend)
                         cr.set_source(shadow_gradient)
                         cr.fill()
 
                         # corner shadow
-                        shadow_gradient = cairo.RadialGradient(target_frame_x + target_width, target_frame_y + target_height, 0, target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend)
+                        shadow_gradient = cairo.RadialGradient(target_frame_x + frame_width, target_frame_y + frame_height, 0, target_frame_x + frame_width, target_frame_y + frame_height, self.shadow_extend)
                         shadow_gradient.add_color_stop_rgba(0, r, g, b, 1)
                         shadow_gradient.add_color_stop_rgba(1, r, g, b, 0)
-                        cr.rectangle(target_frame_x + target_width, target_frame_y + target_height, self.shadow_extend, self.shadow_extend)
+                        cr.rectangle(target_frame_x + frame_width, target_frame_y + frame_height, self.shadow_extend, self.shadow_extend)
                         cr.set_source(shadow_gradient)
                         cr.fill()
 
@@ -1147,6 +1167,6 @@ class CloneAnnotationLayer(RectLayer):
                         cr.set_source_rgba(self.frame_color.red, self.frame_color.green, self.frame_color.blue, self.frame_color.alpha)
                         cr.set_line_width(self.frame_width)
                         cr.set_dash([] if not self.frame_dashed else [self.frame_width, self.frame_width])
-                        cr.rectangle(x1, y1, target_width, target_height)
+                        cr.rectangle(x1, y1, frame_width, frame_height)
                         cr.stroke()
 
