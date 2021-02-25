@@ -44,17 +44,14 @@ class ResizeDialog(Gtk.Dialog):
 
         if self.keep_aspect_ratio_checkbox.get_active():
             if widget == self.height_spinbutton and self.height_spinbutton.get_value() != height:
-                print("a")
                 height = self.height_spinbutton.get_value()
                 width = height * self._ratio
                 self.width_spinbutton.set_value(width)
             elif self.width_spinbutton.get_value() != width:
-                print("b")
                 width = self.width_spinbutton.get_value()
                 height = width / self._ratio
                 self.height_spinbutton.set_value(height)
         else:
-            print("c")
             width = self.width_spinbutton.get_value()
             height = self.height_spinbutton.get_value()
 
