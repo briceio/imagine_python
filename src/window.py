@@ -21,6 +21,7 @@ from .layer_editor import LayerEditor
 from .accelerator import Accelerator
 from .layers import *
 from .extensions import *
+from .gtk_extensions import *
 
 from gi.repository import Gtk, Gdk, Gio, GLib, GdkPixbuf
 import cairo
@@ -35,6 +36,9 @@ MOUSE_SCROLL_FACTOR = 2.0
 @Gtk.Template(resource_path='/io/boite/imagine/window.ui')
 class ImagineWindow(Gtk.ApplicationWindow):
     __gtype_name__ = 'ImagineWindow'
+
+    # settings
+    USER_SETTINGS = Gio.Settings.new("imagine.user-settings")
 
     # documents
     documents = Gio.ListStore()
@@ -62,7 +66,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
 
         self._browsing = False
         self._browsing_prev_x = 0
@@ -112,13 +115,16 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.add("document", "Page_Up", lambda: self._switch_document(-1))
         self.accelerator.add("document", "Page_Down", lambda: self._switch_document(1))
         self.connect("key-press-event", self.accelerator.key_handler)
-        #self.scroll_area.connect("enter-notify-event", lambda w, e: self.accelerator.enable())
-        #self.scroll_area.connect("leave-notify-event", lambda w, e: self.accelerator.disable())
         self.connect("destroy", lambda e: self.accelerator.stop())
         self.accelerator.enable()
 
-        # load settings
-        self.user_settings = Gio.Settings.new("imagine.user-settings")
+        # contextual layer menu
+        self.layer_menu = Menu()
+        self.layer_menu.add_entry("Delete", lambda _: self.delete_current_layer(None), stock_id=Gtk.STOCK_DELETE)
+        self.layer_menu.add_separator()
+        self.layer_menu.add_entry("Move Up", lambda _: self.document.move_layer(self.selected_layer, -1), stock_id=Gtk.STOCK_GO_DOWN)
+        self.layer_menu.add_entry("Move Down", lambda _: self.document.move_layer(self.selected_layer, 1), stock_id=Gtk.STOCK_GO_UP)
+        self.layer_menu.show_all()
 
         # window management
         self._load_window_state()
@@ -225,11 +231,11 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def _load_window_state(self):
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
-        self.set_default_size(self.user_settings.get_int("window-width"), self.user_settings.get_int("window-height"))
+        self.set_default_size(ImagineWindow.USER_SETTINGS.get_int("window-width"), ImagineWindow.USER_SETTINGS.get_int("window-height"))
 
     def _save_window_state(self, window, event=None):
-        self.user_settings.set_int("window-width", self.get_size()[0])
-        self.user_settings.set_int("window-height", self.get_size()[1])
+        ImagineWindow.USER_SETTINGS.set_int("window-width", self.get_size()[0])
+        ImagineWindow.USER_SETTINGS.set_int("window-height", self.get_size()[1])
 
     def display_message(self, message, type=Gtk.MessageType.INFO):
         self.infobar_label.set_text(message)
@@ -431,6 +437,14 @@ class ImagineWindow(Gtk.ApplicationWindow):
     def on_zoom_best_fit(self, _):
         self.document.scale = self._get_best_fit_document_scale(self.document)
 
+    @Gtk.Template.Callback("on_layer_button_press")
+    def on_layer_button_press(self, widget, event):
+        if event.button == 3:
+            hits = self.document.get_layers_at_position(event.x, event.y)
+            if len(hits) >= 1:
+                self.selected_layer = hits[0]
+                self.layer_menu.popup_at_pointer(event)
+
     @Gtk.Template.Callback("on_settings")
     def on_settings(self, widget):
         os.system("dconf-editor /apps/imagine &")
@@ -533,7 +547,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
             if not handled:
                 # try to select another tool
-                hits = [layer.position for layer in self.document.layers if layer.enabled and layer.hit_test(event.x, event.y)]
+                hits = self.document.get_layers_positions_at_position(event.x, event.y)
                 if len(hits) >= 1:
                     self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(hits[0]))
 

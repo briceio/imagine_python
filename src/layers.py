@@ -174,11 +174,12 @@ class Layer(GObject.GObject):
         pass
 
     def draw_helpers(self, w, cr, mouse_x, mouse_y):
+        from .window import ImagineWindow
 
         if self.active:
 
             # reticule
-            if self.reticule:
+            if ImagineWindow.USER_SETTINGS.get_boolean("display-reticule") and self.reticule:
                 cr.set_source_rgba(1, 1, 1, 0.7)
                 cr.set_dash([10, 10])
                 cr.set_line_width(1)

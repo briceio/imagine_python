@@ -142,6 +142,12 @@ class Document(GObject.GObject):
     def get_previous_render(self):
         return self._previous_layer_render if self._previous_layer_render != None else self.image
 
+    def get_layers_at_position(self, x, y):
+        return [layer for layer in self.layers if layer.enabled and layer.hit_test(x, y)]
+
+    def get_layers_positions_at_position(self, x, y):
+        return [layer.position for layer in self.get_layers_at_position(x, y)]
+
     def draw(self, w, cr, mouse_x, mouse_y, helpers=False):
 
         # starting point is the image itself

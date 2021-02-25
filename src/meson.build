@@ -30,6 +30,7 @@ imagine_sources = [
   'main.py',
   'accelerator.py',
   'extensions.py',
+  'gtk_extensions.py',
   'layers.py',
   'document.py',
   'window.py',

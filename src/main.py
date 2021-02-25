@@ -37,6 +37,10 @@ class Application(Gtk.Application):
         context = Gtk.StyleContext()
         context.add_provider_for_screen(Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
+        # enable icons/images in menu
+        settings = Gtk.Settings.get_default()
+        settings.set_property("gtk-menu-images", True)
+
         # load main window
         win = self.props.active_window
         if not win:

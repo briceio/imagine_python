@@ -11,6 +11,11 @@
       <summary>Window height</summary>
       <description>Window height</description>
     </key>
+    <key name="display-reticule" type="b">
+      <default>true</default>
+      <summary>Display reticule</summary>
+      <description>Display a reticule on the mouse cursor</description>
+    </key>
   </schema>
 </schemalist>
 

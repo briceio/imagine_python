@@ -128,9 +128,10 @@
               <object class="GtkCheckButton" id="resize_dialog_keep_aspect_ratio_checkbox">
                 <property name="label" translatable="yes">Keep aspect ratio</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
+                <property name="halign">start</property>
+                <property name="active">True</property>
                 <property name="draw-indicator">True</property>
               </object>
               <packing>

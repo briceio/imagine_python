@@ -737,6 +737,7 @@
                               <object class="GtkDrawingArea" id="drawing_area">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
+                                <signal name="button-press-event" handler="on_layer_button_press" swapped="no"/>
                               </object>
                             </child>
                           </object>
