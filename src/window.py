@@ -159,15 +159,13 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.layers_listbox.connect("row-selected", self._on_select_layer)
         self.button_save.bind_property("sensitive", self, "document")
 
-        # initialization
-        self._on_document_mounted(self, self.document)
-
         # hide subtitle
         self._set_header_subtitle(None)
 
         # TODO DEBUG
         self.load("/home/brice/Données/Temp/pic.jpg")
         self.load("/home/brice/Données/Temp/pic2.jpg")
+        #self._on_document_mounted(self, self.document)
 
 
     def load(self, path):
@@ -535,7 +533,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
             if not handled:
                 # try to select another tool
-                hits = [layer.position for layer in self.document.layers if layer.hit_test(event.x, event.y)]
+                hits = [layer.position for layer in self.document.layers if layer.enabled and layer.hit_test(event.x, event.y)]
                 if len(hits) >= 1:
                     self.layers_listbox.select_row(self.layers_listbox.get_row_at_index(hits[0]))
 
@@ -679,13 +677,22 @@ class ImagineWindow(Gtk.ApplicationWindow):
         def move_layer(widget, layer, offset):
             self.document.move_layer(layer, offset)
 
+        def update_label_state(layer, _, label):
+            if layer.enabled:
+                label.set_text(layer.name)
+            else:
+                label.set_markup("<s>%s</s>" % layer.name)
+            label.set_sensitive(layer.enabled)
+
         box = Gtk.HBox()
         box.set_size_request(-1, 30)
         box.set_homogeneous(False)
 
         # label
         label = Gtk.Label(label = layer.name)
-        layer.bind_property("name", label, "label")
+        layer.connect("notify::name", update_label_state, label)
+        layer.connect("notify::enabled", update_label_state, label)
+        update_label_state(layer, None, label)
         box.pack_start(label, True, True, 0)
 
         # commands
@@ -748,8 +755,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.document.bind_property("scale", self.zoom_spinbutton, "value")
         self.zoom_spinbutton.set_value(self.document.scale)
 
-        self.layers_listbox.bind_model(self.document.layers, self._create_layer_item_widget)
-
         self._offset_scroll_area(self.document.scroll_offset_x, self.document.scroll_offset_y, absolute=True)
 
         # accelerator context
@@ -774,6 +779,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # switch document
         self.document = self.documents[row.get_index()] if len(self.documents) > 0 else None
+
+        # bind
+        self.layers_listbox.bind_model(self.document.layers, self._create_layer_item_widget)
 
         # redraw
         self.redraw()

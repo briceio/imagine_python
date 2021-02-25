@@ -153,6 +153,10 @@ class Document(GObject.GObject):
         # layers
         for layer in reversed(self.layers):
 
+            # disabled layer won't render
+            if not layer.enabled:
+                continue
+
             # create intermediary surface
             layer_surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.imageSurface.get_width(), self.imageSurface.get_height())
             layer_context = cairo.Context(layer_surface)

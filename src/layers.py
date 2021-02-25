@@ -123,10 +123,13 @@ class Layer(GObject.GObject):
     # name of the layer
     name = GObject.Property(type=str, nick="Name")
 
+    # is the layer enabled?
+    enabled = GObject.Property(type=bool, default=True, nick="Enabled")
+
     # position of the layer in the stack
     position = GObject.Property(type=int, default=-1)
 
-    # is the layer active
+    # is the layer active?
     active = GObject.Property(type=bool, default=False)
 
     def __init__(self, document, name, reticule=False, draw_anchors=True):
@@ -347,11 +350,11 @@ class RectLayer(Layer):
                     cr.rectangle(0, y2, width, height - y2)
                     cr.fill()
 
-    # def crop(self, x1, y1, x2, y2): TODO
-    #     self.x1 -= x1
-    #     self.y1 -= y1
-    #     self.x2 -= x1
-    #     self.y2 -= y1
+    def crop(self, x1, y1, x2, y2):
+         self.anchor1.x -= x1
+         self.anchor1.y -= y1
+         self.anchor2.x -= x1
+         self.anchor2.y -= y1
 
 class PointLayer(Layer):
 
@@ -367,9 +370,9 @@ class PointLayer(Layer):
     def valid(self):
         return self.anchor != None and self.anchor.valid()
 
-    # def crop(self, x1, y1, x2, y2): TODO
-    #     self.x -= x1
-    #     self.y -= y1
+    def crop(self, x1, y1, x2, y2):
+         self.anchor.x -= x1
+         self.anchor.y -= y1
 
     def mouse_down(self, w, cr, mouse_x, mouse_y, mouse_button):
         handled = super().mouse_down(w, cr, mouse_x, mouse_y, mouse_button)
@@ -400,8 +403,6 @@ class PointLayer(Layer):
         return self.anchor != None and self.anchor.valid()
 
 class CropLayer(RectLayer):
-
-    # TODO TO ADAPT
 
     def __init__(self, document):
         super().__init__(document, "Crop", rect=RectLayer.RECT_TYPE_CONTRAST, draw_anchors=False)
