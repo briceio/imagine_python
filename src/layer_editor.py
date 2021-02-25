@@ -136,7 +136,7 @@ class LayerEditor(Gtk.ListBox):
 
             if old_text != None and old_text != new_text:
                 self.layer.document.history.snapshot(
-                    "Update layer %s attribute %s to %s" % (capture_layer_name, p.nick, new_text),
+                    "Update layer: %s.%s = %s" % (capture_layer_name, p.nick, new_text),
                     lambda: self.layer.set_property(p.name, old_text))
 
         def spinbutton_history_before(widget, event):
@@ -148,7 +148,7 @@ class LayerEditor(Gtk.ListBox):
 
             if old_text != None and old_text != new_text:
                 self.layer.document.history.snapshot(
-                    "Update layer %s attribute %s to %s" % (capture_layer_name, p.nick, new_text),
+                    "Update layer: %s.%s = %s" % (capture_layer_name, p.nick, new_text),
                     lambda: self.layer.set_property(p.name, old_text))
 
         def textview_history_before(widget, event):
@@ -165,13 +165,13 @@ class LayerEditor(Gtk.ListBox):
 
             if old_text != None and old_text != new_text:
                 self.layer.document.history.snapshot(
-                    "Update layer %s attribute %s to %s" % (capture_layer_name, p.nick, new_text),
+                    "Update layer: %s.%s = %s" % (capture_layer_name, p.nick, new_text),
                     lambda: self.layer.set_property(p.name, old_text))
 
         def checkbutton_history(widget, before):
             after = widget.get_active()
             self.layer.document.history.snapshot(
-                    "Switch layer %s attribute %s to %s" % (capture_layer_name, p.nick, after),
+                    "Update layer: %s.%s = %s" % (capture_layer_name, p.nick, after),
                     lambda: self.layer.set_property(p.name, before))
 
         if isinstance(widget, Gtk.SpinButton):
@@ -218,7 +218,7 @@ class LayerEditor(Gtk.ListBox):
         def on_change(entry):
 
             self.layer.document.history.snapshot(
-                    "Change color of %s property %s" % (capture_layer_name, p.nick),
+                    "Color of %s property %s" % (capture_layer_name, p.nick),
                     lambda: self.layer.set_property(p.name, capture_old_color))
 
             self.layer.set_property(p.name, entry.get_rgba())
@@ -248,7 +248,7 @@ class LayerEditor(Gtk.ListBox):
             after = entry.get_font_name()
 
             self.layer.document.history.snapshot(
-                    "Change font of %s property %s to %s" % (capture_layer_name, p.nick, after),
+                    "Font of %s property %s to %s" % (capture_layer_name, p.nick, after),
                     lambda: self.layer.set_property(p.name, font))
 
             self.layer.set_property(p.name, Font(after))

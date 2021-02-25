@@ -139,11 +139,14 @@ class Document(GObject.GObject):
                 return i
 
     def delete_layer(self, layer, dirty=True):
+        capture_layer = layer
 
         if dirty:
             self.dirty = True
 
         self.layers.remove(self.index_of_layer(layer))
+
+        self.history.snapshot("Delete layer %s" % layer.name, lambda: self.add_layer(capture_layer))
 
         self._update_layers_position()
 
@@ -162,6 +165,8 @@ class Document(GObject.GObject):
         self.layers.insert(new_index, layer)
 
         self._update_layers_position()
+
+        self.history.snapshot("Move layer %s" % layer.name, lambda: self.move_layer(layer, -offset))
 
         if self.on_updated_layers_list != None:
             self.on_updated_layers_list(LayerAction.MOVE, layer)
