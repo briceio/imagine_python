@@ -121,10 +121,10 @@ class Layer(GObject.GObject):
     KEY_ALT = False
 
     # name of the layer
-    name = GObject.Property(type=str, nick="Name")
+    name = GObject.Property(type=str, nick="Name", blurb="order=0")
 
     # is the layer enabled?
-    enabled = GObject.Property(type=bool, default=True, nick="Enabled")
+    enabled = GObject.Property(type=bool, default=True, nick="Enabled", blurb="order=1")
 
     # position of the layer in the stack
     position = GObject.Property(type=int, default=-1)
@@ -420,9 +420,9 @@ class CropLayer(RectLayer):
 
 class RectangleAnnotationLayer(RectLayer):
 
-    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=0, maximum=50)
-    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
-    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Stroke Width", minimum=0, maximum=50, blurb="order=4")
+    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color", blurb="order=3")
+    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color", blurb="order=2")
 
     def __init__(self, document):
         super().__init__(document, "Rectangle")
@@ -443,9 +443,9 @@ class RectangleAnnotationLayer(RectLayer):
 
 class CircleAnnotationLayer(RectLayer):
 
-    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=0, maximum=50)
-    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
-    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Stroke Width", minimum=0, maximum=50, blurb="order=4")
+    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color", blurb="order=3")
+    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color", blurb="order=2")
 
     def __init__(self, document):
         super().__init__(document, "Circle")
@@ -484,9 +484,9 @@ class CircleAnnotationLayer(RectLayer):
 
 class EllipseAnnotationLayer(RectLayer):
 
-    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=0, maximum=50)
-    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
-    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Stroke Width", minimum=0, maximum=50, blurb="order=4")
+    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color", blurb="order=3")
+    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color", blurb="order=2")
 
     def __init__(self, document):
         super().__init__(document, "Ellipse", rect=RectLayer.RECT_TYPE_CLASSIC, persistent_rect=True)
@@ -524,9 +524,9 @@ class EllipseAnnotationLayer(RectLayer):
 
 class LineAnnotationLayer(RectLayer):
 
-    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=1, maximum=50)
-    color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
-    arrow = GObject.Property(type=bool, default=False, nick="Arrow")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=1, maximum=50, blurb="order=3")
+    color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color", blurb="order=2")
+    arrow = GObject.Property(type=bool, default=False, nick="Arrow", blurb="order=4")
 
     def __init__(self, document, arrow = False):
         super().__init__(document, "Arrow" if arrow else "Line")
@@ -559,13 +559,13 @@ class LineAnnotationLayer(RectLayer):
 
 class TextAnnotationLayer(PointLayer):
 
-    text = GObject.Property(type=str, default="Text", nick="Text", blurb="multiline")
-    text_markup = GObject.Property(type=bool, default=True, nick="Text as Markup")
-    size = GObject.Property(type=int, default=50, nick="Size", minimum=1, maximum=1000, blurb="10;100")
-    font = GObject.Property(type=Font, default=Font("Noto Sans Bold"), nick="Font", blurb="nosize")
-    color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
-    centered = GObject.Property(type=bool, default=True, nick="Center")
-    line_spacing = GObject.Property(type=float, default=1.0, nick="Line Spacing", minimum=0.01, maximum=2.0, blurb="0.01;0.1")
+    text = GObject.Property(type=str, default="Text", nick="Text", blurb="type=multiline;order=2")
+    text_markup = GObject.Property(type=bool, default=True, nick="Text as Markup", blurb="order=3")
+    size = GObject.Property(type=int, default=50, nick="Size", minimum=1, maximum=1000, blurb="step1=10;step2=100;order=5")
+    font = GObject.Property(type=Font, default=Font("Noto Sans Bold"), nick="Font", blurb="size=False;order=4")
+    color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color", blurb="order=6")
+    centered = GObject.Property(type=bool, default=True, nick="Center", blurb="order=7")
+    line_spacing = GObject.Property(type=float, default=1.0, nick="Line Spacing", minimum=0.01, maximum=2.0, blurb="step1=0.01;step2=0.1;order=8")
 
     def __init__(self, document):
         super().__init__(document, "Text")
@@ -629,8 +629,8 @@ Selector.SMALL_EMOJI_SELECTOR = Selector([
 
 class EmojiAnnotationLayer(PointLayer):
 
-    size = GObject.Property(type=int, default=150, nick="Size", minimum=1, maximum=1000)
-    emoji = GObject.Property(type=Selector, default=Selector.SMALL_EMOJI_SELECTOR, nick="Emoji")
+    size = GObject.Property(type=int, default=150, nick="Size", minimum=1, maximum=1000, blurb="order=3")
+    emoji = GObject.Property(type=Selector, default=Selector.SMALL_EMOJI_SELECTOR, nick="Emoji", blurb="order=2")
 
     def __init__(self, document):
         super().__init__(document, "Emoji")
@@ -665,10 +665,10 @@ class EmojiAnnotationLayer(PointLayer):
 
 class LightingLayer(RectLayer):
 
-    brightness = GObject.Property(type=float, default=1.5, nick="Brightness", minimum=0.0, maximum=10.0)
-    contrast = GObject.Property(type=float, default=1.0, nick="Contrast", minimum=0.0, maximum=10.0)
-    sharpness = GObject.Property(type=float, default=1.0, nick="Sharpness", minimum=0.0, maximum=10.0)
-    color = GObject.Property(type=float, default=1.0, nick="Color", minimum=0.0, maximum=10.0)
+    brightness = GObject.Property(type=float, default=1.5, nick="Brightness", minimum=0.0, maximum=10.0, blurb="order=2")
+    contrast = GObject.Property(type=float, default=1.0, nick="Contrast", minimum=0.0, maximum=10.0, blurb="order=3")
+    sharpness = GObject.Property(type=float, default=1.0, nick="Sharpness", minimum=0.0, maximum=10.0, blurb="order=4")
+    color = GObject.Property(type=float, default=1.0, nick="Color", minimum=0.0, maximum=10.0, blurb="order=5")
 
     def __init__(self, document):
         super().__init__(document, "Lighting")
@@ -696,8 +696,8 @@ class LightingLayer(RectLayer):
 
 class BlurLayer(RectLayer):
 
-    box = GObject.Property(type=float, default=0.0, nick="Box Blur", minimum=0.0, maximum=10.0)
-    gaussian = GObject.Property(type=float, default=10.0, nick="Gaussian Blur", minimum=0.0, maximum=10.0)
+    box = GObject.Property(type=float, default=0.0, nick="Box Blur", minimum=0.0, maximum=10.0, blurb="order=2")
+    gaussian = GObject.Property(type=float, default=10.0, nick="Gaussian Blur", minimum=0.0, maximum=10.0, blurb="order=3")
 
     def __init__(self, document):
         super().__init__(document, "Blur")
@@ -722,13 +722,13 @@ class BlurLayer(RectLayer):
 
 class ZoomAnnotationLayer(RectLayer):
 
-    zoom = GObject.Property(type=float, default=2, nick="Zoom", minimum=0.1, maximum=10.0)
-    color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Color")
-    frame = GObject.Property(type=bool, default=True, nick="Frame")
-    frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10)
-    shadow = GObject.Property(type=bool, default=True, nick="Shadow")
-    shadow_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(0, 0, 0, 1), nick="Shadow Color")
-    shadow_extend = GObject.Property(type=int, default=15, nick="Shadow Extend", minimum=0, maximum=100)
+    zoom = GObject.Property(type=float, default=2, nick="Zoom", minimum=0.1, maximum=10.0, blurb="order=2")
+    color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Frame Color", blurb="order=4")
+    frame = GObject.Property(type=bool, default=True, nick="Frame", blurb="order=3")
+    frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10, blurb="order=5")
+    shadow = GObject.Property(type=bool, default=True, nick="Shadow", blurb="order=6")
+    shadow_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(0, 0, 0, 1), nick="Shadow Color", blurb="order=7")
+    shadow_extend = GObject.Property(type=int, default=15, nick="Shadow Extend", minimum=0, maximum=100, blurb="order=8")
 
     def __init__(self, document):
         super().__init__(document, "Zoom")
@@ -838,11 +838,11 @@ class ZoomAnnotationLayer(RectLayer):
 
 class PathAnnotationLayer(Layer):
 
-    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Width", minimum=0, maximum=50)
-    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color")
-    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color")
-    dashed = GObject.Property(type=bool, default=False, nick="Dashed")
-    closed = GObject.Property(type=bool, default=False, nick="Closed")
+    width = GObject.Property(type=int, default=DEFAULT_WIDTH, nick="Stroke Width", minimum=0, maximum=50, blurb="order=3")
+    stroke_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Stroke Color", blurb="order=2")
+    fill_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 0), nick="Fill Color", blurb="order=6")
+    dashed = GObject.Property(type=bool, default=False, nick="Dashed", blurb="order=4")
+    closed = GObject.Property(type=bool, default=False, nick="Closed", blurb="order=5")
 
     def __init__(self, document):
         super().__init__(document, "Path")
@@ -906,9 +906,9 @@ class PathAnnotationLayer(Layer):
 
 class ImageAnnotationLayer(RectLayer):
 
-    path = GObject.Property(type=str, nick="Path", blurb="file")
-    keep_aspect = GObject.Property(type=bool, default=True, nick="Keep Aspect")
-    alpha = GObject.Property(type=float, default=1.0, nick="Alpha", minimum=0.0, maximum=1.0)
+    path = GObject.Property(type=str, nick="Path", blurb="type=file;order=2")
+    keep_aspect = GObject.Property(type=bool, default=True, nick="Keep Aspect", blurb="order=3")
+    alpha = GObject.Property(type=float, default=1.0, nick="Alpha", minimum=0.0, maximum=1.0, blurb="order=4")
 
     def __init__(self, document, path=None):
         super().__init__(document, "Image")
@@ -1005,15 +1005,15 @@ class ImageAnnotationLayer(RectLayer):
 
 class CloneAnnotationLayer(RectLayer):
 
-    live = GObject.Property(type=bool, default=False, nick="Live")
-    zoom = GObject.Property(type=float, default=1, nick="Zoom", minimum=0.1, maximum=10.0)
-    frame = GObject.Property(type=bool, default=True, nick="Frame")
-    frame_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Frame Color")
-    frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10)
-    frame_dashed = GObject.Property(type=bool, default=False, nick="Dashed")
-    shadow = GObject.Property(type=bool, default=True, nick="Shadow")
-    shadow_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(0, 0, 0, 1), nick="Shadow Color")
-    shadow_extend = GObject.Property(type=int, default=15, nick="Shadow Extend", minimum=0, maximum=100)
+    live = GObject.Property(type=bool, default=False, nick="Live", blurb="order=2")
+    zoom = GObject.Property(type=float, default=1, nick="Zoom", minimum=0.1, maximum=10.0, blurb="order=3")
+    frame = GObject.Property(type=bool, default=True, nick="Frame", blurb="order=4")
+    frame_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Frame Color", blurb="order=5")
+    frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10, blurb="order=6")
+    frame_dashed = GObject.Property(type=bool, default=False, nick="Dashed", blurb="order=7")
+    shadow = GObject.Property(type=bool, default=True, nick="Shadow", blurb="order=8")
+    shadow_color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(0, 0, 0, 1), nick="Shadow Color", blurb="order=9")
+    shadow_extend = GObject.Property(type=int, default=15, nick="Shadow Extend", minimum=0, maximum=100, blurb="order=10")
 
     def __init__(self, document, live=None):
         super().__init__(document, "Clone")

@@ -25,10 +25,43 @@ class LayerEditor(Gtk.ListBox):
             "imagine+layers+Selector": self._build_selector,
         }
 
-        # build properties editors
+        # order the properties
+        ordered = {}
+        not_ordered = []
+        property_blurbs = {}
+
         for p in self.layer.list_properties():
+
             if p.nick != "":
-                switcher[p.value_type.name](p)
+
+                # parse blurbs
+                blurbs = {}
+                if p.blurb != None:
+                    parts = p.blurb.split(";")
+                    if len(parts) >= 1:
+                        for part in parts:
+                            if part.strip() != "":
+                                key, value = part.split("=")
+                                blurbs[key] = value
+                property_blurbs[p] = blurbs # avoid double parsing
+
+                # check for a order
+                order = int(blurbs.get("order", -1))
+                if order >= 0:
+                    if ordered.get(order) != None:
+                        print("Warning, order conflict: %d in property: %s" % (order, p.name))
+
+                    ordered[order] = p
+                else:
+                    not_ordered.append(p)
+
+        # build up widgets
+        for p_key in sorted(ordered):
+            p = ordered[p_key]
+            switcher[p.value_type.name](p, property_blurbs.get(p, {}))
+
+        for p in not_ordered:
+            switcher[p.value_type.name](p, property_blurbs.get(p, {}))
 
         self.show_all()
 
@@ -51,7 +84,7 @@ class LayerEditor(Gtk.ListBox):
         self.add(box)
         return box
 
-    def _build_string_editor(self, p):
+    def _build_string_editor(self, p, blurbs):
 
         def on_change_entry(entry):
             self.layer.set_property(p.name, entry.get_text())
@@ -72,8 +105,9 @@ class LayerEditor(Gtk.ListBox):
             return False
 
         box = self._build_property_editor(p)
+        entry_type = blurbs.get("type", None)
 
-        if p.blurb == "multiline":
+        if entry_type == "multiline":
             scroll = Gtk.ScrolledWindow()
             scroll.set_hexpand(True)
             scroll.set_vexpand(True)
@@ -88,7 +122,7 @@ class LayerEditor(Gtk.ListBox):
             scroll.add(entry);
 
             box.pack_start(scroll, True, True, 0)
-        elif p.blurb == "file":
+        elif entry_type == "file":
             entry = Gtk.FileChooserButton()
             entry.set_title(p.nick)
             entry.connect("file-set", on_change_file_entry)
@@ -100,7 +134,7 @@ class LayerEditor(Gtk.ListBox):
             entry.connect("changed", on_change_entry)
             box.pack_start(entry, True, True, 0)
 
-    def _build_int_editor(self, p):
+    def _build_int_editor(self, p, blurbs):
 
         def on_change(entry):
             self.layer.set_property(p.name, entry.get_value())
@@ -110,18 +144,17 @@ class LayerEditor(Gtk.ListBox):
         entry = Gtk.SpinButton()
         entry.set_range(p.minimum, p.maximum)
 
-        if p.blurb != "":
-            steps = p.blurb.split(";")
-            entry.set_increments(int(steps[0]), int(steps[1]))
-        else:
-            entry.set_increments(1, 5)
+        # steps
+        step1 = int(blurbs.get("step1", 1))
+        step2 = int(blurbs.get("step2", 1))
+        entry.set_increments(step1, step2)
 
         entry.set_value(self.layer.get_property(p.name))
         entry.connect("changed", on_change)
         entry.connect("value-changed", on_change)
         box.pack_start(entry, True, True, 0)
 
-    def _build_double_editor(self, p):
+    def _build_double_editor(self, p, blurbs):
 
         def on_change(entry):
             self.layer.set_property(p.name, entry.get_value())
@@ -137,7 +170,7 @@ class LayerEditor(Gtk.ListBox):
         entry.connect("value-changed", on_change)
         box.pack_start(entry, True, True, 0)
 
-    def _build_color_editor(self, p):
+    def _build_color_editor(self, p, blurbs):
 
         def on_change(entry):
             self.layer.set_property(p.name, entry.get_rgba())
@@ -150,16 +183,17 @@ class LayerEditor(Gtk.ListBox):
         entry.connect("color-set", on_change)
         box.pack_start(entry, True, True, 0)
 
-    def _build_checkbox_editor(self, p):
+    def _build_checkbox_editor(self, p, blurbs):
 
         box = self._build_property_editor(p)
         entry = Gtk.CheckButton()
         self.layer.bind_property(p.name, entry, "active", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
+        self.layer.connect("notify::" + p.name, lambda _, __: self._notify(p.name))
         box.pack_start(entry, True, True, 0)
 
-    def _build_font_editor(self, p):
+    def _build_font_editor(self, p, blurbs):
         font = self.layer.get_property(p.name)
-        no_size = p.blurb == "nosize"
+        size = bool(blurbs.get("size", True))
 
         def on_change(entry):
             self.layer.set_property(p.name, Font(entry.get_font_name()))
@@ -167,14 +201,14 @@ class LayerEditor(Gtk.ListBox):
 
         box = self._build_property_editor(p)
         entry = Gtk.FontButton()
-        entry.set_use_size(not no_size)
-        entry.set_show_size(not no_size)
+        entry.set_use_size(size)
+        entry.set_show_size(size)
         entry.set_show_style(True)
         entry.set_font_name(font.desc)
         entry.connect("font-set", on_change)
         box.pack_start(entry, True, True, 0)
 
-    def _build_selector(self, p):
+    def _build_selector(self, p, blurbs):
         box = self._build_property_editor(p)
         selector = self.layer.get_property(p.name)
 
