@@ -48,7 +48,7 @@ class Document(GObject.GObject):
         self.scroll_offset_x = 0
         self.scroll_offset_y = 0
 
-    def _reload(self, image):
+    def _reload(self, image, dirty=False):
 
         # image
         self.image = image
@@ -72,35 +72,59 @@ class Document(GObject.GObject):
         # create cairo surface
         self.imageSurface = cario_image_from_pil(self.image)
 
+        if dirty:
+            self.dirty = True
+
     def rename(self, path):
         self.path = path
         self.name = os.path.basename(path)
         self.extension = os.path.splitext(path)[1]
 
     def resize(self, width, height):
-        self.dirty = True
-        self._reload(self.image.resize((width, height), resample=Image.BILINEAR))
+        # capture state for rollback
+        previous_image = self.image.copy()
+
+        self.history.snapshot("Resize to (%d, %d)" % (width, height), lambda: self._reload(previous_image, dirty=True))
+
+        self._reload(self.image.resize((width, height), resample=Image.BILINEAR), dirty=True)
 
     def crop(self, x1, y1, x2, y2):
-        self.dirty = True
-        self._reload(self.image.crop((x1, y1, x2, y2)))
+
+        # capture state for rollback
+        previous_image = self.image.copy()
+        previous_layers = self.layers
+
+        def do_rollback():
+            self._reload(previous_image, dirty=True)
+            for layer in previous_layers:
+                layer.crop(-x1, -y1)
+
+        self.history.snapshot("Cropping", do_rollback)
+
+        self._reload(self.image.crop((x1, y1, x2, y2)), dirty=True)
         for layer in self.layers:
-            layer.crop(x1, y1, x2, y2)
+            layer.crop(x1, y1)
 
     def rotate(self, angle):
-        self.dirty = True
-        self._reload(self.image.rotate(angle, expand=True))
+        self.history.snapshot("Rotation of %d°" % angle, lambda: self.rotate(-angle))
+        self._reload(self.image.rotate(angle, expand=True), dirty=True)
 
     def flip_horizontal(self):
-        self.dirty = True
-        self._reload(self.image.transpose(Image.FLIP_LEFT_RIGHT))
+        self.history.snapshot("Horizontal flip", lambda: self.flip_horizontal())
+        self._reload(self.image.transpose(Image.FLIP_LEFT_RIGHT), dirty=True)
 
     def flip_vertical(self):
-        self.dirty = True
-        self._reload(self.image.transpose(Image.FLIP_TOP_BOTTOM))
+        self.history.snapshot("Vertical flip", lambda: self.flip_vertical())
+        self._reload(self.image.transpose(Image.FLIP_TOP_BOTTOM), dirty=True)
 
     def add_layer(self, layer):
-        self.dirty = True
+
+        def when_layer_added():
+            self.history.snapshot("Add %s" % layer.name, lambda: self.delete_layer(layer))
+            self.dirty = True
+
+        if not layer.transient:
+            layer.connect("notify::dirty", lambda _, __: when_layer_added())
 
         self.layers.insert(0, layer)
 
@@ -114,8 +138,10 @@ class Document(GObject.GObject):
             if l == layer:
                 return i
 
-    def delete_layer(self, layer):
-        self.dirty = True
+    def delete_layer(self, layer, dirty=True):
+
+        if dirty:
+            self.dirty = True
 
         self.layers.remove(self.index_of_layer(layer))
 

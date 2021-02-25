@@ -18,14 +18,24 @@ class History(GObject.GObject):
         # snapshots
         self.snapshots = Gio.ListStore()
 
+        # rollbacking
+        self._rollbacking = False
+
     def snapshot(self, description, rollback):
-        self.snapshots.insert(0, Snapshot(description, rollback))
+        if not self._rollbacking:
+            self.snapshots.insert(0, Snapshot(description, rollback))
+
+    def undo(self):
+        self.rollback(0)
 
     def rollback(self, index):
-        print("Rollbacking to: %d" % index)
+        self._rollbacking = True
 
-        while index >= 0:
+        while index >= 0 and len(self.snapshots) >= 1:
             snapshot = self.snapshots[0]
             snapshot.rollback()
             self.snapshots.remove(0)
             index -= 1
+
+        self._rollbacking = False
+

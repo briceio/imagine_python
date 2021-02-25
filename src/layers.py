@@ -123,6 +123,9 @@ class Layer(GObject.GObject):
     # name of the layer
     name = GObject.Property(type=str, nick="Name", blurb="order=0")
 
+    # is the layer dirty?
+    dirty = GObject.Property(type=bool, default=True)
+
     # is the layer enabled?
     enabled = GObject.Property(type=bool, default=True, nick="Enabled", blurb="order=1")
 
@@ -132,12 +135,12 @@ class Layer(GObject.GObject):
     # is the layer active?
     active = GObject.Property(type=bool, default=False)
 
-    def __init__(self, document, name, reticule=False, draw_anchors=True):
+    def __init__(self, document, name, reticule=False, draw_anchors=True, transient=False):
         GObject.GObject.__init__(self)
 
         self.document = document
         self.name = name
-        self.dirty = True
+        self.transient = transient
         self.reticule = reticule
         self.draw_anchors = draw_anchors
         self.connect("notify", self.updated)
@@ -198,7 +201,7 @@ class Layer(GObject.GObject):
                 for anchor in self.anchors:
                     anchor.draw(self.document, w, cr, mouse_x, mouse_y)
 
-    def crop(self, x1, y1, x2, y2):
+    def crop(self, x1, y1):
         pass
 
     def valid(self):
@@ -236,10 +239,10 @@ class RectLayer(Layer):
 
     RECT_TYPE_NONE = 0
     RECT_TYPE_CLASSIC = 1
-    RECT_TYPE_CONTRAST = 1
+    RECT_TYPE_CONTRAST = 2
 
-    def __init__(self, document, name, rect=RECT_TYPE_NONE, persistent_rect=False, draw_anchors=True):
-        super().__init__(document, name, reticule=True, draw_anchors=draw_anchors)
+    def __init__(self, document, name, rect=RECT_TYPE_NONE, persistent_rect=False, draw_anchors=True, **kwargs):
+        super().__init__(document, name, reticule=True, draw_anchors=draw_anchors, **kwargs)
 
         # anchors
         self.anchor1 = self._add_anchor()
@@ -247,6 +250,9 @@ class RectLayer(Layer):
 
         self.rect = rect
         self.persistent_rect = persistent_rect
+
+        # draw type
+        self.rect = rect
 
         # initialization
         self._init = False
@@ -352,7 +358,7 @@ class RectLayer(Layer):
                     cr.rectangle(0, y2, width, height - y2)
                     cr.fill()
 
-    def crop(self, x1, y1, x2, y2):
+    def crop(self, x1, y1):
          self.anchor1.x -= x1
          self.anchor1.y -= y1
          self.anchor2.x -= x1
@@ -360,8 +366,8 @@ class RectLayer(Layer):
 
 class PointLayer(Layer):
 
-    def __init__(self, document, name, draw_anchors=True):
-        super().__init__(document, name, reticule=True, draw_anchors=draw_anchors)
+    def __init__(self, document, name, draw_anchors=True, **kwargs):
+        super().__init__(document, name, reticule=True, draw_anchors=draw_anchors, **kwargs)
 
         # anchor
         self.anchor = self._add_anchor()
@@ -372,7 +378,7 @@ class PointLayer(Layer):
     def valid(self):
         return self.anchor != None and self.anchor.valid()
 
-    def crop(self, x1, y1, x2, y2):
+    def crop(self, x1, y1):
          self.anchor.x -= x1
          self.anchor.y -= y1
 
@@ -407,18 +413,17 @@ class PointLayer(Layer):
 class CropLayer(RectLayer):
 
     def __init__(self, document):
-        super().__init__(document, "Crop", rect=RectLayer.RECT_TYPE_CONTRAST, draw_anchors=False)
+        super().__init__(document, "Crop", rect=RectLayer.RECT_TYPE_CONTRAST, persistent_rect=True, draw_anchors=False, transient=True)
 
     def mouse_up(self, w, cr, mouse_x, mouse_y, mouse_button):
         super().mouse_up(w, cr, mouse_x, mouse_y, mouse_button)
 
         if mouse_button == 1 and self.valid():
-            x1, y1, x2, y2 = normalize_rect(self.anchor1.x, self.anchor1.y, self.anchor2.x, self.anchor2.y)
+            x1, y1, x2, y2, ok = normalize_rect(self.anchor1.x, self.anchor1.y, self.anchor2.x, self.anchor2.y)
 
-            if x2 - x1 <= 0 or y2 - y1 <= 0:
-                return
-
-            self.document.crop(x1, y1, x2, y2)
+            if ok:
+                self.document.crop(x1, y1, x2, y2)
+                self.document.delete_layer(self)
 
 class RectangleAnnotationLayer(RectLayer):
 
