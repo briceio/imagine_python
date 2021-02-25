@@ -13,6 +13,7 @@ class LayerEditor(Gtk.ListBox):
         self.layer = layer
         self.set_selection_mode(Gtk.SelectionMode.NONE)
         self._build_ui()
+        self._fields_before_modifications = {}
 
     def _build_ui(self):
         switcher = {
@@ -65,10 +66,6 @@ class LayerEditor(Gtk.ListBox):
 
         self.show_all()
 
-    def _notify(self, p):
-        if self.on_update != None:
-            self.on_update(self.layer)
-
     def _build_property_editor(self, p):
         box = Gtk.HBox()
         box.set_homogeneous(True)
@@ -85,15 +82,6 @@ class LayerEditor(Gtk.ListBox):
         return box
 
     def _build_string_editor(self, p, blurbs):
-
-        def on_change_entry(entry):
-            self.layer.set_property(p.name, entry.get_text())
-            self._notify(p.name)
-
-        def on_change_textview(entry):
-            start, end = entry.get_bounds()
-            self.layer.set_property(p.name, entry.get_text(start, end, True))
-            self._notify(p.name)
 
         def on_change_file_entry(entry):
             self.layer.set_property(p.name, entry.get_filename())
@@ -117,10 +105,11 @@ class LayerEditor(Gtk.ListBox):
             entry.set_editable(True)
             entry.set_focus_on_click(True)
             box.set_size_request(-1, 75)
-            entry.get_buffer().connect("changed", on_change_textview)
-            entry.connect("button-press-event", block_event) # hack bug mouse click when textview in box
-            scroll.add(entry);
 
+            entry.connect("button-press-event", block_event) # hack bug mouse click when textview in box
+            self.layer.bind_property(p.name, entry.get_buffer(), "text", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
+            scroll.add(entry);
+            self._bind_history(p, entry) # history
             box.pack_start(scroll, True, True, 0)
         elif entry_type == "file":
             entry = Gtk.FileChooserButton()
@@ -131,14 +120,73 @@ class LayerEditor(Gtk.ListBox):
         else:
             entry = Gtk.Entry()
             entry.set_text(self.layer.get_property(p.name))
-            entry.connect("changed", on_change_entry)
+            self.layer.bind_property(p.name, entry, "text", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
+            self._bind_history(p, entry) # history
             box.pack_start(entry, True, True, 0)
 
-    def _build_int_editor(self, p, blurbs):
+    def _bind_history(self, p, widget):
+        capture_layer_name = self.layer.name
 
-        def on_change(entry):
-            self.layer.set_property(p.name, entry.get_value())
-            self._notify(p.name)
+        def entry_history_before(widget, event):
+            self._fields_before_modifications[widget] = widget.get_text()
+
+        def entry_history_after(widget, event):
+            old_text = self._fields_before_modifications.get(widget, None)
+            new_text = widget.get_text()
+
+            if old_text != None and old_text != new_text:
+                self.layer.document.history.snapshot(
+                    "Update layer %s attribute %s to %s" % (capture_layer_name, p.nick, new_text),
+                    lambda: self.layer.set_property(p.name, old_text))
+
+        def spinbutton_history_before(widget, event):
+            self._fields_before_modifications[widget] = widget.get_value()
+
+        def spinbutton_history_after(widget, event):
+            old_text = self._fields_before_modifications.get(widget, None)
+            new_text = round(widget.get_value(), widget.get_digits())
+
+            if old_text != None and old_text != new_text:
+                self.layer.document.history.snapshot(
+                    "Update layer %s attribute %s to %s" % (capture_layer_name, p.nick, new_text),
+                    lambda: self.layer.set_property(p.name, old_text))
+
+        def textview_history_before(widget, event):
+            buffer = widget.get_buffer()
+            start, end = buffer.get_bounds()
+            self._fields_before_modifications[widget] = buffer.get_text(start, end, True)
+
+        def textview_history_after(widget, event):
+            old_text = self._fields_before_modifications.get(widget, None)
+
+            buffer = widget.get_buffer()
+            start, end = buffer.get_bounds()
+            new_text = buffer.get_text(start, end, True)
+
+            if old_text != None and old_text != new_text:
+                self.layer.document.history.snapshot(
+                    "Update layer %s attribute %s to %s" % (capture_layer_name, p.nick, new_text),
+                    lambda: self.layer.set_property(p.name, old_text))
+
+        def checkbutton_history(widget, before):
+            after = widget.get_active()
+            self.layer.document.history.snapshot(
+                    "Switch layer %s attribute %s to %s" % (capture_layer_name, p.nick, after),
+                    lambda: self.layer.set_property(p.name, before))
+
+        if isinstance(widget, Gtk.SpinButton):
+            widget.connect("focus-in-event", spinbutton_history_before)
+            widget.connect("focus-out-event", spinbutton_history_after)
+        elif isinstance(widget, Gtk.Entry):
+            widget.connect("focus-in-event", entry_history_before)
+            widget.connect("focus-out-event", entry_history_after)
+        elif isinstance(widget, Gtk.TextView):
+            widget.connect("focus-in-event", textview_history_before)
+            widget.connect("focus-out-event", textview_history_after)
+        elif isinstance(widget, Gtk.CheckButton):
+            widget.connect("toggled", checkbutton_history, widget.get_active())
+
+    def _build_int_editor(self, p, blurbs):
 
         box = self._build_property_editor(p)
         entry = Gtk.SpinButton()
@@ -148,33 +196,33 @@ class LayerEditor(Gtk.ListBox):
         step1 = int(blurbs.get("step1", 1))
         step2 = int(blurbs.get("step2", 1))
         entry.set_increments(step1, step2)
-
-        entry.set_value(self.layer.get_property(p.name))
-        entry.connect("changed", on_change)
-        entry.connect("value-changed", on_change)
+        self.layer.bind_property(p.name, entry, "value", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
+        self._bind_history(p, entry) # history
         box.pack_start(entry, True, True, 0)
 
     def _build_double_editor(self, p, blurbs):
-
-        def on_change(entry):
-            self.layer.set_property(p.name, entry.get_value())
-            self._notify(p.name)
 
         box = self._build_property_editor(p)
         entry = Gtk.SpinButton()
         entry.set_range(p.minimum, p.maximum)
         entry.set_increments(0.1, 1.0)
         entry.set_digits(2)
-        entry.set_value(self.layer.get_property(p.name))
-        entry.connect("changed", on_change)
-        entry.connect("value-changed", on_change)
+        self.layer.bind_property(p.name, entry, "value", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
+        self._bind_history(p, entry) # history
         box.pack_start(entry, True, True, 0)
 
     def _build_color_editor(self, p, blurbs):
+        capture_layer_name = self.layer.name
+        capture_old_color = self.layer.get_property(p.name)
 
         def on_change(entry):
+
+            self.layer.document.history.snapshot(
+                    "Change color of %s property %s" % (capture_layer_name, p.nick),
+                    lambda: self.layer.set_property(p.name, capture_old_color))
+
             self.layer.set_property(p.name, entry.get_rgba())
-            self._notify(p.name)
+            self.layer.notify(p.name)
 
         box = self._build_property_editor(p)
         entry = Gtk.ColorButton()
@@ -188,16 +236,23 @@ class LayerEditor(Gtk.ListBox):
         box = self._build_property_editor(p)
         entry = Gtk.CheckButton()
         self.layer.bind_property(p.name, entry, "active", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
-        self.layer.connect("notify::" + p.name, lambda _, __: self._notify(p.name))
+        self._bind_history(p, entry) # history
         box.pack_start(entry, True, True, 0)
 
     def _build_font_editor(self, p, blurbs):
+        capture_layer_name = self.layer.name
         font = self.layer.get_property(p.name)
         size = bool(blurbs.get("size", True))
 
         def on_change(entry):
-            self.layer.set_property(p.name, Font(entry.get_font_name()))
-            self._notify(p.name)
+            after = entry.get_font_name()
+
+            self.layer.document.history.snapshot(
+                    "Change font of %s property %s to %s" % (capture_layer_name, p.nick, after),
+                    lambda: self.layer.set_property(p.name, font))
+
+            self.layer.set_property(p.name, Font(after))
+            self.layer.notify(p.name)
 
         box = self._build_property_editor(p)
         entry = Gtk.FontButton()

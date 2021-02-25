@@ -872,15 +872,12 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     def _build_layer_editor(self, layer):
 
-        def on_update_editor(layer):
-            self.redraw()
-
         # cleanup
         self._cleanup_layer_editor()
 
         # add the new editor
         layer_editor = LayerEditor(layer)
-        layer_editor.on_update = on_update_editor
+        layer.connect("notify", lambda _, __: self.redraw())
         self.layer_editor_container.add(layer_editor)
 
     def _draw_document(self, w, cr, document, helpers=True):
