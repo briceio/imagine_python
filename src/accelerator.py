@@ -46,7 +46,7 @@ class Accelerator:
 
     EXCLUDED_KEYVALS = [Gdk.KEY_Shift_L, Gdk.KEY_Shift_R, Gdk.KEY_Alt_L, Gdk.KEY_Alt_R, Gdk.KEY_Control_L, Gdk.KEY_Control_R, Gdk.KEY_Meta_L, Gdk.KEY_Meta_R]
 
-    def key_handler(self, widget, event):
+    def key_handler(self, window, event):
 
         def register_event():
             if event.type == Gdk.EventType.KEY_PRESS and not event.keyval in Accelerator.EXCLUDED_KEYVALS:
@@ -55,6 +55,11 @@ class Accelerator:
         if not self.enabled: return
 
         #print("Accelerator command: %s" % Gtk.accelerator_name_with_keycode(None, event.keyval, event.hardware_keycode, event.state))
+
+        # get current focused widget
+        widget = window.get_focus();
+        if isinstance(widget, (Gtk.Entry, Gtk.TextView)):
+            return # skip
 
         if not self.action_pending:
             self.action_pending = True

@@ -78,7 +78,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # register the accelerator
         self.accelerator = Accelerator(activation_timeout=1.0)
-        self.accelerator.disable()
         self.accelerator.add(None, "Tab", lambda: self._switch_document())
         self.accelerator.add("document", "Delete", lambda: self.delete_current_layer(None))
         self.accelerator.add("document", "BackSpace", lambda: self.delete_current_layer(None))
@@ -113,9 +112,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.accelerator.add("document", "Page_Up", lambda: self._switch_document(-1))
         self.accelerator.add("document", "Page_Down", lambda: self._switch_document(1))
         self.connect("key-press-event", self.accelerator.key_handler)
-        self.scroll_area.connect("enter-notify-event", lambda w, e: self.accelerator.enable())
-        self.scroll_area.connect("leave-notify-event", lambda w, e: self.accelerator.disable())
+        #self.scroll_area.connect("enter-notify-event", lambda w, e: self.accelerator.enable())
+        #self.scroll_area.connect("leave-notify-event", lambda w, e: self.accelerator.disable())
         self.connect("destroy", lambda e: self.accelerator.stop())
+        self.accelerator.enable()
 
         # load settings
         self.user_settings = Gio.Settings.new("imagine.user-settings")
