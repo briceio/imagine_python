@@ -22,6 +22,7 @@ from .accelerator import Accelerator
 from .layers import *
 from .extensions import *
 from .gtk_extensions import *
+from .history import *
 
 from gi.repository import Gtk, Gdk, Gio, GLib, GdkPixbuf
 import cairo
@@ -63,6 +64,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
     menu_advanced_save: Gtk.MenuButton = Gtk.Template.Child()
     menu_advanced_zoom: Gtk.MenuButton = Gtk.Template.Child()
     zoom_spinbutton_label: Gtk.Label = Gtk.Template.Child()
+    history_listbox: Gtk.ListBox = Gtk.Template.Child()
+    popover_history: Gtk.Popover = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -164,6 +167,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.documents_listbox.connect("row-selected", self._on_select_document)
         self.layers_listbox.connect("row-selected", self._on_select_layer)
         self.button_save.bind_property("sensitive", self, "document")
+        self.history_listbox.connect("row-activated", self._on_select_history)
 
         # hide subtitle
         self._set_header_subtitle(None)
@@ -355,79 +359,111 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
     @Gtk.Template.Callback("on_crop")
     def on_crop(self, widget):
-        self.create_layer(CropLayer(self.document))
+        layer = CropLayer(self.document)
+        self.document.history.snapshot("Crop", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_path")
     def on_annotate_path(self, widget):
-        self.create_layer(PathAnnotationLayer(self.document))
+        layer = PathAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Path", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_rectangle")
     def on_annotate_rectangle(self, widget):
-        self.create_layer(RectangleAnnotationLayer(self.document))
+        layer = RectangleAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Rectangle", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_ellipse")
     def on_annotate_ellipse(self, widget):
-        self.create_layer(EllipseAnnotationLayer(self.document))
+        layer = EllipseAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Ellipse", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_circle")
     def on_annotate_circle(self, widget):
-        self.create_layer(CircleAnnotationLayer(self.document))
+        layer = CircleAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Circle", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_line")
     def on_annotate_line(self, widget):
-        self.create_layer(LineAnnotationLayer(self.document))
+        layer = LineAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Line", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_arrow")
     def on_annotate_arrow(self, widget):
-        self.create_layer(LineAnnotationLayer(self.document, arrow=True))
+        layer = LineAnnotationLayer(self.document, arrow=True)
+        self.document.history.snapshot("Annotate Circle", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_text")
     def on_annotate_text(self, widget):
-        self.create_layer(TextAnnotationLayer(self.document))
+        layer = TextAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Text", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_emoji")
     def on_annotate_emoji(self, widget):
-        self.create_layer(EmojiAnnotationLayer(self.document))
+        layer = EmojiAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Emoji", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_zoom")
     def on_annotate_zoom(self, widget):
-        self.create_layer(ZoomAnnotationLayer(self.document))
+        layer = ZoomAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Zoom", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_image")
     def on_annotate_image(self, widget):
-        self.create_layer(ImageAnnotationLayer(self.document))
+        layer = ImageAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Image", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_annotate_clone")
     def on_annotate_clone(self, widget):
-        self.create_layer(CloneAnnotationLayer(self.document))
+        layer = CloneAnnotationLayer(self.document)
+        self.document.history.snapshot("Annotate Clone", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
+
+    @Gtk.Template.Callback("on_enhance_lighting")
+    def on_enhance_lighting(self, widget):
+        layer = LightingLayer(self.document)
+        self.document.history.snapshot("Add Lightning", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
+
+    @Gtk.Template.Callback("on_enhance_blur")
+    def on_enhance_blur(self, widget):
+        layer = BlurLayer(self.document)
+        self.document.history.snapshot("Add Blur", lambda: self.document.delete_layer(layer))
+        self.create_layer(layer)
 
     @Gtk.Template.Callback("on_rotate_left")
     def on_rotate_left(self, widget):
+        self.document.history.snapshot("Rotate Left", lambda: self.on_rotate_right(widget))
         self.document.rotate(90)
         self.redraw()
 
     @Gtk.Template.Callback("on_rotate_right")
     def on_rotate_right(self, widget):
+        self.document.history.snapshot("Rotate Right", lambda: self.on_rotate_left(widget))
         self.document.rotate(-90)
         self.redraw()
 
     @Gtk.Template.Callback("on_flip_horizontal")
     def on_flip_horizontal(self, widget):
+        self.document.history.snapshot("Flip Horizontal", lambda: self.on_flip_horizontal(widget))
         self.document.flip_horizontal()
         self.redraw()
 
     @Gtk.Template.Callback("on_flip_vertical")
     def on_flip_vertical(self, widget):
+        self.document.history.snapshot("Flip Vertical", lambda: self.on_flip_vertical(widget))
         self.document.flip_vertical()
         self.redraw()
-
-    @Gtk.Template.Callback("on_enhance_lighting")
-    def on_enhance_lighting(self, widget):
-        self.create_layer(LightingLayer(self.document))
-
-    @Gtk.Template.Callback("on_enhance_blur")
-    def on_enhance_blur(self, widget):
-        self.create_layer(BlurLayer(self.document))
 
     @Gtk.Template.Callback("on_zoom_100")
     def on_zoom_100(self, _):
@@ -458,7 +494,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
                                  version="1.0",
                                  website="https://boite.io",
                                  website_label="Boite",
-                                 comments="A small yet powerful image annotation tool.")
+                                 comments="A minimalist yet powerful image annotation tool.")
         # TODO logo=[pixbuf]
         # TODO automate version injection
         dialog.set_transient_for(self)
@@ -661,6 +697,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         return False
 
+    def _create_history_item_widget(self, snapshot):
+        return Gtk.Label(snapshot.description)
+
     def _create_document_item_widget(self, document):
 
         def on_updated_thumbnail(document):
@@ -783,6 +822,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         if found:
             self.documents_listbox.select_row(self.documents_listbox.get_row_at_index(position))
 
+        # bind history
+        self.history_listbox.bind_model(self.document.history.snapshots, self._create_history_item_widget)
+
     def _select_last_document(self):
         self.documents_listbox.select_row(self.documents_listbox.get_row_at_index(len(self.documents) - 1))
 
@@ -803,6 +845,15 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # redraw
         self.redraw()
+
+    def _on_select_history(self, container, row):
+
+        # get current document history snapshot entry
+        if row != None:
+            index = row.get_index()
+            self.document.history.rollback(index)
+            self.popover_history.hide()
+            self.display_message("%d modification%s cancelled." % (index + 1, "s" if index + 1 > 1 else ""))
 
     def _on_select_layer(self, container, row):
 

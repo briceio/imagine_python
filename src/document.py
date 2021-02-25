@@ -5,8 +5,8 @@ from gi.repository import Gtk, Gio, GObject, GdkPixbuf, GLib
 import enum
 import os
 from .extensions import *
-
 from .layers import Layer
+from .history import *
 
 class LayerAction(enum.Enum):
     ADD = 1
@@ -28,8 +28,13 @@ class Document(GObject.GObject):
     # dirty flag
     dirty = GObject.Property(type=bool, default=False)
 
+    # history
+    history = GObject.Property(type=History)
+
     def __init__(self, path):
         GObject.GObject.__init__(self)
+
+        self.history = History()
         self.path = path
         self.name = os.path.basename(path)
         self.extension = os.path.splitext(path)[1]

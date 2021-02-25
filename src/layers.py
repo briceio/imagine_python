@@ -134,6 +134,7 @@ class Layer(GObject.GObject):
 
     def __init__(self, document, name, reticule=False, draw_anchors=True):
         GObject.GObject.__init__(self)
+
         self.document = document
         self.name = name
         self.dirty = True
@@ -723,7 +724,7 @@ class BlurLayer(RectLayer):
 
 class ZoomAnnotationLayer(RectLayer):
 
-    zoom = GObject.Property(type=float, default=2, nick="Zoom", minimum=0.1, maximum=10.0, blurb="order=2")
+    zoom = GObject.Property(type=float, default=1.5, nick="Zoom", minimum=0.1, maximum=10.0, blurb="order=2")
     color = GObject.Property(type=Gdk.RGBA, default=Gdk.RGBA(1, 1, 1, 1), nick="Frame Color", blurb="order=4")
     frame = GObject.Property(type=bool, default=True, nick="Frame", blurb="order=3")
     frame_width = GObject.Property(type=int, default=3, nick="Frame Width", minimum=1, maximum=10, blurb="order=5")
