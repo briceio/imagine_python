@@ -731,6 +731,8 @@
                           <object class="GtkViewport" id="viewport">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <child>
                               <object class="GtkDrawingArea" id="drawing_area">
                                 <property name="visible">True</property>

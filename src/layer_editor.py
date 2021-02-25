@@ -1,5 +1,4 @@
-from gi.repository import Gtk
-from gi.repository import Gdk
+from gi.repository import Gtk, Gdk, GObject
 
 from .layers import Layer, Font
 
@@ -153,14 +152,9 @@ class LayerEditor(Gtk.ListBox):
 
     def _build_checkbox_editor(self, p):
 
-        def on_change(entry):
-            self.layer.set_property(p.name, entry.get_active())
-            self._notify(p.name)
-
         box = self._build_property_editor(p)
         entry = Gtk.CheckButton()
-        entry.set_active(self.layer.get_property(p.name))
-        entry.connect("toggled", on_change)
+        self.layer.bind_property(p.name, entry, "active", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
         box.pack_start(entry, True, True, 0)
 
     def _build_font_editor(self, p):

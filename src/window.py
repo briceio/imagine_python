@@ -700,6 +700,10 @@ class ImagineWindow(Gtk.ApplicationWindow):
         buttons.set_homogeneous(True)
         buttons.set_size_request(30, -1)
 
+        delete_button = Gtk.ToolButton(stock_id = Gtk.STOCK_DELETE)
+        delete_button.connect("clicked", delete_layer, layer)
+        buttons.add(delete_button)
+
         down_button = Gtk.ToolButton(stock_id = Gtk.STOCK_GO_DOWN)
         down_button.connect("clicked", move_layer, layer, 1)
         down_button.set_sensitive(not layer.is_last_layer())
@@ -710,9 +714,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
         up_button.set_sensitive(not layer.is_first_layer())
         buttons.add(up_button)
 
-        delete_button = Gtk.ToolButton(stock_id = Gtk.STOCK_DELETE)
-        delete_button.connect("clicked", delete_layer, layer)
-        buttons.add(delete_button)
+        enable_button = Gtk.CheckButton()
+        layer.bind_property("enabled", enable_button, "active", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
+        buttons.add(enable_button)
 
         box.pack_end(buttons, False, False, 0)
 
@@ -806,6 +810,9 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # udpate the layer properties editor
         self._build_layer_editor(self.selected_layer)
+
+        # bind enabled/disabled flag on redraw refresh
+        self.selected_layer.connect("notify::enabled", lambda layer, _: self.redraw())
 
         # redraw
         self.redraw()
