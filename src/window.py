@@ -177,8 +177,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self._on_document_mounted(self, self.document)
 
         # TODO DEBUG
-        #self.load("/home/brice/Données/Temp/pic.jpg")
-        #self.load("/home/brice/Données/Temp/pic2.jpg")
+        self.load("/home/brice/Données/Temp/pic.jpg")
+        self.load("/home/brice/Données/Temp/pic2.jpg")
 
 
     def load(self, path):
@@ -221,7 +221,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         with cairo.ImageSurface(cairo.FORMAT_RGB24, width, height) as surface:
             context = cairo.Context(surface)
-            self.document.draw(self, context, self.mouse_x, self.mouse_y, helpers=False)
+            document.draw(self, context, self.mouse_x, self.mouse_y, helpers=False)
 
             # save
             saver = switcher[document.extension]
