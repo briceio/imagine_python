@@ -14,6 +14,8 @@ Only JPEG and PNG are supported for the moment (which should be more than enough
 
 **Please make a backup of your images before editing them as the application is still in its early development days and might presents some bugs!**
 
+![Application overview](http://gitlab.boite.io/brice/imagine/-/blob/main/imagine_overview.png "Image overview").
+
 ### Accelerator
 
 I added an "accelerator" in the application, some kind a fast keyboard shortcuts to help them annotate your pictures faster:
