@@ -18,7 +18,7 @@ Only JPEG and PNG are supported for the moment (which should be more than enough
 
 ### Accelerator
 
-I added an "accelerator" in the application, some kind a fast keyboard shortcuts to help them annotate your pictures faster:
+I added an "accelerator" in the application, some kind of a fast keyboard shortcuts helper to help you annotate your pictures faster.
 
 Note that the accelerator has a timeout: as soon as you start a command you have 1 second to finish it or it will be reset.
 
