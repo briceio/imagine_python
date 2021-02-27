@@ -66,6 +66,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
     zoom_spinbutton_label: Gtk.Label = Gtk.Template.Child()
     history_listbox: Gtk.ListBox = Gtk.Template.Child()
     popover_history: Gtk.Popover = Gtk.Template.Child()
+    button_history: Gtk.Button = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -175,11 +176,6 @@ class ImagineWindow(Gtk.ApplicationWindow):
 
         # init
         self._on_document_mounted(self, self.document)
-
-        # TODO DEBUG
-        #self.load("/home/brice/Données/Temp/pic.jpg")
-        #self.load("/home/brice/Données/Temp/pic2.jpg")
-
 
     def load(self, path):
         # check if the file is already opened
@@ -763,6 +759,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
             self.button_save.hide()
             self.menu_advanced_save.hide()
             self.menu_advanced_zoom.hide()
+            self.button_history.hide()
 
             return
 
@@ -775,6 +772,7 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self.button_save.show()
         self.menu_advanced_save.show()
         self.menu_advanced_zoom.show()
+        self.button_history.show()
 
         # document title
         self._set_header_subtitle(self.document.path)
