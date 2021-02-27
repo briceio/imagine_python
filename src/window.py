@@ -177,8 +177,8 @@ class ImagineWindow(Gtk.ApplicationWindow):
         self._on_document_mounted(self, self.document)
 
         # TODO DEBUG
-        self.load("/home/brice/Données/Temp/pic.jpg")
-        self.load("/home/brice/Données/Temp/pic2.jpg")
+        #self.load("/home/brice/Données/Temp/pic.jpg")
+        #self.load("/home/brice/Données/Temp/pic2.jpg")
 
 
     def load(self, path):
