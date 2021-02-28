@@ -23,7 +23,6 @@ import gi
 import math
 gi.require_version('PangoCairo', '1.0')
 from gi.repository import Gtk, Gdk, Gio, GObject, Pango, PangoCairo
-import emojis
 from .extensions import *
 import copy
 
@@ -637,7 +636,6 @@ class TextAnnotationLayer(PointLayer):
             cr.set_source_rgba(self.color.red, self.color.green, self.color.blue, self.color.alpha)
             PangoCairo.show_layout(cr, layout)
         
-Selector.FULL_EMOJI_SELECTOR = Selector(emojis.db.get_emoji_aliases().values()) # TODO bug perf use iter() instead of dict in Selector
 Selector.SMALL_EMOJI_SELECTOR = Selector([
     "😀", "😁", "😂", "😄", "😅", "😆", "😇", "😉", "😊", "😋",
     "😍", "🤩", "😎", "😑", "😜", "😝", "😡", "🤬", "😖", "😤",
